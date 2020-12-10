@@ -36,8 +36,6 @@ extern "C"
 #include <string.h>
 #include <stdio.h>
 #include <USART_RSLxx.h>
-#include "app_trace.h"
-
 
 /* ----------------------------------------------------------------------------
  * Defines
@@ -62,7 +60,6 @@ extern "C"
  * --------------------------------------------------------------------------*/
 extern ARM_DRIVER_USART Driver_USART0;
 extern DRIVER_GPIO_t Driver_GPIO;
-#define TEST_QUERY						"R??\r"
 
 /* ---------------------------------------------------------------------------
 * Function prototype definitions

@@ -1354,7 +1354,7 @@
 // <i> Enabled GPIO2 configuration
 // <i> Default: 0
 #ifndef RTE_GPIO2_EN
- #define RTE_GPIO2_EN       0
+ #define RTE_GPIO2_EN       1
 #endif
 //   <o>Drive strength
 //       <0x0=> 2x drive strength
@@ -1492,7 +1492,7 @@
 // <i> Enabled GPIO4 configuration
 // <i> Default: 0
 #ifndef RTE_GPIO4_EN
- #define RTE_GPIO4_EN       0
+ #define RTE_GPIO4_EN       1
 #endif
 //   <o>Drive strength
 //       <0x0=> 2x drive strength
@@ -2422,7 +2422,7 @@
 // <i> Enables DIO1 interrupt.
 // <i> Default: 1
 #ifndef RTE_GPIO_DIO2_INT_EN
- #define RTE_GPIO_DIO2_INT_EN       0
+ #define RTE_GPIO_DIO2_INT_EN       1
 #endif
 //   <o>Interrupt source
 //       <0x0=> GPIO 0   <0x1=> GPIO 1   <0x2=> GPIO 2   <0x3=> GPIO 3
@@ -2469,7 +2469,7 @@
 // <i> Enables DIO3 interrupt.
 // <i> Default: 1
 #ifndef RTE_GPIO_DIO3_INT_EN
- #define RTE_GPIO_DIO3_INT_EN       0
+ #define RTE_GPIO_DIO3_INT_EN       1
 #endif
 //   <o>Interrupt source
 //       <0x0=> GPIO 0   <0x1=> GPIO 1   <0x2=> GPIO 2   <0x3=> GPIO 3
@@ -3415,7 +3415,7 @@
 //   <i> Defines gpio pad number to be used as a rx data line.
 //   <i> Default: 0
 #ifndef RTE_USART0_RX_PIN_DEFAULT
- #define RTE_USART0_RX_PIN_DEFAULT  2
+ #define RTE_USART0_RX_PIN_DEFAULT  4
 #endif
 //   <o>TX data gpio pad
 //       <0x0=> 0
@@ -3437,7 +3437,7 @@
 //   <i> Defines gpio pad number to be used as a tx data line.
 //   <i> Default: 0
 #ifndef RTE_USART0_TX_PIN_DEFAULT
- #define RTE_USART0_TX_PIN_DEFAULT  3
+ #define RTE_USART0_TX_PIN_DEFAULT  2
 #endif
 // </h>
 // <h>Interrupt priority configuration
