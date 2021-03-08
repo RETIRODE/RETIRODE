@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="RETIRODE_APP.Views.AboutPage"
+             xmlns:vm="clr-namespace:RETIRODE_APP.ViewModels"
+             Title="{Binding Title}">
+
+    <ContentPage.BindingContext>
+        <vm:AboutViewModel />
+    </ContentPage.BindingContext>
+
+    <!--<ContentPage.Resources>
+        <ResourceDictionary>
+            <Color x:Key="Accent">#96d1ff</Color>
+        </ResourceDictionary>
+    </ContentPage.Resources>-->
+
+    <!--<Grid>-->
+    <!--<Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>-->
+    <StackLayout BackgroundColor="{StaticResource Secondary}" VerticalOptions="FillAndExpand" HorizontalOptions="Fill">
+        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Center">
+            <ContentView Padding="0,40,0,40" VerticalOptions="FillAndExpand">
+                <Label VerticalOptions="Center" FontSize="56" Text="RETIRODE" TextColor="White" />
+            </ContentView>
+        </StackLayout>
+        <!--</StackLayout>
+        <S Grid.Row="1">
+            <StackLayout BackgroundColor="{StaticResource Secondary}" Orientation="Vertical" Padding="30,24,30,24" Spacing="100">-->
+        <!--<Label Text="Start developing now" FontSize="Title"/>
+                <Label Text="Make changes to your XAML file and save to see your UI update in the running app with XAML Hot Reload. Give it a try!" FontSize="16" Padding="0,0,0,0"/>
+                <Label FontSize="16" Padding="0,24,0,0">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <FormattedString.Spans>
+                                <Span Text="Learn more at "/>
+                                <Span Text="https://aka.ms/xamarin-quickstart" FontAttributes="Bold"/>
+                            </FormattedString.Spans>
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>-->
+        <Button Margin="40,350,40,0" Text="SCAN"
+                        Command="{Binding OpenWebCommand}"
+                        BackgroundColor="{StaticResource Orange}"
+                        TextColor="White" />
+    </StackLayout>
+    <!--</StackLayout>-->
+    <!--</Grid>-->
+
+</ContentPage>
