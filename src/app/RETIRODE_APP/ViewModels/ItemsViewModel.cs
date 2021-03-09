@@ -19,7 +19,7 @@ namespace RETIRODE_APP.ViewModels
 
         public ItemsViewModel()
         {
-            Title = "Browse";
+            Title = "Save/Load";
             Items = new ObservableCollection<Item>();
             LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
 

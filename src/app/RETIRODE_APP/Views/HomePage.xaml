@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="RETIRODE_APP.Views.HomePage"
+             xmlns:vm="clr-namespace:RETIRODE_APP.ViewModels"
+             Title="{Binding Title}">
+
+    <ContentPage.BindingContext>
+        <vm:HomeViewModel />
+    </ContentPage.BindingContext>
+
+    <StackLayout BackgroundColor="{StaticResource Secondary}" VerticalOptions="FillAndExpand" HorizontalOptions="Fill">
+        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Center">
+            <ContentView Padding="0,40,0,40" VerticalOptions="FillAndExpand">
+                <Label VerticalOptions="Center" FontSize="56" Text="RETIRODE" TextColor="White" />
+            </ContentView>
+        </StackLayout>
+
+        <Button Margin="40,350,40,0" Text="SCAN"
+                        Command="{Binding OpenWebCommand}"
+                        BackgroundColor="{StaticResource Orange}"
+                        TextColor="White" />
+    </StackLayout>
+
+
+</ContentPage>
