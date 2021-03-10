@@ -3,7 +3,8 @@
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:local="clr-namespace:RETIRODE_APP.Views"
        Title="RETIRODE_APP"
-       x:Class="RETIRODE_APP.AppShell">
+       x:Class="RETIRODE_APP.AppShell"
+       FlyoutBackgroundColor="{StaticResource Primary}">
 
     <!--
         The overall app visual hierarchy is defined here, along with navigation.

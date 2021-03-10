@@ -9,18 +9,31 @@
         <vm:HomeViewModel />
     </ContentPage.BindingContext>
 
-    <StackLayout BackgroundColor="{StaticResource Secondary}" VerticalOptions="FillAndExpand" HorizontalOptions="Fill">
-        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Center">
-            <ContentView Padding="0,40,0,40" VerticalOptions="FillAndExpand">
-                <Label VerticalOptions="Center" FontSize="56" Text="RETIRODE" TextColor="White" />
-            </ContentView>
-        </StackLayout>
+    <Grid BackgroundColor="{StaticResource Secondary}">
+        <!--<Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>-->
 
-        <Button Margin="40,350,40,0" Text="SCAN"
+        <Grid Grid.Row="0">
+            <StackLayout BackgroundColor="{StaticResource Secondary}" VerticalOptions="FillAndExpand" HorizontalOptions="Fill">
+                <StackLayout Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Center">
+                    <ContentView Padding="0,40,0,40" VerticalOptions="FillAndExpand">
+                        <Label VerticalOptions="Center" FontSize="56" Text="RETIRODE" TextColor="White" />
+                    </ContentView>
+                </StackLayout>
+            </StackLayout>
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <StackLayout VerticalOptions="End"
+                         BackgroundColor="{StaticResource Primary}">
+                <Button Margin="40,20,40,20" Text="SCAN"
                         Command="{Binding OpenWebCommand}"
                         BackgroundColor="{StaticResource Orange}"
                         TextColor="White" />
-    </StackLayout>
-
+            </StackLayout>
+        </Grid>
+    </Grid>
 
 </ContentPage>
