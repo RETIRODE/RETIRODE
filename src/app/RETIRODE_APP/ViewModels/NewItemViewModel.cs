@@ -1,4 +1,6 @@
 ﻿using RETIRODE_APP.Models;
+using RETIRODE_APP.Services;
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,6 +13,8 @@ namespace RETIRODE_APP.ViewModels
     {
         private string text;
         private string description;
+
+        private IDataStore _itemDataStore => DependencyService.Resolve<IDataStore>();
 
         public NewItemViewModel()
         {
@@ -49,15 +53,15 @@ namespace RETIRODE_APP.ViewModels
 
         private async void OnSave()
         {
-            Item newItem = new Item()
+            TestItem newItem = new TestItem()
             {
-                Id = Guid.NewGuid().ToString(),
                 Text = Text,
                 Description = Description
             };
 
-            await DataStore.AddItemAsync(newItem);
-
+            await _itemDataStore.CreateTableAsync<TestItem>();
+            await _itemDataStore.AddEntityAsync<TestItem>(newItem);
+ 
             // This will pop the current page off the navigation stack
             await Shell.Current.GoToAsync("..");
         }
