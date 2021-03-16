@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RETIRODE_APP.Services
 {
-    public class MockDataStore : IDataStore<Item>
+    public class MockDataStore : IMockDataStore<Item>
     {
         readonly List<Item> items;
 
@@ -55,6 +55,11 @@ namespace RETIRODE_APP.Services
         public async Task<IEnumerable<Item>> GetItemsAsync(bool forceRefresh = false)
         {
             return await Task.FromResult(items);
+        }
+
+        public Task CreateTablesAsync(Item item)
+        {
+            throw new NotImplementedException();
         }
     }
 }
