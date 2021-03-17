@@ -1,4 +1,5 @@
-﻿using RETIRODE_APP.Models;
+﻿using Nancy.TinyIoc;
+using RETIRODE_APP.Models;
 using RETIRODE_APP.Services;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ namespace RETIRODE_APP.ViewModels
 {
     public class BaseViewModel : INotifyPropertyChanged
     {
+        //public IDataStore<Item> DataStore => TinyIoCContainer.Current.Resolve<IDataStore<Item>>();
         public IDataStore<Item> DataStore => DependencyService.Get<IDataStore<Item>>();
 
         bool isBusy = false;

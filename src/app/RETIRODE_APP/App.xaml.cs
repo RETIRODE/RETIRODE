@@ -1,8 +1,6 @@
-﻿using RETIRODE_APP.Services;
-using RETIRODE_APP.Views;
-using System;
+﻿using Nancy.TinyIoc;
+using RETIRODE_APP.Services;
 using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
 
 namespace RETIRODE_APP
 {
@@ -13,7 +11,7 @@ namespace RETIRODE_APP
         {
             InitializeComponent();
 
-            DependencyService.Register<MockDataStore>();
+            TinyIoCContainer.Current.Register<MockDataStore>();
             MainPage = new AppShell();
         }
 
