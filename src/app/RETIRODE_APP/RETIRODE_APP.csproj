@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Plugin.BLE" Version="2.1.1" />
     <PackageReference Include="sqlite-net-pcl" Version="1.7.335" />
     <PackageReference Include="Xamarin.Forms" Version="4.8.0.1451" />  
     <PackageReference Include="Xamarin.Essentials" Version="1.5.3.2" />
@@ -21,8 +22,17 @@
     <Compile Update="Views\HomePage.xaml.cs">
       <DependentUpon>HomePage.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\BluetoothDataPage.xaml.cs">
+      <DependentUpon>BluetoothDataPage.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\SettingsPage.xaml.cs">
       <DependentUpon>SettingsPage.xaml</DependentUpon>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Views\BluetoothDataPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -14,5 +15,7 @@ namespace RETIRODE_APP.ViewModels
         }
 
         public ICommand OpenWebCommand { get; }
+
+        public Command BluetoothLE { get; }
     }
 }
