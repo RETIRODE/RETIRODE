@@ -1,25 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+             xmlns:vm="clr-namespace:RETIRODE_APP.ViewModels"
              x:Class="RETIRODE_APP.Views.BluetoothDataPage"
-             Title="Talking to BLE UART" >
+             Title="{Binding Title}" >
+
+    <ContentPage.BindingContext>
+        <vm:BluetoothViewModel />
+    </ContentPage.BindingContext>
+    
     <ContentPage.Content>
-        <StackLayout Padding="10"
-                     Orientation="Vertical">
-            <Button x:Name="InitButton"
-                    Margin="10"
-                    Clicked="InitializeCommandButton_Clicked"
-                    Text="Explicit Init" />
-            <Button x:Name="ScanButton"
-                    Margin="10"
-                    Clicked="SendCommandButton_Clicked"
-                    Text="Send Command" />
-            <Entry x:Name="CommandTxt"
-                   Text="ATZ" />
-            <ScrollView VerticalOptions="StartAndExpand">
-                <Label x:Name="Output"
-                       VerticalOptions="CenterAndExpand" />
-            </ScrollView>
-        </StackLayout>
+        <Grid BackgroundColor="{StaticResource Secondary}">
+            <StackLayout BackgroundColor="{StaticResource Secondary}" VerticalOptions="FillAndExpand" HorizontalOptions="Fill"></StackLayout>
+        </Grid>
     </ContentPage.Content>
 </ContentPage>
+    
+    
