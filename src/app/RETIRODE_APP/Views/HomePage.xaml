@@ -25,22 +25,6 @@
             </StackLayout>
         </Grid>
         <Grid Grid.Row="1">
-            <StackLayout>
-                <Button 
-                        Margin="40,20,40,20"
-                        BackgroundColor="{StaticResource Primary}"
-                        x:Name="ScanBluetoothLE"
-                        Clicked="ScanBluetoothLE_Clicked"
-                        Text="ScanBLE"
-                        TextColor="White" />
-                <ListView x:Name="foundBLEDevicesListView"
-                          Footer=""
-                          ItemTapped="FoundBluetoothDevicesListView_ItemTapped" />
-            </StackLayout>
-            <ActivityIndicator x:Name="IsBusyIndicator"
-                               Scale="0.3"/>
-        </Grid>
-        <Grid Grid.Row="2">
             <StackLayout VerticalOptions="End"
                          BackgroundColor="{StaticResource Primary}">
                 <Button Margin="40,20,40,20" Text="SCAN"
