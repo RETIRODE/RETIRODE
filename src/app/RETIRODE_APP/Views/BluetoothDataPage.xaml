@@ -11,7 +11,23 @@
     
     <ContentPage.Content>
         <Grid BackgroundColor="{StaticResource Secondary}">
-            <StackLayout BackgroundColor="{StaticResource Secondary}" VerticalOptions="FillAndExpand" HorizontalOptions="Fill"></StackLayout>
+            <StackLayout BackgroundColor="{StaticResource Secondary}" VerticalOptions="FillAndExpand" HorizontalOptions="Fill">
+            <Grid Grid.Row="0">
+                <Button Margin="40,20,40,20"
+                            BackgroundColor="{StaticResource Primary}"
+                            Text="ScanBLE"
+                            Command="{Binding ScanBluetoothLECommand}"
+                            TextColor="White" />
+                <ListView x:Name="foundBLEDevicesListView"
+                              Footer=""
+                              ItemTapped="FoundBluetoothDevicesListView_ItemTapped" />
+                <ActivityIndicator x:Name="ActivityIndicator"
+                                       Color="{StaticResource Orange}"
+                                       IsRunning="{Binding IsBusyProperty, Mode=TwoWay}"
+                                       IsVisible="{Binding IsBusyProperty, Mode=TwoWay}"
+                                       Scale="0.3"/>
+            </Grid>
+            </StackLayout>
         </Grid>
     </ContentPage.Content>
 </ContentPage>
