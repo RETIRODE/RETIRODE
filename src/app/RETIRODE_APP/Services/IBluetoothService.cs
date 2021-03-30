@@ -13,8 +13,8 @@ namespace RETIRODE_APP.Services
 
         bool ConnectToDevice(IDevice btDevice);
 
-        Task<bool> WriteCharacteristic();
+        Task<bool> WriteToCharacteristic();
 
-        Task<string> ReadCharacteristic();
+        Task<string> ReadFromCharacteristic();
     }
 }
