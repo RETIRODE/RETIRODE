@@ -11,7 +11,7 @@ namespace RETIRODE_APP.ViewModels
 {
     public class BaseViewModel : INotifyPropertyChanged
     {
-        public IMockDataStore<Item> DataStore => DependencyService.Get<IMockDataStore<Item>>();
+        public IMockDataStore<Item> DataStore => TinyIoCContainer.Current.Resolve<IMockDataStore<Item>>();
 
         bool isBusy = false;
         public bool IsBusy

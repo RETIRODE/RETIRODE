@@ -14,10 +14,9 @@ namespace RETIRODE_APP
         {
             InitializeComponent();
 
-            DependencyService.Register<MockDataStore>();
-            DependencyService.Register<SQLiteAsyncConnection>();
-            DependencyService.Register<IDataStore,SqliteDataStore>();
-            TinyIoCContainer.Current.Register<MockDataStore>();
+            TinyIoCContainer.Current.Register<IMockDataStore<Item>,MockDataStore>();
+            TinyIoCContainer.Current.Register<SQLiteAsyncConnection>();
+            TinyIoCContainer.Current.Register<IDataStore,SqliteDataStore>();
             MainPage = new AppShell();
         }
 
