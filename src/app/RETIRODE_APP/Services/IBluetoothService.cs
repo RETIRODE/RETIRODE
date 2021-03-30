@@ -11,7 +11,7 @@ namespace RETIRODE_APP.Services
     {
         List<IDevice> GetBluetoothDevices();
 
-        bool connectToDevice(IDevice btDevice); 
+        bool ConnectToDevice(IDevice btDevice);
 
         Task<bool> WriteCharacteristic();
 
