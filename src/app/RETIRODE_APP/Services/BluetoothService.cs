@@ -7,26 +7,26 @@ using System.Threading.Tasks;
 
 namespace RETIRODE_APP.Services
 {
-    class BluetoothService : IBluetoothService
+    public class BluetoothService : IBluetoothService
     {
-        public bool connectToDevice(IDevice btDevice)
+        public bool ConnectToDevice(IDevice btDevice)
         {
-            throw new NotImplementedException();
+            return true;
         }
 
         public List<IDevice> GetBluetoothDevices()
         {
-            throw new NotImplementedException();
+            return new List<IDevice>();
         }
 
-        public Task<string> ReadCharacteristic()
+        public Task<string> ReadFromCharacteristic()
         {
-            throw new NotImplementedException();
+            return Task.FromResult("Read Characteristic not implemented");
         }
 
-        public Task<bool> WriteCharacteristic()
+        public Task<bool> WriteToCharacteristic()
         {
-            throw new NotImplementedException();
+            return Task.FromResult(true);
         }
     }
 }
