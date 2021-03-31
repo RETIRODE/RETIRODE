@@ -17,6 +17,7 @@ namespace RETIRODE_APP
             TinyIoCContainer.Current.Register<IMockDataStore<Item>,MockDataStore>();
             TinyIoCContainer.Current.Register<SQLiteAsyncConnection>();
             TinyIoCContainer.Current.Register<IDataStore,SqliteDataStore>();
+            TinyIoCContainer.Current.Register<IRangeMeasurementService, RangeMeasurementService>();
             MainPage = new AppShell();
         }
 
