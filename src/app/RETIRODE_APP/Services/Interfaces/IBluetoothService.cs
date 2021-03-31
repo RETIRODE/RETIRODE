@@ -9,12 +9,14 @@ namespace RETIRODE_APP.Services
 {
     public interface IBluetoothService
     {
-        List<IDevice> GetBluetoothDevices();
+        Task StartScanning();
 
         bool ConnectToDevice(IDevice btDevice);
 
         Task<bool> WriteToCharacteristic();
 
         Task<string> ReadFromCharacteristic();
+
+        Action<object, IDevice> DeviceFounded { get; set; }
     }
 }
