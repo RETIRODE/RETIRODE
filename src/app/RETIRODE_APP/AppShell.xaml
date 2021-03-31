@@ -87,7 +87,7 @@
         <ShellContent Route="ItemsPage" ContentTemplate="{DataTemplate local:ItemsPage}" />
     </FlyoutItem>
     <FlyoutItem Title="Bluetooth" Icon="icon_settings.png">
-        <ShellContent Route="SettingsPage" ContentTemplate="{DataTemplate local:BluetoothPage}" />
+        <ShellContent Route="BluetoothPage" ContentTemplate="{DataTemplate local:BluetoothPage}"/>
     </FlyoutItem>
 
 

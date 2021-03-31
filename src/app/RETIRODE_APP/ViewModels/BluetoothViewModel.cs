@@ -3,11 +3,10 @@ using RETIRODE_APP.Models;
 using RETIRODE_APP.Services;
 using System;
 using System.Windows.Input;
-using Xamarin.Essentials;
 using Xamarin.Forms;
-using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace RETIRODE_APP.ViewModels
 {
@@ -20,26 +19,41 @@ namespace RETIRODE_APP.ViewModels
         public Command LoadDevicesCommand { get; }
         public Command<BLEDevice> DeviceTapped { get; }
 
+        public ObservableCollection<BLEDevice> TestDevices { get; }
+
         public BluetoothViewModel()
         {
             Title = "Bluetooth";
             Devices = new ObservableCollection<BLEDevice>();
-            LoadDevicesCommand = new Command(ExecuteLoadDevicesCommand);
-
+            LoadDevicesCommand = new Command(async () => await ExecuteLoadDevicesCommand());
             DeviceTapped = new Command<BLEDevice>(OnDeviceSelected);
+            TestDevices = new ObservableCollection<BLEDevice>();
+
+            TestDevices.Add(new BLEDevice
+            {
+                Name = "device1",
+                Identifier = new Guid()
+            });
+            TestDevices.Add(new BLEDevice
+            {
+                Name = "device2",
+                Identifier = new Guid()
+            });
         }
 
         public ICommand OpenWebCommand { get; }
 
-        public void ExecuteLoadDevicesCommand()
+        private async Task ExecuteLoadDevicesCommand()
         {
             IsBusy = true;
 
             try
             {
                 Devices.Clear();
-                var devices = rangeMeasurementService.AvailableDevices();
-                foreach (var device in devices)
+                await rangeMeasurementService.StartScanning();
+                System.Threading.Thread.Sleep(1000);
+                var devices = rangeMeasurementService.AvailableDevices;
+                foreach (var device in TestDevices)
                 {
                     Devices.Add(device);
                 }

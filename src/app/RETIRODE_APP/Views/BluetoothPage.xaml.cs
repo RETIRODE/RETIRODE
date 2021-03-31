@@ -8,16 +8,11 @@ using Xamarin.Forms.Xaml;
 
 namespace RETIRODE_APP.Views
 {
-    public partial class SettingsPage : ContentPage
+    public partial class BluetoothPage : ContentPage
     {
-        public SettingsPage()
+        public BluetoothPage()
         {
             InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            throw new NotImplementedException();
         }
     }
 }

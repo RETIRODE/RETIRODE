@@ -7,14 +7,14 @@
              Title="{Binding Title}">
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Icon="icon_refresh.svg"/>
+        <ToolbarItem  Icon="icon_refresh.svg" Command="{Binding LoadDevicesCommand}"/>
     </ContentPage.ToolbarItems>
 
     <ContentPage.BindingContext>
         <local:BluetoothViewModel />
     </ContentPage.BindingContext>
 
-    <StackLayout BackgroundColor="{StaticResource Secondary}" VerticalOptions="FillAndExpand" HorizontalOptions="Fill">
+    <StackLayout>
 
         <RefreshView x:DataType="local:BluetoothViewModel" Command="{Binding LoadDevicesCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}">
             <CollectionView x:Name="DevicesListView"
@@ -23,25 +23,27 @@
                 BackgroundColor="{StaticResource Secondary}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <StackLayout Padding="10" x:DataType="model:BLEDevice">
+                        <StackLayout Padding="130, 40, 0, 0" x:DataType="model:BLEDevice" Orientation="Horizontal">
+                            <Image Source="icon_device.png" WidthRequest="50" HeightRequest="50"/>
                             <Label Text="{Binding Name}" 
                             LineBreakMode="NoWrap" 
                             Style="{DynamicResource ListItemTextStyle}" 
-                            FontSize="16"
-                            TextColor="White" />
-                            <StackLayout.GestureRecognizers>
-                                <TapGestureRecognizer 
-                                NumberOfTapsRequired="1"
-                                Command="{Binding Source={RelativeSource AncestorType={x:Type local:BluetoothViewModel}}, Path=DeviceTapped}"		
-                                CommandParameter="{Binding .}">
-                                </TapGestureRecognizer>
-                            </StackLayout.GestureRecognizers>
+                            FontSize="20"
+                            TextColor="White" 
+                            HorizontalOptions="Center"
+                            Padding="10, 5"/>
+                                <StackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer 
+                                    NumberOfTapsRequired="1"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type local:BluetoothViewModel}}, Path=DeviceTapped}"		
+                                    CommandParameter="{Binding .}">
+                                    </TapGestureRecognizer>
+                                </StackLayout.GestureRecognizers>
                         </StackLayout>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
         </RefreshView>
-
     </StackLayout>
 
 </ContentPage>
