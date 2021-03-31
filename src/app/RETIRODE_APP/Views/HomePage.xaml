@@ -24,7 +24,6 @@
                 </StackLayout>
             </StackLayout>
         </Grid>
-
         <Grid Grid.Row="1">
             <StackLayout VerticalOptions="End"
                          BackgroundColor="{StaticResource Primary}">

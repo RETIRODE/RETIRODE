@@ -13324,6 +13324,9 @@ namespace RETIRODE_APP.Droid
 			// aapt resource value: 0x7F0E0004
 			public const int abc_activity_chooser_view_see_all = 2131623940;
 			
+			// aapt resource value: 0x7F0E0004
+			public const int abc_activity_chooser_view_see_all = 2131623940;
+			
 			// aapt resource value: 0x7F0E0006
 			public const int abc_capital_off = 2131623942;
 			
@@ -13351,6 +13354,9 @@ namespace RETIRODE_APP.Droid
 			// aapt resource value: 0x7F0E000E
 			public const int abc_menu_shift_shortcut_label = 2131623950;
 			
+			// aapt resource value: 0x7F0E000E
+			public const int abc_menu_shift_shortcut_label = 2131623950;
+			
 			// aapt resource value: 0x7F0E000F
 			public const int abc_menu_space_shortcut_label = 2131623951;
 			
@@ -13374,6 +13380,9 @@ namespace RETIRODE_APP.Droid
 			
 			// aapt resource value: 0x7F0E0017
 			public const int abc_searchview_description_voice = 2131623959;
+			
+			// aapt resource value: 0x7F0E0012
+			public const int abc_search_hint = 2131623954;
 			
 			// aapt resource value: 0x7F0E0012
 			public const int abc_search_hint = 2131623954;
@@ -13516,6 +13525,9 @@ namespace RETIRODE_APP.Droid
 			// aapt resource value: 0x7F0E0045
 			public const int mtrl_picker_range_header_title = 2131624005;
 			
+			// aapt resource value: 0x7F0E0045
+			public const int mtrl_picker_range_header_title = 2131624005;
+			
 			// aapt resource value: 0x7F0E0046
 			public const int mtrl_picker_range_header_unselected = 2131624006;
 			
@@ -13533,6 +13545,9 @@ namespace RETIRODE_APP.Droid
 			
 			// aapt resource value: 0x7F0E004B
 			public const int mtrl_picker_text_input_day_abbr = 2131624011;
+			
+			// aapt resource value: 0x7F0E004C
+			public const int mtrl_picker_text_input_month_abbr = 2131624012;
 			
 			// aapt resource value: 0x7F0E004C
 			public const int mtrl_picker_text_input_month_abbr = 2131624012;
@@ -13557,6 +13572,9 @@ namespace RETIRODE_APP.Droid
 			
 			// aapt resource value: 0x7F0E0053
 			public const int password_toggle_content_description = 2131624019;
+			
+			// aapt resource value: 0x7F0E0054
+			public const int path_password_eye = 2131624020;
 			
 			// aapt resource value: 0x7F0E0054
 			public const int path_password_eye = 2131624020;
