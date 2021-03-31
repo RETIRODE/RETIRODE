@@ -66,6 +66,8 @@ namespace RETIRODE_APP.Services
 
         private async void DeviceDiscovered(object sender, IDevice device)
         {
+            if (await IsWhiteList(device))
+            {
                 AvailableDevices.Add(new BLEDevice
                 {
                     Name = device.Name,
@@ -73,6 +75,30 @@ namespace RETIRODE_APP.Services
                 });
 
                 _availableDevices.Add(device);
+            }
+        }
+
+        private async Task<bool> IsWhiteList(IDevice device)
+        {
+            var deviceServices = await device.GetServicesAsync();
+
+            foreach (var service in deviceServices)
+            {
+                if (service.Id == GattServiceId && IsMacAddressEquals(device))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool IsMacAddressEquals(object device)
+        {
+            PropertyInfo propertyInfo = device.GetType().GetProperty("Address");
+            var macAddress = (string)propertyInfo.GetValue(device, null);
+
+            return macAddress.Substring(0, UniqueMacAddressLength).Equals(RetirodeUniqueMacAddressPart);
+
         }
     }
 }
