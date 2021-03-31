@@ -1,4 +1,5 @@
-﻿using RETIRODE_APP.Models;
+﻿using Nancy.TinyIoc;
+using RETIRODE_APP.Models;
 using RETIRODE_APP.Services;
 using SQLite;
 using System;
@@ -14,7 +15,7 @@ namespace RETIRODE_APP.ViewModels
         private string text;
         private string description;
 
-        private IDataStore _itemDataStore => DependencyService.Resolve<IDataStore>();
+        private IDataStore _itemDataStore => TinyIoCContainer.Current.Resolve<IDataStore>();
 
         public NewItemViewModel()
         {
