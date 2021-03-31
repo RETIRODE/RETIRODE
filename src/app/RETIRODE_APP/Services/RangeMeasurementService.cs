@@ -39,7 +39,13 @@ namespace RETIRODE_APP.Services
 
         public async Task<bool> ConnectToRSL10(BLEDevice bleDevice)
         {
-            return await Task.FromResult(true);
+            if (device is null)
+            {
+                return false;
+            }
+
+            return await _bluetoothService.ConnectToDeviceAsync(device);
+
         }
 
         public Task<bool> Disconnect(BLEDevice device)
