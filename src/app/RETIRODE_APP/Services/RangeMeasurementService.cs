@@ -1,4 +1,5 @@
 ﻿using Nancy.TinyIoc;
+using Plugin.BLE.Abstractions.Contracts;
 using RETIRODE_APP.Models;
 using System;
 using System.Collections.Generic;
@@ -9,45 +10,58 @@ namespace RETIRODE_APP.Services
 {
     public class RangeMeasurementService : IRangeMeasurementService
     {
-        public IEnumerable<BLEDevice> AvailableDevices()
+        private readonly IBluetoothService _bluetoothService;
+        private IList<IDevice> _availableDevices;
+        public IList<BLEDevice> AvailableDevices { get; private set; }
+
+        public RangeMeasurementService()
         {
-            // TEMPORARY MOCKED DATA
-            List<BLEDevice> devices = new List<BLEDevice>();
-            Random random = new Random();
-            for(int i = 0; i < 2; i++)
-            {
-                devices.Add(new BLEDevice()
-                {
-                    Name = "asd" + i,
-                    Identifier = Guid.NewGuid()
-                });
-            }
-            return devices;
+            _availableDevices = new List<IDevice>();
+            _bluetoothService = TinyIoCContainer.Current.Resolve<IBluetoothService>();
+            _bluetoothService.DeviceFounded = DeviceDiscovered;
         }
 
-        public bool CalibrateLIDAR(RSL10Command command)
+        public Task<bool> CalibrateLIDAR()
         {
-            return true;
+            throw new NotImplementedException();
         }
 
         public Task<bool> ConnectToRSL10(BLEDevice bleDevice)
         {
-            return Task.FromResult(true);
+            throw new NotImplementedException();
         }
 
-        public Task<bool> DisconnectFromRSL10()
+        public Task<bool> Disconnect(BLEDevice device)
         {
-            return Task.FromResult(true);
+            throw new NotImplementedException();
         }
 
-        public bool StartMeasurement(RSL10Command command)
+        public Task<bool> StartMeasurement()
         {
-            return true;
+            throw new NotImplementedException();
         }
 
-        public bool StopMeasurement(RSL10Command command)
+        public async Task StartScanning()
         {
-            return true;
+            _availableDevices.Clear();
+            AvailableDevices.Clear();
+            await _bluetoothService.StartScanning();
+        }
+
+        public Task<bool> StopMeasurement()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void DeviceDiscovered(object sender, IDevice device)
+        {
+            AvailableDevices.Add(new BLEDevice
+            {
+                Name = device.Name,
+                Identifier = device.Id
+            });
+
+            _availableDevices.Add(device);
         }
     }
 }
