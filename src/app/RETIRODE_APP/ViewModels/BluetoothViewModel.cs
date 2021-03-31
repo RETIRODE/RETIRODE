@@ -14,7 +14,7 @@ namespace RETIRODE_APP.ViewModels
     {
         private BLEDevice _selectedDevice;
 
-        public IRangeMeasurementService rangeMeasurementService => TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
+        public IRangeMeasurementService rangeMeasurementService;
         public ObservableCollection<BLEDevice> Devices { get; }
         public Command LoadDevicesCommand { get; }
         public Command<BLEDevice> DeviceTapped { get; }
@@ -23,6 +23,7 @@ namespace RETIRODE_APP.ViewModels
 
         public BluetoothViewModel()
         {
+            rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
             Title = "Bluetooth";
             Devices = new ObservableCollection<BLEDevice>();
             LoadDevicesCommand = new Command(async () => await ExecuteLoadDevicesCommand());
