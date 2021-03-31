@@ -13,7 +13,6 @@ namespace RETIRODE_APP.Views
         public SettingsPage()
         {
             InitializeComponent();
-            BindingContext = new NewItemViewModel();
         }
     }
 }

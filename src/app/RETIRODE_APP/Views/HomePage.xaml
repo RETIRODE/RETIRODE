@@ -9,11 +9,11 @@
         <vm:HomeViewModel />
     </ContentPage.BindingContext>
 
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Connected" Icon="icon_bluetooth.svg"/>
+    </ContentPage.ToolbarItems>
+
     <Grid BackgroundColor="{StaticResource Secondary}">
-        <!--<Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>-->
 
         <Grid Grid.Row="0">
             <StackLayout BackgroundColor="{StaticResource Secondary}" VerticalOptions="FillAndExpand" HorizontalOptions="Fill">
