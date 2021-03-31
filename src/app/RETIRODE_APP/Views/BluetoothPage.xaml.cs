@@ -14,5 +14,10 @@ namespace RETIRODE_APP.Views
         {
             InitializeComponent();
         }
+
+        private void InitializeComponent()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
