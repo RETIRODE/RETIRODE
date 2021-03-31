@@ -23,11 +23,17 @@ namespace RETIRODE_APP.Services
         //------------- CLASS VARIABLES -------------//
         private readonly IBluetoothService _bluetoothService;
         private IList<IDevice> _availableDevices;
-        public IList<BLEDevice> AvailableDevices { get; private set; }
+        public IList<BLEDevice> AvailableDevices => _availableDevices.Select(x => new BLEDevice()
+        {
+            Identifier = x.Id,
+            Name = x.Name,
+            State = x.State
+        }).ToList();
 
         public RangeMeasurementService()
         {
             _availableDevices = new List<IDevice>();
+
             _bluetoothService = TinyIoCContainer.Current.Resolve<IBluetoothService>();
             _bluetoothService.DeviceFounded = DeviceDiscovered;
         }
@@ -62,7 +68,6 @@ namespace RETIRODE_APP.Services
         public async Task StartScanning()
         {
             _availableDevices.Clear();
-            AvailableDevices.Clear();
             await _bluetoothService.StartScanning();
         }
 
@@ -75,12 +80,6 @@ namespace RETIRODE_APP.Services
         {
             if (await IsWhiteList(device))
             {
-                AvailableDevices.Add(new BLEDevice
-                {
-                    Name = device.Name,
-                    Identifier = device.Id
-                });
-
                 _availableDevices.Add(device);
             }
         }
