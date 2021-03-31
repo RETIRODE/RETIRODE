@@ -11,7 +11,7 @@ namespace RETIRODE_APP.Services
     {
         Task StartScanning();
 
-        bool ConnectToDevice(IDevice btDevice);
+        Task<bool> ConnectToDeviceAsync(IDevice btDevice);
 
         Task<bool> WriteToCharacteristic();
 
