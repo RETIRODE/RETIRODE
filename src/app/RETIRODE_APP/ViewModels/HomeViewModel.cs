@@ -8,14 +8,31 @@ namespace RETIRODE_APP.ViewModels
 {
     public class HomeViewModel : BaseViewModel
     {
+        public Boolean isConnected;
+        public Command ConnectCommand { get; }
         public HomeViewModel()
         {
             Title = "Home";
-            OpenWebCommand = new Command(async () => await Browser.OpenAsync("https://aka.ms/xamarin-quickstart"));
+            isConnected = false;
+            ConnectCommand = new Command(ConnectCom);
+
+            if (isConnected)
+            {
+                Connected = "Connected";
+            }
+            else
+            {
+                Connected = "Disconnected";
+            }
         }
 
-        public ICommand OpenWebCommand { get; }
-
         public Command BluetoothLE { get; }
+
+        public void ConnectCom()
+        {
+            isConnected = !isConnected;
+        }
+
+        public string Connected { get; }
     }
 }

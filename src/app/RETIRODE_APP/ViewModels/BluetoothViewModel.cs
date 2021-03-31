@@ -51,9 +51,9 @@ namespace RETIRODE_APP.ViewModels
             try
             {
                 Devices.Clear();
-                await rangeMeasurementService.StartScanning();
-                System.Threading.Thread.Sleep(1000);
-                var devices = rangeMeasurementService.AvailableDevices;
+                //commented just for demo
+                //await rangeMeasurementService.StartScanning();
+                //var devices = rangeMeasurementService.AvailableDevices;
                 foreach (var device in TestDevices)
                 {
                     Devices.Add(device);
