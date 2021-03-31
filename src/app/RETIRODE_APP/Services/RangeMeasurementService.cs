@@ -14,9 +14,9 @@ namespace RETIRODE_APP.Services
     {
         //------------- STATIC VARIABLES -------------//
         private static Guid GattServiceId = Guid.Parse("5177db0a-8ce6-11eb-8dcd-0242ac130003");
-        private static Guid GattCharacteristicReceiveId = Guid.Parse("");
-        private static Guid GattCharacteristicSendId = Guid.Parse("");
-        private static Guid SpecialNotificationDescriptorId = Guid.Parse("");
+        private static Guid GattCharacteristicReceiveId = Guid.Parse("00000000000000000000000000000000");
+        private static Guid GattCharacteristicSendId = Guid.Parse("00000000000000000000000000000000");
+        private static Guid SpecialNotificationDescriptorId = Guid.Parse("00000000000000000000000000000000");
         private static string RetirodeUniqueMacAddressPart = "60:C0:BF";
         private static int UniqueMacAddressLength = 8;
 
