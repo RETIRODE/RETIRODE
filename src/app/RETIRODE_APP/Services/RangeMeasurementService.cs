@@ -39,6 +39,7 @@ namespace RETIRODE_APP.Services
 
         public async Task<bool> ConnectToRSL10(BLEDevice bleDevice)
         {
+            var device = _availableDevices.FirstOrDefault(foundDevice => foundDevice.Id == bleDevice.Identifier);
             if (device is null)
             {
                 return false;
