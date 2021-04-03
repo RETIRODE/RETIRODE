@@ -1271,7 +1271,7 @@
 //   <0xB04=> RF_GPIO4_IN           <0xB05=> RF_GPIO5_IN           <0xB06=> RF_GPIO6_IN           <0xB07=> RF_GPIO7_IN
 //   <0xB08=> RF_GPIO8_IN           <0xB09=> RF_GPIO9_IN           <0x038=> AUDIOCLK_OUT          <0x039=> AUDIOSLOWCLK_OUT
 //   <0x03A=> OD_P_OUT              <0x03B=> OD_N_OUT              <0xC00=> DMIC_CLK_AUDIOCLK     <0xC01=> DMIC_CLK_AUDIOSLOWCLK
-//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0x03E=> ADC_IN
+//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0xD00=> ADC_IN
 //   <0x03E=> INPUT                 <0x03F=> DISABLED
 //   <i> Defines the io mode
 //   <i> Default: DISABLED
@@ -1340,7 +1340,7 @@
 //   <0xB04=> RF_GPIO4_IN           <0xB05=> RF_GPIO5_IN           <0xB06=> RF_GPIO6_IN           <0xB07=> RF_GPIO7_IN
 //   <0xB08=> RF_GPIO8_IN           <0xB09=> RF_GPIO9_IN           <0x038=> AUDIOCLK_OUT          <0x039=> AUDIOSLOWCLK_OUT
 //   <0x03A=> OD_P_OUT              <0x03B=> OD_N_OUT              <0xC00=> DMIC_CLK_AUDIOCLK     <0xC01=> DMIC_CLK_AUDIOSLOWCLK
-//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0x03E=> ADC_IN
+//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0xD00=> ADC_IN
 //   <0x03E=> INPUT                 <0x03F=> DISABLED
 //   <i> Defines the io mode
 //   <i> Default: DISABLED
@@ -1354,7 +1354,7 @@
 // <i> Enabled GPIO2 configuration
 // <i> Default: 0
 #ifndef RTE_GPIO2_EN
- #define RTE_GPIO2_EN       1
+ #define RTE_GPIO2_EN       0
 #endif
 //   <o>Drive strength
 //       <0x0=> 2x drive strength
@@ -1409,7 +1409,7 @@
 //   <0xB04=> RF_GPIO4_IN           <0xB05=> RF_GPIO5_IN           <0xB06=> RF_GPIO6_IN           <0xB07=> RF_GPIO7_IN
 //   <0xB08=> RF_GPIO8_IN           <0xB09=> RF_GPIO9_IN           <0x038=> AUDIOCLK_OUT          <0x039=> AUDIOSLOWCLK_OUT
 //   <0x03A=> OD_P_OUT              <0x03B=> OD_N_OUT              <0xC00=> DMIC_CLK_AUDIOCLK     <0xC01=> DMIC_CLK_AUDIOSLOWCLK
-//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0x03E=> ADC_IN
+//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0xD00=> ADC_IN
 //   <0x03E=> INPUT                 <0x03F=> DISABLED
 //   <i> Defines the io mode
 //   <i> Default: DISABLED
@@ -1478,7 +1478,7 @@
 //   <0xB04=> RF_GPIO4_IN           <0xB05=> RF_GPIO5_IN           <0xB06=> RF_GPIO6_IN           <0xB07=> RF_GPIO7_IN
 //   <0xB08=> RF_GPIO8_IN           <0xB09=> RF_GPIO9_IN           <0x038=> AUDIOCLK_OUT          <0x039=> AUDIOSLOWCLK_OUT
 //   <0x03A=> OD_P_OUT              <0x03B=> OD_N_OUT              <0xC00=> DMIC_CLK_AUDIOCLK     <0xC01=> DMIC_CLK_AUDIOSLOWCLK
-//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0x03E=> ADC_IN
+//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0xD00=> ADC_IN
 //   <0x03E=> INPUT                 <0x03F=> DISABLED
 //   <i> Defines the io mode
 //   <i> Default: DISABLED
@@ -1492,7 +1492,7 @@
 // <i> Enabled GPIO4 configuration
 // <i> Default: 0
 #ifndef RTE_GPIO4_EN
- #define RTE_GPIO4_EN       1
+ #define RTE_GPIO4_EN       0
 #endif
 //   <o>Drive strength
 //       <0x0=> 2x drive strength
@@ -1547,7 +1547,7 @@
 //   <0xB04=> RF_GPIO4_IN           <0xB05=> RF_GPIO5_IN           <0xB06=> RF_GPIO6_IN           <0xB07=> RF_GPIO7_IN
 //   <0xB08=> RF_GPIO8_IN           <0xB09=> RF_GPIO9_IN           <0x038=> AUDIOCLK_OUT          <0x039=> AUDIOSLOWCLK_OUT
 //   <0x03A=> OD_P_OUT              <0x03B=> OD_N_OUT              <0xC00=> DMIC_CLK_AUDIOCLK     <0xC01=> DMIC_CLK_AUDIOSLOWCLK
-//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0x03E=> ADC_IN
+//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0xD00=> ADC_IN
 //   <0x03F=> DISABLED
 //   <i> Defines the gpio0 io mode
 //   <i> Default: DISABLED
@@ -1616,7 +1616,7 @@
 //   <0xB04=> RF_GPIO4_IN           <0xB05=> RF_GPIO5_IN           <0xB06=> RF_GPIO6_IN           <0xB07=> RF_GPIO7_IN
 //   <0xB08=> RF_GPIO8_IN           <0xB09=> RF_GPIO9_IN           <0x038=> AUDIOCLK_OUT          <0x039=> AUDIOSLOWCLK_OUT
 //   <0x03A=> OD_P_OUT              <0x03B=> OD_N_OUT              <0xC00=> DMIC_CLK_AUDIOCLK     <0xC01=> DMIC_CLK_AUDIOSLOWCLK
-//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0x03E=> ADC_IN
+//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0xD00=> ADC_IN
 //   <0x03F=> DISABLED
 //   <i> Defines the io mode
 //   <i> Default: DISABLED
@@ -1685,7 +1685,7 @@
 //   <0xB04=> RF_GPIO4_IN           <0xB05=> RF_GPIO5_IN           <0xB06=> RF_GPIO6_IN           <0xB07=> RF_GPIO7_IN
 //   <0xB08=> RF_GPIO8_IN           <0xB09=> RF_GPIO9_IN           <0x038=> AUDIOCLK_OUT          <0x039=> AUDIOSLOWCLK_OUT
 //   <0x03A=> OD_P_OUT              <0x03B=> OD_N_OUT              <0xC00=> DMIC_CLK_AUDIOCLK     <0xC01=> DMIC_CLK_AUDIOSLOWCLK
-//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0x03E=> ADC_IN
+//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0xD00=> ADC_IN
 //   <0x03F=> DISABLED
 //   <i> Defines the io mode
 //   <i> Default: DISABLED
@@ -1754,7 +1754,7 @@
 //   <0xB04=> RF_GPIO4_IN           <0xB05=> RF_GPIO5_IN           <0xB06=> RF_GPIO6_IN           <0xB07=> RF_GPIO7_IN
 //   <0xB08=> RF_GPIO8_IN           <0xB09=> RF_GPIO9_IN           <0x038=> AUDIOCLK_OUT          <0x039=> AUDIOSLOWCLK_OUT
 //   <0x03A=> OD_P_OUT              <0x03B=> OD_N_OUT              <0xC00=> DMIC_CLK_AUDIOCLK     <0xC01=> DMIC_CLK_AUDIOSLOWCLK
-//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0x03E=> ADC_IN
+//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0xD00=> ADC_IN
 //   <0x03F=> DISABLED
 //   <i> Defines the io mode
 //   <i> Default: DISABLED
@@ -1823,7 +1823,7 @@
 //   <0xB04=> RF_GPIO4_IN           <0xB05=> RF_GPIO5_IN           <0xB06=> RF_GPIO6_IN           <0xB07=> RF_GPIO7_IN
 //   <0xB08=> RF_GPIO8_IN           <0xB09=> RF_GPIO9_IN           <0x038=> AUDIOCLK_OUT          <0x039=> AUDIOSLOWCLK_OUT
 //   <0x03A=> OD_P_OUT              <0x03B=> OD_N_OUT              <0xC00=> DMIC_CLK_AUDIOCLK     <0xC01=> DMIC_CLK_AUDIOSLOWCLK
-//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0x03E=> ADC_IN
+//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0xD00=> ADC_IN
 //   <0x03F=> DISABLED
 //   <i> Defines the io mode
 //   <i> Default: DISABLED
@@ -1892,7 +1892,7 @@
 //   <0xB04=> RF_GPIO4_IN           <0xB05=> RF_GPIO5_IN           <0xB06=> RF_GPIO6_IN           <0xB07=> RF_GPIO7_IN
 //   <0xB08=> RF_GPIO8_IN           <0xB09=> RF_GPIO9_IN           <0x038=> AUDIOCLK_OUT          <0x039=> AUDIOSLOWCLK_OUT
 //   <0x03A=> OD_P_OUT              <0x03B=> OD_N_OUT              <0xC00=> DMIC_CLK_AUDIOCLK     <0xC01=> DMIC_CLK_AUDIOSLOWCLK
-//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0x03E=> ADC_IN
+//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0xD00=> ADC_IN
 //   <0x03F=> DISABLED
 //   <i> Defines the io mode
 //   <i> Default: DISABLED
@@ -1961,7 +1961,7 @@
 //   <0xB04=> RF_GPIO4_IN           <0xB05=> RF_GPIO5_IN           <0xB06=> RF_GPIO6_IN           <0xB07=> RF_GPIO7_IN
 //   <0xB08=> RF_GPIO8_IN           <0xB09=> RF_GPIO9_IN           <0x038=> AUDIOCLK_OUT          <0x039=> AUDIOSLOWCLK_OUT
 //   <0x03A=> OD_P_OUT              <0x03B=> OD_N_OUT              <0xC00=> DMIC_CLK_AUDIOCLK     <0xC01=> DMIC_CLK_AUDIOSLOWCLK
-//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0x03E=> ADC_IN
+//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0xD00=> ADC_IN
 //   <0x03F=> DISABLED
 //   <i> Defines the io mode
 //   <i> Default: DISABLED
@@ -2030,7 +2030,7 @@
 //   <0xB04=> RF_GPIO4_IN           <0xB05=> RF_GPIO5_IN           <0xB06=> RF_GPIO6_IN           <0xB07=> RF_GPIO7_IN
 //   <0xB08=> RF_GPIO8_IN           <0xB09=> RF_GPIO9_IN           <0x038=> AUDIOCLK_OUT          <0x039=> AUDIOSLOWCLK_OUT
 //   <0x03A=> OD_P_OUT              <0x03B=> OD_N_OUT              <0xC00=> DMIC_CLK_AUDIOCLK     <0xC01=> DMIC_CLK_AUDIOSLOWCLK
-//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0x03E=> ADC_IN
+//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0xD00=> ADC_IN
 //   <0x03F=> DISABLED
 //   <i> Defines the io mode
 //   <i> Default: DISABLED
@@ -2099,7 +2099,7 @@
 //   <0xB04=> RF_GPIO4_IN           <0xB05=> RF_GPIO5_IN           <0xB06=> RF_GPIO6_IN           <0xB07=> RF_GPIO7_IN
 //   <0xB08=> RF_GPIO8_IN           <0xB09=> RF_GPIO9_IN           <0x038=> AUDIOCLK_OUT          <0x039=> AUDIOSLOWCLK_OUT
 //   <0x03A=> OD_P_OUT              <0x03B=> OD_N_OUT              <0xC00=> DMIC_CLK_AUDIOCLK     <0xC01=> DMIC_CLK_AUDIOSLOWCLK
-//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0x03E=> ADC_IN
+//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0xD00=> ADC_IN
 //   <0x03F=> DISABLED
 //   <i> Defines the io mode
 //   <i> Default: DISABLED
@@ -2168,7 +2168,7 @@
 //   <0xB04=> RF_GPIO4_IN           <0xB05=> RF_GPIO5_IN           <0xB06=> RF_GPIO6_IN           <0xB07=> RF_GPIO7_IN
 //   <0xB08=> RF_GPIO8_IN           <0xB09=> RF_GPIO9_IN           <0x038=> AUDIOCLK_OUT          <0x039=> AUDIOSLOWCLK_OUT
 //   <0x03A=> OD_P_OUT              <0x03B=> OD_N_OUT              <0xC00=> DMIC_CLK_AUDIOCLK     <0xC01=> DMIC_CLK_AUDIOSLOWCLK
-//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0x03E=> ADC_IN
+//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0xD00=> ADC_IN
 //   <0x03F=> DISABLED
 //   <i> Defines the io mode
 //   <i> Default: DISABLED
@@ -2237,7 +2237,7 @@
 //   <0xB04=> RF_GPIO4_IN           <0xB05=> RF_GPIO5_IN           <0xB06=> RF_GPIO6_IN           <0xB07=> RF_GPIO7_IN
 //   <0xB08=> RF_GPIO8_IN           <0xB09=> RF_GPIO9_IN           <0x038=> AUDIOCLK_OUT          <0x039=> AUDIOSLOWCLK_OUT
 //   <0x03A=> OD_P_OUT              <0x03B=> OD_N_OUT              <0xC00=> DMIC_CLK_AUDIOCLK     <0xC01=> DMIC_CLK_AUDIOSLOWCLK
-//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0x03E=> ADC_IN
+//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0xD00=> ADC_IN
 //   <0x03F=> DISABLED
 //   <i> Defines the io mode
 //   <i> Default: DISABLED
@@ -2306,7 +2306,7 @@
 //   <0xB04=> RF_GPIO4_IN           <0xB05=> RF_GPIO5_IN           <0xB06=> RF_GPIO6_IN           <0xB07=> RF_GPIO7_IN
 //   <0xB08=> RF_GPIO8_IN           <0xB09=> RF_GPIO9_IN           <0x038=> AUDIOCLK_OUT          <0x039=> AUDIOSLOWCLK_OUT
 //   <0x03A=> OD_P_OUT              <0x03B=> OD_N_OUT              <0xC00=> DMIC_CLK_AUDIOCLK     <0xC01=> DMIC_CLK_AUDIOSLOWCLK
-//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0x03E=> ADC_IN
+//   <0xC02=> DMIC_DATA_IN          <0x03C=> AUDIO_SYNC_PULSE_OUT  <0x03D=> AUDIO_SYNC_MISSED_OUT <0xD00=> ADC_IN
 //   <0x03F=> DISABLED
 //   <i> Defines the io mode
 //   <i> Default: DISABLED
@@ -2422,7 +2422,7 @@
 // <i> Enables DIO1 interrupt.
 // <i> Default: 1
 #ifndef RTE_GPIO_DIO2_INT_EN
- #define RTE_GPIO_DIO2_INT_EN       1
+ #define RTE_GPIO_DIO2_INT_EN       0
 #endif
 //   <o>Interrupt source
 //       <0x0=> GPIO 0   <0x1=> GPIO 1   <0x2=> GPIO 2   <0x3=> GPIO 3
@@ -2469,7 +2469,7 @@
 // <i> Enables DIO3 interrupt.
 // <i> Default: 1
 #ifndef RTE_GPIO_DIO3_INT_EN
- #define RTE_GPIO_DIO3_INT_EN       1
+ #define RTE_GPIO_DIO3_INT_EN       0
 #endif
 //   <o>Interrupt source
 //       <0x0=> GPIO 0   <0x1=> GPIO 1   <0x2=> GPIO 2   <0x3=> GPIO 3
@@ -3415,7 +3415,7 @@
 //   <i> Defines gpio pad number to be used as a rx data line.
 //   <i> Default: 0
 #ifndef RTE_USART0_RX_PIN_DEFAULT
- #define RTE_USART0_RX_PIN_DEFAULT  4
+ #define RTE_USART0_RX_PIN_DEFAULT  2
 #endif
 //   <o>TX data gpio pad
 //       <0x0=> 0
@@ -3437,7 +3437,7 @@
 //   <i> Defines gpio pad number to be used as a tx data line.
 //   <i> Default: 0
 #ifndef RTE_USART0_TX_PIN_DEFAULT
- #define RTE_USART0_TX_PIN_DEFAULT  2
+ #define RTE_USART0_TX_PIN_DEFAULT  3
 #endif
 // </h>
 // <h>Interrupt priority configuration
