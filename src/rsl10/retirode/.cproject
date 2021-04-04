@@ -165,7 +165,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="app_serial_terminal.c|app_simple.c|GPIO_STM32F10x.c|GPIO_LPC18xx.c|GPDMA_LPC18xx.c|USART_STM32F10x.c|USART_LPC18xx.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="measurement|app_serial_terminal.c|app_simple.c|GPIO_STM32F10x.c|GPIO_LPC18xx.c|GPDMA_LPC18xx.c|USART_STM32F10x.c|USART_LPC18xx.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -334,7 +334,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="app_serial_terminal.c|app_simple.c|GPIO_STM32F10x.c|GPIO_LPC18xx.c|GPDMA_LPC18xx.c|USART_STM32F10x.c|USART_LPC18xx.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="measurement|app_serial_terminal.c|app_simple.c|GPIO_STM32F10x.c|GPIO_LPC18xx.c|GPDMA_LPC18xx.c|USART_STM32F10x.c|USART_LPC18xx.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

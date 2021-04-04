@@ -34,7 +34,6 @@ extern "C"
 #include <GPIO_RSLxx.h>
 #include <rsl10.h>
 #include <string.h>
-#include <stdio.h>
 #include <USART_RSLxx.h>
 
 /* ----------------------------------------------------------------------------
