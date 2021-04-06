@@ -7,6 +7,8 @@ using Xamarin.Forms;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using Xamarin.CommunityToolkit.ObjectModel;
 
 namespace RETIRODE_APP.ViewModels
 {
@@ -16,19 +18,19 @@ namespace RETIRODE_APP.ViewModels
 
         public IRangeMeasurementService rangeMeasurementService;
         public ObservableCollection<BLEDevice> Devices { get; }
-        public Command LoadDevicesCommand { get; }
+        public IAsyncCommand LoadDevicesCommand { get; }
         public Command<BLEDevice> DeviceTapped { get; }
 
-        public ObservableCollection<BLEDevice> TestDevices { get; }
+        public IList<BLEDevice> TestDevices { get; }
 
         public BluetoothViewModel()
         {
             rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
             Title = "Bluetooth";
             Devices = new ObservableCollection<BLEDevice>();
-            LoadDevicesCommand = new Command(async () => await ExecuteLoadDevicesCommand());
+            LoadDevicesCommand = new AsyncCommand(async () => await ExecuteLoadDevicesCommand());
             DeviceTapped = new Command<BLEDevice>(OnDeviceSelected);
-            TestDevices = new ObservableCollection<BLEDevice>();
+            TestDevices = new List<BLEDevice>();
 
             TestDevices.Add(new BLEDevice
             {
@@ -49,11 +51,11 @@ namespace RETIRODE_APP.ViewModels
             IsBusy = true;
 
             try
-            {
+            {                
+                await rangeMeasurementService.StartScanning();
+                //System.Threading.Thread.Sleep(1000);
+                var devices = rangeMeasurementService.AvailableDevices;
                 Devices.Clear();
-                //commented just for demo
-                //await rangeMeasurementService.StartScanning();
-                //var devices = rangeMeasurementService.AvailableDevices;
                 foreach (var device in TestDevices)
                 {
                     Devices.Add(device);
