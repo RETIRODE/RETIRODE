@@ -11,11 +11,11 @@
 
 #define QUERY_CHAR                 		"??"
 #define ACK_CHAR                   		"\r"
-#define COMMAND(reg, value)				BuildCommand(reg,value)
-#define QUERY(reg)						BuildCommand(reg,QUERY_CHAR)
+#define COMMAND(reg, value)				BuildCommand(reg,value, 4)
+#define QUERY(reg)						BuildCommand(reg,QUERY_CHAR, 4)
 
 
-static void BuildCommand(const char reg, const char value);
+static void BuildCommand(const char reg, const char value, char *command, uint32_t len);
 /**
  * Array of internal flags about the state of library and which application
  * issued commands are pending.
@@ -96,6 +96,13 @@ static const RETIRODE_LMP_StateHandler_t retirode_lmp_state_handler[RETIRODE_LMP
 	[RETIRODE_LMP_STATE_MEASURING] = RETIRODE_LMP_MeasuringStateHandler,
 	[RETIRODE_LMP_STATE_DATA_READY] = RETIRODE_LMP_DataReadyStateHandler
 };
+
+
+/**
+ * Function to build command/queries which will be send to LIDAR.
+ *
+ */
+
 
 
 /**
