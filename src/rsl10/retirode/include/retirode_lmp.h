@@ -41,6 +41,8 @@ extern "C"
 #define I_REGISTER                 "I"
 #define b_REGISTER                 "b"
 
+#define RETIRODE_LMP_DATA_RECEIVED_BUFFER_SIZE  	2000
+#define RETIRODE_LMP_MAX_DATA_CHUNK_SIZE				64
 
 typedef enum RETIRODE_LMP_State_t
 {
@@ -82,7 +84,7 @@ typedef enum RETIRODE_LMP_State_t
 	 * State transitions:
 	 * * SMARTSHOT_ISP_STATE_DATA_READY - After RECEIVING data from LIDAR.
 	 */
-	RETIRODE_LMP_STATE_MEASURING,
+	RETIRODE_LMP_STATE_DATA_PROCESSING,
 
 	/**
 	 * Notifies application about received data
@@ -106,7 +108,37 @@ typedef enum RETIRODE_LMP_Event_t
 	RETIRODE_LMP_EVENT_READY,
 	RETIRODE_LMP_EVENT_MEASUREMENT_DATA_READY,
 	RETIRODE_LMP_EVENT_QUERY_RESPONSE_READY
-}RETIRODE_LMP_Event_t;
+} RETIRODE_LMP_Event_t;
+
+
+/** List of error codes returned by ISP library calls. */
+typedef enum RETIRODE_LMP_Err_t
+{
+    /** Operation completed without errors. */
+	RETIRODE_LMP_ERR_NO_ERROR,
+
+    /** Transaction error on UART C bus while communicating with LIDAR. */
+	RETIRODE_LMP_ERR_UART_ERROR,
+
+    /** Unused. */
+	RETIRODE_LMP_ERR_ISP_TIMEOUT,
+
+    /** Raised when invalid non compatible with current implementation of LMP. */
+	RETIRODE_LMP_ERR_LIDAR,
+} RETIRODE_LMP_Err_t;
+
+
+/** Additional parameters for @ref SMARTSHOT_ISP_IMAGE_DATA_IND message. */
+typedef struct RETIRODE_LMP_Data_t
+{
+    /** Number of data bytes contained in #data */
+    uint32_t size;
+
+    /** Contains chunk of image data read from ISP processor. */
+    uint8_t data[RETIRODE_LMP_MAX_DATA_CHUNK_SIZE];
+} RETIRODE_LMP_Data_t;
+
+int32_t RETIRODE_LMP_WriteCommand(char *cmd);
 
 /** Function prototype for RETIRODE_LMP library event handler.
  *
@@ -118,6 +150,49 @@ typedef enum RETIRODE_LMP_Event_t
  */
 typedef void (*RETIRODE_LMP_EventHandler_t)(RETIRODE_LMP_Event_t event,
         const void *p_param);
+
+/** Additional parameters for @ref SMARTSHOT_ISP_ERROR_IND message. */
+typedef struct RETIRODE_LMP_ErrorEvent_t
+{
+    /** ID of state in which the error occurred. */
+	RETIRODE_LMP_State_t state;
+
+    /** Error code of the error. */
+	RETIRODE_LMP_Err_t error;
+
+} RETIRODE_LMP_ErrorEvent_t;
+
+typedef enum RETIRODE_LMP_ReadyReason_t
+{
+    /**
+     * ISP is ready to capture next image due to completion of power up
+     * sequence.
+     */
+	RETIRODE_LMP_READY_POWER_UP,
+
+    /**
+     * ISP is ready to capture next image after completion of data transfer
+     * of previous capture.
+     */
+	RETIRODE_LMP_READY_DATA_TRANSFER_COMPLETE,
+} RETIRODE_LMP_ReadyReason_t;
+
+/**
+ * Handler that must be called from the event handler routine of the UART
+ * CMSIS-Driver.
+ *
+ * @param event
+ * Event passed to the CMSIS-Driver event handler.
+ */
+void RETIRODE_LMP_UARTEventHandler(uint32_t event);
+
+
+int32_t RETIRODE_LMP_Initialize(ARM_DRIVER_USART *uart, RETIRODE_LMP_EventHandler_t handler);
+bool RETIRODE_LMP_MainLoop(void);
+
+void RETIRODE_LMP_PowerUpCommand(void);
+
+void RETIRODE_LMP_MeasureCommand(uint32_t measure_size);
 
 /* ----------------------------------------------------------------------------
  * Close the 'extern "C"' block

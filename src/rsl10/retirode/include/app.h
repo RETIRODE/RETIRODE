@@ -35,6 +35,7 @@ extern "C"
 #include <rsl10.h>
 #include <string.h>
 #include <USART_RSLxx.h>
+#include <retirode_lmp.h>
 
 /* ----------------------------------------------------------------------------
  * Defines
