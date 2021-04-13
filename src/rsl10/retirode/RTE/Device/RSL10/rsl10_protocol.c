@@ -156,7 +156,7 @@ uint8_t Device_Param_Read(uint8_t requestedId, uint8_t *buf)
         case PARAM_ID_BLE_CA_TIMER_DUR:
             if(param.chnlAsses_param_src_type == APP_PROVIDED)
             {
-                memcpy(buf, (uint8_t *) &param.chnlAsses_timer_cnt, 2);
+            	memcpy(buf, (uint8_t *) &param.chnlAsses_timer_duration, 2);
             }
             else
             {

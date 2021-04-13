@@ -2,8 +2,8 @@
  * Auto generated Run-Time-Environment Component Configuration File
  *      *** Do not modify ! ***
  *
- * Project: uart_cmsis_driver
- * RTE configuration: uart_cmsis_driver.rteconfig
+ * Project: retirode
+ * RTE configuration: retirode.rteconfig
 */
 #ifndef RTE_COMPONENTS_H
 #define RTE_COMPONENTS_H
