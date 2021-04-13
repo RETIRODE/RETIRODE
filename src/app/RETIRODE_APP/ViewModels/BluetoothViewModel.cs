@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Xamarin.CommunityToolkit.ObjectModel;
+using System.Threading;
 
 namespace RETIRODE_APP.ViewModels
 {
@@ -53,13 +54,19 @@ namespace RETIRODE_APP.ViewModels
             try
             {                
                 await rangeMeasurementService.StartScanning();
-                //System.Threading.Thread.Sleep(1000);
                 var devices = rangeMeasurementService.AvailableDevices;
                 Devices.Clear();
-                foreach (var device in TestDevices)
+                do
                 {
-                    Devices.Add(device);
+                    devices = rangeMeasurementService.AvailableDevices;
+                    foreach (var device in devices)
+                    {
+                        Devices.Add(device);
+                        OnPropertyChanged(nameof(Devices));
+                    }
+                    Thread.Sleep(2000);
                 }
+                while (devices == rangeMeasurementService.AvailableDevices);
             }
             catch (Exception ex)
             {

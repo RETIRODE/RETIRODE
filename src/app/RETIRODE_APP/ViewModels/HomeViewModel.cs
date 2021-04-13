@@ -8,15 +8,23 @@ namespace RETIRODE_APP.ViewModels
 {
     public class HomeViewModel : BaseViewModel
     {
-        public Boolean isConnected;
+        private Boolean _isConnected;
         public Command ConnectCommand { get; }
         public HomeViewModel()
         {
             Title = "Home";
-            isConnected = false;
+            _isConnected = false;
+            Connected = "Disconnected";
             ConnectCommand = new Command(ConnectCom);
+        }
 
-            if (isConnected)
+        public Command BluetoothLE { get; }
+
+        public void ConnectCom()
+        {
+            _isConnected = !_isConnected;
+
+            if (_isConnected)
             {
                 Connected = "Connected";
             }
@@ -24,15 +32,9 @@ namespace RETIRODE_APP.ViewModels
             {
                 Connected = "Disconnected";
             }
+            OnPropertyChanged(nameof(Connected));
         }
 
-        public Command BluetoothLE { get; }
-
-        public void ConnectCom()
-        {
-            isConnected = !isConnected;
-        }
-
-        public string Connected { get; }
+        public string Connected { get; set; }
     }
 }
