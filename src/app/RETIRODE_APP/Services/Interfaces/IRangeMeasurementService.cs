@@ -8,9 +8,9 @@ namespace RETIRODE_APP.Services
 {
     public interface IRangeMeasurementService
     {
-        Task<bool> StartMeasurement();
+        Task StartMeasurement();
 
-        Task<bool> StopMeasurement();
+        Task StopMeasurement();
 
         Task<bool> ConnectToRSL10(BLEDevice bleDevice);
 
