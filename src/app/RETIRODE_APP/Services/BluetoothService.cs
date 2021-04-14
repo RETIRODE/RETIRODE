@@ -1,32 +1,54 @@
-﻿using Plugin.BLE.Abstractions.Contracts;
+﻿using Plugin.BLE;
+using Plugin.BLE.Abstractions;
+using Plugin.BLE.Abstractions.Contracts;
 using RETIRODE_APP.Models;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Xamarin.Forms;
 
 namespace RETIRODE_APP.Services
 {
     public class BluetoothService : IBluetoothService
     {
-        public bool ConnectToDevice(IDevice btDevice)
+        //------------- CLASS VARIABLES -------------//
+        private readonly IAdapter _bluetoothAdapter;
+        private IDevice _device;
+
+        public Action<object, IDevice> DeviceFounded { get; set; }
+
+        public BluetoothService()
         {
-            return true;
+            _bluetoothAdapter = CrossBluetoothLE.Current.Adapter;
+            _bluetoothAdapter.DeviceDiscovered += (obj, device) => DeviceFounded.Invoke(obj,device.Device);
         }
 
-        public List<IDevice> GetBluetoothDevices()
+        public async Task ConnectToDeviceAsync(IDevice btDevice)
         {
-            return new List<IDevice>();
+                _device = btDevice;
+                var connectParameters = new ConnectParameters(false, true);
+                await _bluetoothAdapter.ConnectToDeviceAsync(btDevice, connectParameters);
+
+                //Connection interval to increase speed
+                //Does not work on iOS devices. Supported only on Android API > 21
+                _device.UpdateConnectionInterval(ConnectionInterval.High);
         }
 
-        public Task<string> ReadFromCharacteristic()
+        public async Task StartScanning()
         {
-            return Task.FromResult("Read Characteristic not implemented");
+            await _bluetoothAdapter.StartScanningForDevicesAsync();
         }
 
-        public Task<bool> WriteToCharacteristic()
+        public async Task ReadFromCharacteristic(ICharacteristic characteristic)
         {
-            return Task.FromResult(true);
+            await characteristic.ReadAsync();
+        }
+
+        public async Task<bool> WriteToCharacteristic(ICharacteristic characteristic, RSL10Command commandToCharacteristic)
+        {
+             return await characteristic.WriteAsync(new[] { (byte)commandToCharacteristic });
         }
     }
 }

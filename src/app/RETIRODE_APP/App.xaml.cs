@@ -18,11 +18,13 @@ namespace RETIRODE_APP
             TinyIoCContainer.Current.Register<SQLiteAsyncConnection>();
             TinyIoCContainer.Current.Register<IDataStore,SqliteDataStore>();
             TinyIoCContainer.Current.Register<IRangeMeasurementService, RangeMeasurementService>();
+            TinyIoCContainer.Current.Register<IBluetoothService, BluetoothService>();
             MainPage = new AppShell();
         }
 
         protected override void OnStart()
         {
+
         }
 
         protected override void OnSleep()

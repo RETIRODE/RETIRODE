@@ -1,7 +1,11 @@
 ﻿using Nancy.TinyIoc;
+using Plugin.BLE.Abstractions;
+using Plugin.BLE.Abstractions.Contracts;
 using RETIRODE_APP.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,45 +13,127 @@ namespace RETIRODE_APP.Services
 {
     public class RangeMeasurementService : IRangeMeasurementService
     {
-        public IEnumerable<BLEDevice> AvailableDevices()
+        //------------- STATIC VARIABLES -------------//
+        private static Guid GattServiceId = Guid.Parse("5177db0a-8ce6-11eb-8dcd-0242ac130003");
+        private static Guid GattCharacteristicReceiveId = Guid.Parse("00000000000000000000000000000000");
+        private static Guid GattCharacteristicSendId = Guid.Parse("5177de8e-8ce6-11eb-8dcd-0242ac130003");
+        private static Guid SpecialNotificationDescriptorId = Guid.Parse("00000000000000000000000000000000");
+        private static string RetirodeUniqueMacAddressPart = "60:C0:BF";
+        private static string UniqueRetirodeName = "Retirode";
+        private static int UniqueMacAddressLength = 8;
+
+        //------------- CLASS VARIABLES -------------//
+        private readonly IBluetoothService _bluetoothService;
+        private IList<IDevice> _availableDevices;
+        private IDevice _connectedDevice;
+        public IList<BLEDevice> AvailableDevices => _availableDevices.Select(x => new BLEDevice()
         {
-            // TEMPORARY MOCKED DATA
-            List<BLEDevice> devices = new List<BLEDevice>();
-            Random random = new Random();
-            for(int i = 0; i < 2; i++)
+            Identifier = x.Id,
+            Name = x.Name,
+            State = x.State
+        }).ToList();
+
+        public RangeMeasurementService()
+        {
+            _availableDevices = new List<IDevice>();
+            _bluetoothService = TinyIoCContainer.Current.Resolve<IBluetoothService>();
+            _bluetoothService.DeviceFounded = DeviceDiscovered;
+        }
+
+        public Task<bool> CalibrateLIDAR()
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<bool> ConnectToRSL10(BLEDevice bleDevice)
+        {
+            bool result = false;
+            try
             {
-                devices.Add(new BLEDevice()
+                var device = _availableDevices.FirstOrDefault(foundDevice => foundDevice.Name == bleDevice.Name);
+                if (device != null)
                 {
-                    Name = "asd" + i,
-                    Identifier = Guid.NewGuid()
-                });
+                    _connectedDevice = device;
+                    await _bluetoothService.ConnectToDeviceAsync(_connectedDevice);
+                    result = true;
+                }
             }
-            return devices;
+            catch
+            {
+                throw new Exception("Cannot connect to device");
+            }
+            return result;
         }
 
-        public bool CalibrateLIDAR(RSL10Command command)
+        public Task<bool> Disconnect(BLEDevice device)
         {
-            return true;
+            throw new NotImplementedException();
         }
 
-        public Task<bool> ConnectToRSL10(BLEDevice bleDevice)
+        public Task StartMeasurement()
         {
-            return Task.FromResult(true);
+            throw new NotImplementedException();
         }
 
-        public Task<bool> DisconnectFromRSL10()
+        public async Task StartScanning()
         {
-            return Task.FromResult(true);
+            _availableDevices.Clear();
+            await _bluetoothService.StartScanning();
         }
 
-        public bool StartMeasurement(RSL10Command command)
+        public async Task StopMeasurement()
         {
-            return true;
+            var service = await _connectedDevice.GetServiceAsync(GattServiceId);
+
+            if (service is null)
+            {
+                throw new Exception("Error with send command to characteristic");
+            }
+
+            var sendCharacteristic = await service.GetCharacteristicAsync(GattCharacteristicSendId);
+
+            if (sendCharacteristic is null)
+            {
+                throw new Exception("Error with send command to characteristic");
+            }
+
+            try
+            {
+               if(!await _bluetoothService.WriteToCharacteristic(sendCharacteristic, RSL10Command.StopMeasurement))
+               {
+                    throw new Exception("Error with send command to characteristic");
+               }
+            }
+            catch(Exception e)
+            {
+                throw new Exception(e.Message);
+            }
         }
 
-        public bool StopMeasurement(RSL10Command command)
+        private async void DeviceDiscovered(object sender, IDevice device)
         {
-            return true;
+            if (await IsWhiteList(device))
+            {
+                _availableDevices.Add(device);
+            }
         }
+
+        private Task<bool> IsWhiteList(IDevice device)
+        {
+            if (device.Name == UniqueRetirodeName && IsMacAddressEquals(device.NativeDevice))
+            {
+                return Task.FromResult(true);
+            }
+            return Task.FromResult(false);
+        }
+
+        private bool IsMacAddressEquals(object device)
+        {
+            PropertyInfo propertyInfo = device.GetType().GetProperty("Address");
+            var macAddress = (string)propertyInfo.GetValue(device, null);
+
+            return macAddress.Substring(0, UniqueMacAddressLength).Equals(RetirodeUniqueMacAddressPart);
+        }
+
     }
 }

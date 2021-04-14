@@ -8,16 +8,18 @@ namespace RETIRODE_APP.Services
 {
     public interface IRangeMeasurementService
     {
-        bool StartMeasurement(RSL10Command command);
+        Task StartMeasurement();
 
-        bool StopMeasurement(RSL10Command command);
+        Task StopMeasurement();
 
         Task<bool> ConnectToRSL10(BLEDevice bleDevice);
 
-        IEnumerable<BLEDevice> AvailableDevices();
+        Task StartScanning();
 
-        bool CalibrateLIDAR(RSL10Command command);
+        Task<bool> CalibrateLIDAR();
 
-        Task<bool> DisconnectFromRSL10();
+        Task<bool> Disconnect(BLEDevice bleDevice);
+
+        IList<BLEDevice> AvailableDevices { get; }
     }
 }
