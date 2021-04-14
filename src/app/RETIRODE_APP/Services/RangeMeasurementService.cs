@@ -70,7 +70,7 @@ namespace RETIRODE_APP.Services
             throw new NotImplementedException();
         }
 
-        public Task<bool> StartMeasurement()
+        public Task StartMeasurement()
         {
             throw new NotImplementedException();
         }
@@ -81,9 +81,33 @@ namespace RETIRODE_APP.Services
             await _bluetoothService.StartScanning();
         }
 
-        public Task<bool> StopMeasurement()
+        public async Task StopMeasurement()
         {
-            throw new NotImplementedException();
+            var service = await _connectedDevice.GetServiceAsync(GattServiceId);
+
+            if (service is null)
+            {
+                throw new Exception("Error with send command to characteristic");
+            }
+
+            var sendCharacteristic = await service.GetCharacteristicAsync(GattCharacteristicSendId);
+
+            if (sendCharacteristic is null)
+            {
+                throw new Exception("Error with send command to characteristic");
+            }
+
+            try
+            {
+               if(!await _bluetoothService.WriteToCharacteristic(sendCharacteristic, RSL10Command.StopMeasurement))
+               {
+                    throw new Exception("Error with send command to characteristic");
+               }
+            }
+            catch(Exception e)
+            {
+                throw new Exception(e.Message);
+            }
         }
 
         private async void DeviceDiscovered(object sender, IDevice device)
