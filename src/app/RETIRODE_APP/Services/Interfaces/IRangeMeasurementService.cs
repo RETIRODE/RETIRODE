@@ -8,6 +8,7 @@ namespace RETIRODE_APP.Services
 {
     public interface IRangeMeasurementService
     {
+        event Action<BLEDevice> DeviceDiscoveredEvent;
         Task StartMeasurement();
 
         Task StopMeasurement();

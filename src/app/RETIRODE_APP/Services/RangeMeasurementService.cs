@@ -40,6 +40,8 @@ namespace RETIRODE_APP.Services
             _bluetoothService.DeviceFounded = DeviceDiscovered;
         }
 
+        event Action<BLEDevice> DeviceDiscoveredEvent;
+
         public Task<bool> CalibrateLIDAR()
         {
             throw new NotImplementedException();
@@ -115,6 +117,12 @@ namespace RETIRODE_APP.Services
             if (await IsWhiteList(device))
             {
                 _availableDevices.Add(device);
+                DeviceDiscoveredEvent.Invoke(new BLEDevice()
+                {
+                    Name = device.Name,
+                    Identifier = device.Id,
+                    State = device.State
+                });
             }
         }
 
