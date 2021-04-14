@@ -11,11 +11,11 @@ namespace RETIRODE_APP.Services
     {
         Task StartScanning();
 
-        Task<bool> ConnectToDeviceAsync(IDevice btDevice);
+        Task ConnectToDeviceAsync(IDevice btDevice);
 
-        Task<bool> WriteToCharacteristic();
+        Task<bool> WriteToCharacteristic(ICharacteristic characteristic, RSL10Command stopMeasurement);
 
-        Task<string> ReadFromCharacteristic();
+        Task ReadFromCharacteristic(ICharacteristic characteristic);
 
         Action<object, IDevice> DeviceFounded { get; set; }
     }
