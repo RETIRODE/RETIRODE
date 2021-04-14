@@ -3,7 +3,6 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Urho;
-using Urho.Actions;
 using Urho.Gui;
 
 namespace RETIRODE_APP.ViewModels
@@ -64,7 +63,7 @@ namespace RETIRODE_APP.ViewModels
 
             }
 
-            int moveSpeed = 1;
+            int moveSpeed = 2;
             if (Input.GetKeyDown(Key.W)) CameraNode.Translate(Vector3.UnitZ * moveSpeed * timeStep);
             if (Input.GetKeyDown(Key.S)) CameraNode.Translate(-Vector3.UnitZ * moveSpeed * timeStep);
             if (Input.GetKeyDown(Key.A)) CameraNode.Translate(-Vector3.UnitX * moveSpeed * timeStep);
@@ -104,8 +103,6 @@ namespace RETIRODE_APP.ViewModels
             // Viewport
             Renderer.SetViewport(0, new Viewport(scene, camera, null));
 
-            // Action
-            await plotNode.RunActionsAsync(new EaseBackOut(new RotateBy(1, 0, 90, 0)));
             movementsEnabled = true;
         }
 
@@ -128,8 +125,8 @@ namespace RETIRODE_APP.ViewModels
                         return;
 
                     var graphics = Graphics;
-                    Yaw += TouchSensitivity * camera.Fov / graphics.Height * state.Delta.X;
-                    Pitch += TouchSensitivity * camera.Fov / graphics.Height * state.Delta.Y;
+                    Yaw -= TouchSensitivity * camera.Fov / graphics.Height * state.Delta.X;
+                    Pitch -= TouchSensitivity * camera.Fov / graphics.Height * state.Delta.Y;
                     CameraNode.Rotation = new Quaternion(Pitch, Yaw, 0);
                 }
                 else
@@ -143,6 +140,36 @@ namespace RETIRODE_APP.ViewModels
         float Distance(IntVector2 v1, IntVector2 v2)
         {
             return (float)Math.Sqrt((v1.X - v2.X) * (v1.X - v2.X) + (v1.Y - v2.Y) * (v1.Y - v2.Y));
+        }
+
+        float CalculateDistanceFromTdc(float tdcValue)
+        {
+            // TODO get from DB
+            float tdc0Value = 0;
+            float tdc62Value = 0;
+            float tdc125Value = 0;
+
+            float tofValue;
+
+            if(tdcValue < 0)
+            {
+                tofValue = 0f;
+            }
+            else if(tdcValue < 62.5f)
+            {
+                tofValue = 0f + (62.5f * ((tdcValue - tdc0Value) / (tdc62Value - tdc0Value)));
+            }
+            else if (tdcValue < 125f)
+            {
+                tofValue = 62.5f + (62.5f * ((tdcValue - tdc62Value) / (tdc125Value - tdc62Value)));
+            }
+            else
+            {
+                tofValue = 125f + (62.5f * ((tdcValue - tdc125Value) / (tdc125Value - tdc62Value)));
+            }
+
+            float distance = 0.15f * tofValue;
+            return distance;
         }
     }
 }
