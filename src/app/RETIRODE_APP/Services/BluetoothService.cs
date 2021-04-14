@@ -46,9 +46,9 @@ namespace RETIRODE_APP.Services
             await characteristic.ReadAsync();
         }
 
-        public Task<bool> WriteToCharacteristic()
+        public async Task<bool> WriteToCharacteristic(ICharacteristic characteristic, RSL10Command commandToCharacteristic)
         {
-            return Task.FromResult(true);
+             return await characteristic.WriteAsync(new[] { (byte)commandToCharacteristic });
         }
     }
 }
