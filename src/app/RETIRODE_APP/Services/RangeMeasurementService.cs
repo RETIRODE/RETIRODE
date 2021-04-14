@@ -94,18 +94,13 @@ namespace RETIRODE_APP.Services
             }
         }
 
-        private async Task<bool> IsWhiteList(IDevice device)
+        private Task<bool> IsWhiteList(IDevice device)
         {
-            var deviceServices = await device.GetServicesAsync();
-
-            foreach (var service in deviceServices)
+            if (device.Name == UniqueRetirodeName && IsMacAddressEquals(device.NativeDevice))
             {
-                if (service.Id == GattServiceId && IsMacAddressEquals(device))
-                {
-                    return true;
-                }
+                return Task.FromResult(true);
             }
-            return false;
+            return Task.FromResult(false);
         }
 
         private bool IsMacAddressEquals(object device)
