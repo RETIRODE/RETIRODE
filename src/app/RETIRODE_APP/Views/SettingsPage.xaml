@@ -1,0 +1,148 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="RETIRODE_APP.Views.SettingsPage"
+             xmlns:local="clr-namespace:RETIRODE_APP.ViewModels"
+             Title="{Binding Title}"
+             BackgroundColor="{StaticResource Secondary}">
+
+    <ContentPage.BindingContext>
+        <local:SettingsViewModel />
+    </ContentPage.BindingContext>
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style TargetType="Label">
+                <Setter Property="HorizontalOptions" Value="Center"/>
+                <Setter Property="FontSize" Value="20"/>
+                <Setter Property="FontAttributes" Value="Bold"/>
+                <Setter Property="TextColor" Value="White"/>
+            </Style>
+
+            <Style x:Key="TCDValue" TargetType="Label">
+                <Setter Property="HorizontalOptions" Value="Center"/>
+                <Setter Property="FontSize" Value="20"/>
+                <Setter Property="FontAttributes" Value="Bold"/>
+                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                <Setter Property="Padding" Value="10"/>
+                <Setter Property="WidthRequest" Value="150"/>
+            </Style>
+
+            <Style TargetType="Stepper">
+                <Setter Property="HorizontalOptions" Value="Center"/>
+                <Setter Property="WidthRequest" Value="160"/>
+            </Style>
+            
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ContentPage.Content>
+
+        <StackLayout>
+
+            <Grid Margin="20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="50"/>
+                </Grid.RowDefinitions>
+
+                <!-- TCD Cal 0.0 ns -->
+                <Label Text="0.0 ns:"/>
+                <Label Text="{Binding TCDCal0}" Grid.Row="1" Style="{StaticResource TCDValue}"/>
+
+                <!-- TCD Cal 62.5 ns -->
+                <Label Text="62.5 ns:" Grid.Column="1"/>
+                <Label Text="{Binding TCDCal62}"  Grid.Column="1" Grid.Row="1" Style="{StaticResource TCDValue}"/>
+
+                <!-- TCD Cal 125.0 ns -->
+                <Label Text="125.0 ns:" Grid.Column="2"/>
+                <Label Text="{Binding TCDCal125}" Grid.Column="2" Grid.Row="1" Style="{StaticResource TCDValue}"/>
+
+
+
+            </Grid>
+
+            <!-- Calibrate button -->
+            <Button Text="Calibrate" Margin="20, 0, 20, 20"/>
+
+            <Grid Margin="20,10,20,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="50" />
+                </Grid.RowDefinitions>
+
+                <!-- Trigger Pulse -->
+                <Label Text="Trigger Pulse"/>
+                <Label Text="{Binding TriggerPulse}" Style="{StaticResource TCDValue}" Grid.Row="1"/>
+
+
+                <!-- Voltage target -->
+                <Label Text="Voltage target" Grid.Column="1"/>
+                <Label Text="{Binding VoltagePulse}" Style="{StaticResource TCDValue}" Grid.Column="1" Grid.Row="1"/>
+
+            </Grid>
+
+            <Grid Margin="20,20,20,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30" />
+                </Grid.RowDefinitions>
+
+                <!-- power labels -->
+                <Label Text="SiPM bias power"/>
+                <Label Text="Laser power" Grid.Column="1"/>
+
+            </Grid>
+
+            <Grid Margin="20,0,20,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="50" />
+                </Grid.RowDefinitions>
+
+                <!-- SiPM bias power -->
+
+                <!-- Target[V] -->
+                <Label Text="Target[V]"/>
+                <Label Style="{StaticResource TCDValue}" Grid.Row="1" Text="{Binding SIPMTargetV}"/>
+                <!-- Actual[V] -->
+                <Label Text="Actual[V]" Grid.Column="1"/>
+                <Label Style="{StaticResource TCDValue}" Grid.Column="1" Grid.Row="1" Text="{Binding SIPMActualV}"/>
+
+                <!-- Laser power -->
+
+                <!-- Target[V] -->
+                <Label Text="Target[V]" Grid.Column="2"/>
+                <Label Style="{StaticResource TCDValue}" Grid.Column="2" Grid.Row="1" Text="{Binding LaserTargetV}"/>
+                <!-- Actual[V] -->
+                <Label Text="Actual[V]" Grid.Column="3"/>
+                <Label Style="{StaticResource TCDValue}" Grid.Column="3" Grid.Row="1" Text="{Binding LaserActualV}"/>
+            </Grid>
+
+
+            <Button Text="SW Reset" Margin="20, 20"/>
+
+        </StackLayout>
+
+    </ContentPage.Content>
+
+</ContentPage>

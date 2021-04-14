@@ -10,7 +10,7 @@
     </ContentPage.BindingContext>
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Connected" Icon="icon_bluetooth.svg" Command="{Binding ConnectCommand}"/>
+        <!--<ToolbarItem Text="Connected" Icon="icon_bluetooth.png" Command="{Binding ConnectCommand}"/>-->
     </ContentPage.ToolbarItems>
 
     <Grid BackgroundColor="{StaticResource Secondary}">
