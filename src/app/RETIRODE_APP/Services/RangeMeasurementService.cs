@@ -1,4 +1,5 @@
 ﻿using Nancy.TinyIoc;
+using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
 using RETIRODE_APP.Models;
 using System;
@@ -15,14 +16,16 @@ namespace RETIRODE_APP.Services
         //------------- STATIC VARIABLES -------------//
         private static Guid GattServiceId = Guid.Parse("5177db0a-8ce6-11eb-8dcd-0242ac130003");
         private static Guid GattCharacteristicReceiveId = Guid.Parse("00000000000000000000000000000000");
-        private static Guid GattCharacteristicSendId = Guid.Parse("00000000000000000000000000000000");
+        private static Guid GattCharacteristicSendId = Guid.Parse("5177de8e-8ce6-11eb-8dcd-0242ac130003");
         private static Guid SpecialNotificationDescriptorId = Guid.Parse("00000000000000000000000000000000");
         private static string RetirodeUniqueMacAddressPart = "60:C0:BF";
+        private static string UniqueRetirodeName = "Retirode";
         private static int UniqueMacAddressLength = 8;
 
         //------------- CLASS VARIABLES -------------//
         private readonly IBluetoothService _bluetoothService;
         private IList<IDevice> _availableDevices;
+        private IDevice _connectedDevice;
         public IList<BLEDevice> AvailableDevices => _availableDevices.Select(x => new BLEDevice()
         {
             Identifier = x.Id,
@@ -33,7 +36,6 @@ namespace RETIRODE_APP.Services
         public RangeMeasurementService()
         {
             _availableDevices = new List<IDevice>();
-
             _bluetoothService = TinyIoCContainer.Current.Resolve<IBluetoothService>();
             _bluetoothService.DeviceFounded = DeviceDiscovered;
         }
@@ -45,14 +47,22 @@ namespace RETIRODE_APP.Services
 
         public async Task<bool> ConnectToRSL10(BLEDevice bleDevice)
         {
-            var device = _availableDevices.FirstOrDefault(foundDevice => foundDevice.Id == bleDevice.Identifier);
-            if (device is null)
+            bool result = false;
+            try
             {
-                return false;
+                var device = _availableDevices.FirstOrDefault(foundDevice => foundDevice.Name == bleDevice.Name);
+                if (device != null)
+                {
+                    _connectedDevice = device;
+                    await _bluetoothService.ConnectToDeviceAsync(_connectedDevice);
+                    result = true;
+                }
             }
-
-            return await _bluetoothService.ConnectToDeviceAsync(device);
-
+            catch
+            {
+                throw new Exception("Cannot connect to device");
+            }
+            return result;
         }
 
         public Task<bool> Disconnect(BLEDevice device)
@@ -104,7 +114,7 @@ namespace RETIRODE_APP.Services
             var macAddress = (string)propertyInfo.GetValue(device, null);
 
             return macAddress.Substring(0, UniqueMacAddressLength).Equals(RetirodeUniqueMacAddressPart);
-
         }
+
     }
 }
