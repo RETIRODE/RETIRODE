@@ -16,23 +16,24 @@ namespace RETIRODE_APP.Services
         //------------- CLASS VARIABLES -------------//
         private readonly IAdapter _bluetoothAdapter;
         private IDevice _device;
-        
-        private readonly Queue<IDescriptor> descriptorWriteQueue = new Queue<IDescriptor>();
-        private readonly Queue<ICharacteristic> characteristicReadQueue = new Queue<ICharacteristic>();
 
         public Action<object, IDevice> DeviceFounded { get; set; }
 
         public BluetoothService()
-        { 
+        {
             _bluetoothAdapter = CrossBluetoothLE.Current.Adapter;
             _bluetoothAdapter.DeviceDiscovered += (obj, device) => DeviceFounded.Invoke(obj,device.Device);
         }
 
-        public async Task<bool> ConnectToDeviceAsync(IDevice btDevice)
+        public async Task ConnectToDeviceAsync(IDevice btDevice)
         {
-            var connectParameters = new ConnectParameters(false, true);
-            await _bluetoothAdapter.ConnectToDeviceAsync(btDevice, connectParameters);
-            return true;
+                _device = btDevice;
+                var connectParameters = new ConnectParameters(false, true);
+                await _bluetoothAdapter.ConnectToDeviceAsync(btDevice, connectParameters);
+
+                //Connection interval to increase speed
+                //Does not work on iOS devices. Supported only on Android API > 21
+                _device.UpdateConnectionInterval(ConnectionInterval.High);
         }
 
         public async Task StartScanning()
