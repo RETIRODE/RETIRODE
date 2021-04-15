@@ -199,5 +199,30 @@ namespace RETIRODE_APP.Services
             //BluetoothResponseEvent.Invoke(responseItem);
         }
 
+        private ResponseItem getQueryResponseItem(byte[] data)
+        {
+            switch ((Registers)data[0])
+            {
+                case Registers.LaserVoltage:
+                case Registers.SipmBiasPowerVoltage:
+                    return new ResponseItem()
+                    {
+                        Identifier = Encoding.UTF8.GetString(new[] { data[0] }),
+                        Target = Encoding.UTF8.GetString(new[] { data[1] }),
+                        Actual = Encoding.UTF8.GetString(new[] { data[2] })
+                    };
+                case Registers.Calibrate:
+                    return new ResponseItem()
+                    {
+                        Identifier = Encoding.UTF8.GetString(new[] { data[0] }),
+                        Calibrate_0 = Encoding.UTF8.GetString(new[] { data[1] }),
+                        Calibrate_62_5 = Encoding.UTF8.GetString(new[] { data[2] }),
+                        Calibrate_125 = Encoding.UTF8.GetString(new[] { data[3] }),
+                    };
+                default:
+                    break;
+            }
+            return new ResponseItem();
+        }
     }
 }
