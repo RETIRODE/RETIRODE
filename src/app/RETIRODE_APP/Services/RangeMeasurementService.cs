@@ -75,6 +75,7 @@ namespace RETIRODE_APP.Services
                 {
                     _connectedDevice = device;
                     await _bluetoothService.ConnectToDeviceAsync(_connectedDevice);
+                    Init();
                     result = true;
                 }
             }
@@ -169,6 +170,17 @@ namespace RETIRODE_APP.Services
         public void Dispose()
         {
             _connectedDevice.Dispose();
+        }
+
+        private async void Init()
+        {
+            _firstService = await _connectedDevice.GetServiceAsync(GattFirstServiceId);
+            _firstCharacteristicDataReceive = await _firstService.GetCharacteristicAsync(GattFirstCharacteristicReceiveId);
+            _firstCharacteristicDataWrite = await _firstService.GetCharacteristicAsync(GattFirstCharacteristicWriteId);
+
+            _secondService = await _connectedDevice.GetServiceAsync(GattSecondServiceId);
+            _secondCharacteristicDataReceive = await _secondService.GetCharacteristicAsync(GattSecondCharacteristicReceiveId);
+            _secondCharacteristicDataWrite = await _secondService.GetCharacteristicAsync(GattSecondCharacteristicWriteId);
         }
 
     }
