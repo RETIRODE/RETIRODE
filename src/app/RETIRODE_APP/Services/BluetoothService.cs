@@ -41,12 +41,7 @@ namespace RETIRODE_APP.Services
             await _bluetoothAdapter.StartScanningForDevicesAsync();
         }
 
-        public async Task ReadFromCharacteristic(ICharacteristic characteristic)
-        {
-            await characteristic.ReadAsync();
-        }
-
-        public async Task<bool> WriteToCharacteristic(ICharacteristic characteristic, RSL10Command commandToCharacteristic)
+        public async Task<bool> WriteToCharacteristic(ICharacteristic characteristic, byte commandToCharacteristic)
         {
              return await characteristic.WriteAsync(new[] { (byte)commandToCharacteristic });
         }
