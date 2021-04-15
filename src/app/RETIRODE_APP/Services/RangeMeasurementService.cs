@@ -56,9 +56,9 @@ namespace RETIRODE_APP.Services
             _bluetoothService.DeviceFounded = DeviceDiscovered;
         }
 
-        event Action<BLEDevice> DeviceDiscoveredEvent;
+        public event Action<BLEDevice> DeviceDiscoveredEvent;
 
-        event Action<string> BluetoothResponseEvent;
+        public event Action<string> BluetoothResponseEvent;
 
         public Task<bool> CalibrateLIDAR()
         {
