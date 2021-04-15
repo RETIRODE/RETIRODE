@@ -13,9 +13,7 @@ namespace RETIRODE_APP.Services
 
         Task ConnectToDeviceAsync(IDevice btDevice);
 
-        Task<bool> WriteToCharacteristic(ICharacteristic characteristic, RSL10Command stopMeasurement);
-
-        Task ReadFromCharacteristic(ICharacteristic characteristic);
+        Task<bool> WriteToCharacteristic(ICharacteristic characteristic, byte stopMeasurement);
 
         Action<object, IDevice> DeviceFounded { get; set; }
     }
