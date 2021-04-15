@@ -224,5 +224,29 @@ namespace RETIRODE_APP.Services
             }
             return new ResponseItem();
         }
+
+        public async Task SwReset()
+        {
+            BeforeWriteToCharacteristic(_firstCharacteristicDataWrite, _firstService);
+            await WriteToCharacteristic(_firstCharacteristicDataWrite, (byte)Registers.SWReset);
+        }
+
+        public async Task SetLaserVoltage()
+        {
+            BeforeWriteToCharacteristic(_firstCharacteristicDataWrite, _firstService);
+            await WriteToCharacteristic(_firstCharacteristicDataWrite, (byte)Registers.LaserVoltage);
+        }
+
+        public async Task SetSipmBiasPowerVoltage()
+        {
+            BeforeWriteToCharacteristic(_firstCharacteristicDataWrite, _firstService);
+            await WriteToCharacteristic(_firstCharacteristicDataWrite, (byte)Registers.SipmBiasPowerVoltage);
+        }
+
+        public async Task Calibrate()
+        {
+            BeforeWriteToCharacteristic(_firstCharacteristicDataWrite, _firstService);
+            await WriteToCharacteristic(_firstCharacteristicDataWrite, (byte)Registers.Calibrate);
+        }
     }
 }
