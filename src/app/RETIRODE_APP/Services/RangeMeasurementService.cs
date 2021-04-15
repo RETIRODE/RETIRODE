@@ -165,6 +165,11 @@ namespace RETIRODE_APP.Services
 
             return macAddress.Substring(0, UniqueMacAddressLength).Equals(RetirodeUniqueMacAddressPart);
         }
-  
+
+        public void Dispose()
+        {
+            _connectedDevice.Dispose();
+        }
+
     }
 }
