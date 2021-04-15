@@ -183,5 +183,21 @@ namespace RETIRODE_APP.Services
             _secondCharacteristicDataWrite = await _secondService.GetCharacteristicAsync(GattSecondCharacteristicWriteId);
         }
 
+        public void ReadFromDevice()
+        {
+            _firstCharacteristicDataReceive.ValueUpdated += QueryResponseHandler;
+        }
+
+        private async void QueryResponseHandler(object sender, CharacteristicUpdatedEventArgs e)
+        {
+            var data = await e.Characteristic.ReadAsync();
+
+            BluetoothResponseEvent.Invoke(Encoding.UTF8.GetString(data));
+
+            //with final data
+            //var responseItem = getQueryResponseItem(data);
+            //BluetoothResponseEvent.Invoke(responseItem);
+        }
+
     }
 }
