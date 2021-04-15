@@ -1,7 +1,9 @@
 ﻿using Nancy.TinyIoc;
 using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
+using Plugin.BLE.Abstractions.EventArgs;
 using RETIRODE_APP.Models;
+using RETIRODE_APP.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,24 +16,38 @@ namespace RETIRODE_APP.Services
     public class RangeMeasurementService : IRangeMeasurementService
     {
         //------------- STATIC VARIABLES -------------//
-        private static Guid GattServiceId = Guid.Parse("5177db0a-8ce6-11eb-8dcd-0242ac130003");
-        private static Guid GattCharacteristicReceiveId = Guid.Parse("00000000000000000000000000000000");
-        private static Guid GattCharacteristicSendId = Guid.Parse("5177de8e-8ce6-11eb-8dcd-0242ac130003");
-        private static Guid SpecialNotificationDescriptorId = Guid.Parse("00000000000000000000000000000000");
-        private static string RetirodeUniqueMacAddressPart = "60:C0:BF";
-        private static string UniqueRetirodeName = "Retirode";
-        private static int UniqueMacAddressLength = 8;
+        private static Guid GattFirstServiceId = Guid.Parse("5177db0a-8ce6-11eb-8dcd-0242ac130003");
+        private static Guid GattFirstCharacteristicReceiveId = Guid.Parse("00000000000000000000000000000000");
+        private static Guid GattFirstCharacteristicWriteId = Guid.Parse("5177de8e-8ce6-11eb-8dcd-0242ac130003");
+
+        private static Guid GattSecondCharacteristicReceiveId = Guid.Parse("00000000000000000000000000000000");
+        private static Guid GattSecondCharacteristicWriteId = Guid.Parse("00000000000000000000000000000000");
+        private static Guid GattSecondServiceId = Guid.Parse("00000000000000000000000000000000");
+
+        private static readonly string RetirodeUniqueMacAddressPart = "60:C0:BF";
+        private static readonly string UniqueRetirodeName = "Retirode";
+        private static readonly int UniqueMacAddressLength = 8;
 
         //------------- CLASS VARIABLES -------------//
         private readonly IBluetoothService _bluetoothService;
         private IList<IDevice> _availableDevices;
         private IDevice _connectedDevice;
-        public IList<BLEDevice> AvailableDevices => _availableDevices.Select(x => new BLEDevice()
+        private IList<BLEDevice> AvailableDevices => _availableDevices.Select(x => new BLEDevice()
         {
             Identifier = x.Id,
             Name = x.Name,
             State = x.State
         }).ToList();
+
+        IList<BLEDevice> IRangeMeasurementService.AvailableDevices => throw new NotImplementedException();
+
+        private ICharacteristic _firstCharacteristicDataReceive;
+        private ICharacteristic _firstCharacteristicDataWrite;
+        private IService _firstService;
+        private ICharacteristic _secondCharacteristicDataReceive;
+        private ICharacteristic _secondCharacteristicDataWrite;
+        private IService _secondService;
+
 
         public RangeMeasurementService()
         {
@@ -41,6 +57,8 @@ namespace RETIRODE_APP.Services
         }
 
         event Action<BLEDevice> DeviceDiscoveredEvent;
+
+        event Action<string> BluetoothResponseEvent;
 
         public Task<bool> CalibrateLIDAR()
         {
@@ -72,11 +90,24 @@ namespace RETIRODE_APP.Services
             throw new NotImplementedException();
         }
 
-        public Task StartMeasurement()
+        public async Task StartMeasurement()
         {
-            throw new NotImplementedException();
+            BeforeWriteToCharacteristic(_firstCharacteristicDataWrite,_firstService);
+            await WriteToCharacteristic(_firstCharacteristicDataWrite, (byte)RSL10Command.StartMeasurement);
         }
 
+        private void BeforeWriteToCharacteristic(ICharacteristic characteristic, IService service)
+        {
+            if (characteristic is null)
+            {
+                throw new Exception("Error with send command to characteristic");
+            }
+
+            if (service is null)
+            {
+                throw new Exception("Error with send command to characteristic");
+            }
+        }
         public async Task StartScanning()
         {
             _availableDevices.Clear();
@@ -85,26 +116,18 @@ namespace RETIRODE_APP.Services
 
         public async Task StopMeasurement()
         {
-            var service = await _connectedDevice.GetServiceAsync(GattServiceId);
+            BeforeWriteToCharacteristic(_firstCharacteristicDataWrite, _firstService);
+            await WriteToCharacteristic(_firstCharacteristicDataWrite, (byte)RSL10Command.StopMeasurement);
+        }
 
-            if (service is null)
-            {
-                throw new Exception("Error with send command to characteristic");
-            }
-
-            var sendCharacteristic = await service.GetCharacteristicAsync(GattCharacteristicSendId);
-
-            if (sendCharacteristic is null)
-            {
-                throw new Exception("Error with send command to characteristic");
-            }
-
+        private async Task WriteToCharacteristic(ICharacteristic characteristic, byte command)
+        {
             try
             {
-               if(!await _bluetoothService.WriteToCharacteristic(sendCharacteristic, RSL10Command.StopMeasurement))
-               {
+                if(!await _bluetoothService.WriteToCharacteristic(characteristic, command))
+                {
                     throw new Exception("Error with send command to characteristic");
-               }
+                }
             }
             catch(Exception e)
             {
@@ -142,6 +165,6 @@ namespace RETIRODE_APP.Services
 
             return macAddress.Substring(0, UniqueMacAddressLength).Equals(RetirodeUniqueMacAddressPart);
         }
-
+  
     }
 }
