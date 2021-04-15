@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 namespace RETIRODE_APP.Services
 {
-    public interface IRangeMeasurementService
+    public interface IRangeMeasurementService : IDisposable
     {
         event Action<BLEDevice> DeviceDiscoveredEvent;
+
+        event Action<string> BluetoothResponseEvent;
         Task StartMeasurement();
 
         Task StopMeasurement();
@@ -17,10 +19,19 @@ namespace RETIRODE_APP.Services
 
         Task StartScanning();
 
+        void ReadFromDevice();
+
         Task<bool> CalibrateLIDAR();
 
         Task<bool> Disconnect(BLEDevice bleDevice);
 
+        Task SwReset();
+
+        Task SetLaserVoltage();
+
+        Task SetSipmBiasPowerVoltage();
+
+        Task Calibrate();
         IList<BLEDevice> AvailableDevices { get; }
     }
 }
