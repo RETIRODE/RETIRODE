@@ -22,3 +22,4 @@ namespace RETIRODE_APP.ViewModels
         public double LaserActualV { get; set; }
     }
 }
+ 
