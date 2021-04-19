@@ -31,18 +31,13 @@ namespace RETIRODE_APP.ViewModels
             Devices = new ObservableCollection<BLEDevice>();
             LoadDevicesCommand = new AsyncCommand(async () => await ExecuteLoadDevicesCommand());
             DeviceTapped = new Command<BLEDevice>(OnDeviceSelected);
-            TestDevices = new List<BLEDevice>();
+            rangeMeasurementService.DeviceDiscoveredEvent += RangeMeasurementService_DeviceDiscoveredEvent;
 
-            TestDevices.Add(new BLEDevice
-            {
-                Name = "device1",
-                Identifier = new Guid()
-            });
-            TestDevices.Add(new BLEDevice
-            {
-                Name = "device2",
-                Identifier = new Guid()
-            });
+        }
+
+        private void RangeMeasurementService_DeviceDiscoveredEvent(BLEDevice device)
+        {
+            Devices.Add(device);
         }
 
         public ICommand OpenWebCommand { get; }
@@ -54,19 +49,7 @@ namespace RETIRODE_APP.ViewModels
             try
             {                
                 await rangeMeasurementService.StartScanning();
-                var devices = rangeMeasurementService.AvailableDevices;
                 Devices.Clear();
-                do
-                {
-                    devices = rangeMeasurementService.AvailableDevices;
-                    foreach (var device in devices)
-                    {
-                        Devices.Add(device);
-                        OnPropertyChanged(nameof(Devices));
-                    }
-                    Thread.Sleep(2000);
-                }
-                while (devices == rangeMeasurementService.AvailableDevices);
             }
             catch (Exception ex)
             {

@@ -18,7 +18,11 @@ namespace RETIRODE_APP.Views
         public HomePage()
         {
             InitializeComponent();
+        }
 
-        }    
+        private void StartDepictionButton_Clicked(object sender, EventArgs e)
+        {
+            Navigation.PushAsync(new DepictionPage());
+        }
     }
 }
