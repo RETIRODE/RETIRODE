@@ -69,7 +69,7 @@
             </Grid>
 
             <!-- Calibrate button -->
-            <Button Text="Calibrate" Margin="20, 0, 20, 20"/>
+            <Button Text="Calibrate" Margin="20, 0, 20, 20" Command="{Binding Calibrate }"/>
 
             <Grid Margin="20,10,20,0">
                 <Grid.ColumnDefinitions>
@@ -138,8 +138,8 @@
                 <Label Style="{StaticResource TCDValue}" Grid.Column="3" Grid.Row="1" Text="{Binding LaserActualV}"/>
             </Grid>
 
-
-            <Button Text="SW Reset" Margin="20, 20"/>
+            <!-- SW Reset button -->
+            <Button Text="SW Reset" Margin="20, 20" Command="{Binding SWReset }"/>
 
         </StackLayout>
 

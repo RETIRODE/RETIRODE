@@ -1,14 +1,35 @@
 ﻿using System;
+using System.Windows.Input;
+using Xamarin.Forms;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Text;
+using Xamarin.CommunityToolkit.ObjectModel;
+using System.Threading;
 
 namespace RETIRODE_APP.ViewModels
 {
     class SettingsViewModel : BaseViewModel
     {
+        public Command SWReset { get; set; }
+        public Command Calibrate { get; set; }
+
         public SettingsViewModel()
         {
             Title = "Settings";
+            SWReset = new Command(onSWReset);
+            Calibrate = new Command(onCalibrate);
+        }
+
+        public void onSWReset()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void onCalibrate()
+        {
+            throw new NotImplementedException();
         }
 
         public double TCDCal0 { get; set; }
