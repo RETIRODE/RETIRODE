@@ -2,6 +2,7 @@
 using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Abstractions.EventArgs;
+using RETIRODE_APP.Helpers;
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Models.Enums;
 using System;
@@ -13,22 +14,9 @@ using System.Threading.Tasks;
 
 namespace RETIRODE_APP.Services
 {
+    /// <inheritdoc cref="IRangeMeasurementService"/>
     public class RangeMeasurementService : IRangeMeasurementService
     {
-        //------------- STATIC VARIABLES -------------//
-        private static Guid GattFirstServiceId = Guid.Parse("5177db0a-8ce6-11eb-8dcd-0242ac130003");
-        private static Guid GattFirstCharacteristicReceiveId = Guid.Parse("00000000000000000000000000000000");
-        private static Guid GattFirstCharacteristicWriteId = Guid.Parse("5177de8e-8ce6-11eb-8dcd-0242ac130003");
-
-        private static Guid GattSecondCharacteristicReceiveId = Guid.Parse("00000000000000000000000000000000");
-        private static Guid GattSecondCharacteristicWriteId = Guid.Parse("00000000000000000000000000000000");
-        private static Guid GattSecondServiceId = Guid.Parse("00000000000000000000000000000000");
-
-        private static readonly string RetirodeUniqueMacAddressPart = "60:C0:BF";
-        private static readonly string UniqueRetirodeName = "Retirode";
-        private static readonly int UniqueMacAddressLength = 8;
-
-        //------------- CLASS VARIABLES -------------//
         private readonly IBluetoothService _bluetoothService;
         private IList<IDevice> _availableDevices;
         private IDevice _connectedDevice;
@@ -53,84 +41,221 @@ namespace RETIRODE_APP.Services
         {
             _availableDevices = new List<IDevice>();
             _bluetoothService = TinyIoCContainer.Current.Resolve<IBluetoothService>();
-            _bluetoothService.DeviceFounded = DeviceDiscovered;
+            _bluetoothService.DeviceFound = DeviceDiscovered;
         }
 
-        event Action<BLEDevice> DeviceDiscoveredEvent;
+        /// <inheritdoc cref="IRangeMeasurementService"/>
+        public event Action<BLEDevice> DeviceDiscoveredEvent;
 
-        event Action<string> BluetoothResponseEvent;
+        /// <inheritdoc cref="IRangeMeasurementService"/>
+        public event Action<ResponseItem> QueryResponseEvent;
 
-        public Task<bool> CalibrateLIDAR()
+        /// <inheritdoc cref="IRangeMeasurementService"/>
+        public event Action QueryDataReceivedEvent;
+
+        /// <inheritdoc cref="IRangeMeasurementService"/>
+        public async Task ConnectToRSL10(BLEDevice bleDevice)
         {
-            throw new NotImplementedException();
-        }
-
-        public async Task<bool> ConnectToRSL10(BLEDevice bleDevice)
-        {
-            bool result = false;
             try
             {
                 var device = _availableDevices.FirstOrDefault(foundDevice => foundDevice.Name == bleDevice.Name);
-                if (device != null)
+                if (device == null)
                 {
-                    _connectedDevice = device;
-                    await _bluetoothService.ConnectToDeviceAsync(_connectedDevice);
-                    Init();
-                    result = true;
+                    throw new Exception("Cannot connect to device");
                 }
+                
+                _connectedDevice = device;
+                await _bluetoothService.ConnectToDeviceAsync(_connectedDevice);
+                await InitializeBluetoothConnection();
             }
             catch
             {
-                throw new Exception("Cannot connect to device");
+                throw;
             }
-            return result;
         }
 
-        public Task<bool> Disconnect(BLEDevice device)
+        /// <inheritdoc cref="IRangeMeasurementService"/>
+        public Task Disconnect(BLEDevice device)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task StartMeasurement()
         {
-            BeforeWriteToCharacteristic(_firstCharacteristicDataWrite,_firstService);
             await WriteToCharacteristic(_firstCharacteristicDataWrite, (byte)RSL10Command.StartMeasurement);
         }
 
-        private void BeforeWriteToCharacteristic(ICharacteristic characteristic, IService service)
-        {
-            if (characteristic is null)
-            {
-                throw new Exception("Error with send command to characteristic");
-            }
-
-            if (service is null)
-            {
-                throw new Exception("Error with send command to characteristic");
-            }
-        }
+        /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task StartScanning()
         {
             _availableDevices.Clear();
             await _bluetoothService.StartScanning();
         }
 
+        /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task StopMeasurement()
         {
-            BeforeWriteToCharacteristic(_firstCharacteristicDataWrite, _firstService);
             await WriteToCharacteristic(_firstCharacteristicDataWrite, (byte)RSL10Command.StopMeasurement);
         }
 
-        private async Task WriteToCharacteristic(ICharacteristic characteristic, byte command)
+        /// <inheritdoc cref="IRangeMeasurementService"/>
+        public async Task SwReset()
+        {
+            await WriteToCharacteristic(_firstCharacteristicDataWrite, new[] { (byte)Registers.SWReset, Convert.ToByte(0), Convert.ToByte(0)});
+        }
+
+        /// <inheritdoc cref="IRangeMeasurementService"/>
+        public async Task SetLaserVoltage(int laserVoltage)
+        {
+            var message = BuildProtocolMessage(Registers.LaserVoltage, (byte)Voltage.Target, laserVoltage);
+            await WriteToCharacteristic(_firstCharacteristicDataWrite, message);
+        }
+
+        /// <inheritdoc cref="IRangeMeasurementService"/>
+        public async Task SetSipmBiasPowerVoltage(int simpBiasPowerVoltage)
+        {
+            var message = BuildProtocolMessage(Registers.SipmBiasPowerVoltage, (byte)Voltage.Target, simpBiasPowerVoltage);
+            await WriteToCharacteristic(_firstCharacteristicDataWrite, message);
+        }
+
+        /// <inheritdoc cref="IRangeMeasurementService"/>
+        public async Task CalibrateLidar()
+        {
+            var messageNS0 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS0, 0);
+            var messageNS62_5 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS62_5, 0);
+            var messageNS125 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS125, 0);
+
+            await WriteToCharacteristic(_firstCharacteristicDataWrite, messageNS0);
+            await WriteToCharacteristic(_firstCharacteristicDataWrite, messageNS62_5);
+            await WriteToCharacteristic(_firstCharacteristicDataWrite, messageNS125);
+        }
+
+        private async void QueryResponseHandler(object sender, CharacteristicUpdatedEventArgs e)
+        {
+            var data = await e.Characteristic.ReadAsync();
+            if(data is null)
+            {
+                return;
+            }
+            var responseItem = GetQueryResponseItem(data);
+            QueryResponseEvent.Invoke(responseItem);
+        }
+
+        private async void MeasurementDataHandler(object sender, CharacteristicUpdatedEventArgs e)
+        {
+            var data = await e.Characteristic.ReadAsync();
+
+            if (data is null)
+            {
+                return;
+            }
+            //var responseItem = GetQueryResponseItem(data);
+            //QueryDataReceivedEvent.Invoke(responseItem);
+        }
+        private ResponseItem GetQueryResponseItem(byte[] data)
+        {
+            switch ((Registers)data[0])
+            {
+                case Registers.LaserVoltage:
+                    
+                    if (data[1] == (byte)Voltage.Actual)
+                    {
+                        return new ResponseItem()
+                        {
+                            Identifier = RangeFinderValues.LaserVoltageActual,
+                            Value = Encoding.UTF8.GetString(new[] { data[2] })
+                        };
+                    }
+                    else
+                    {
+                        return new ResponseItem()
+                        {
+                            Identifier = RangeFinderValues.LaserVoltageTarget,
+                            Value = Encoding.UTF8.GetString(new[] { data[2] })
+                        };
+                    }
+                case Registers.SipmBiasPowerVoltage:
+
+                    if(data[1] == (byte)Voltage.Actual)
+                    {
+                        return new ResponseItem()
+                        {
+                            Identifier = RangeFinderValues.SipmBiasPowerVoltageActual,
+                            Value = Encoding.UTF8.GetString(new[] { data[2] })
+                        };
+                    }
+                    else
+                    {
+                        return new ResponseItem()
+                        {
+                            Identifier = RangeFinderValues.SipmBiasPowerVoltageTarget,
+                            Value = Encoding.UTF8.GetString(new[] { data[2] })
+                        };
+                    }
+                    
+                case Registers.Calibrate:
+                    if (data[1] == (byte)Calibrate.NS0)
+                    {
+                        return new ResponseItem()
+                        {
+                            Identifier = RangeFinderValues.CalibrateNS0,
+                            Value = Encoding.UTF8.GetString(new[] { data[2] })
+                        };
+                    }
+                    else if(data[1] == (byte)Calibrate.NS62_5)
+                    {
+                        return new ResponseItem()
+                        {
+                            Identifier = RangeFinderValues.Calibrate62_5,
+                            Value = Encoding.UTF8.GetString(new[] { data[2] })
+                        };
+                    }
+                    else
+                    {
+                        return new ResponseItem()
+                        {
+                            Identifier = RangeFinderValues.Calibrate125,
+                            Value = Encoding.UTF8.GetString(new[] { data[2] })
+                        };
+                    }
+                default:
+                    break;
+            }
+            return new ResponseItem();
+        }
+
+        private async Task InitializeBluetoothConnection()
+        {
+            _firstService = await _connectedDevice.GetServiceAsync(Constants.GattFirstServiceId);
+            _firstCharacteristicDataReceive = await _firstService.GetCharacteristicAsync(Constants.GattFirstCharacteristicReceiveId);
+            _firstCharacteristicDataWrite = await _firstService.GetCharacteristicAsync(Constants.GattFirstCharacteristicWriteId);
+
+            _secondService = await _connectedDevice.GetServiceAsync(Constants.GattSecondServiceId);
+            _secondCharacteristicDataReceive = await _secondService.GetCharacteristicAsync(Constants.GattSecondCharacteristicReceiveId);
+            _secondCharacteristicDataWrite = await _secondService.GetCharacteristicAsync(Constants.GattSecondCharacteristicWriteId);
+
+            Helper.NullCheck(_firstService);
+            Helper.NullCheck(_firstCharacteristicDataReceive);
+            Helper.NullCheck(_firstCharacteristicDataWrite);
+            Helper.NullCheck(_secondService);
+            Helper.NullCheck(_secondCharacteristicDataReceive);
+            Helper.NullCheck(_secondCharacteristicDataWrite);
+
+            _firstCharacteristicDataReceive.ValueUpdated += QueryResponseHandler;
+            _secondCharacteristicDataReceive.ValueUpdated += MeasurementDataHandler;
+        }
+
+        private async Task WriteToCharacteristic(ICharacteristic characteristic, byte[] command)
         {
             try
             {
-                if(!await _bluetoothService.WriteToCharacteristic(characteristic, command))
+                if (!await _bluetoothService.WriteToCharacteristic(characteristic, command))
                 {
                     throw new Exception("Error with send command to characteristic");
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw new Exception(e.Message);
             }
@@ -152,7 +277,7 @@ namespace RETIRODE_APP.Services
 
         private Task<bool> IsWhiteList(IDevice device)
         {
-            if (device.Name == UniqueRetirodeName && IsMacAddressEquals(device.NativeDevice))
+            if (device.Name == Constants.UniqueRetirodeName && IsMacAddressEquals(device.NativeDevice))
             {
                 return Task.FromResult(true);
             }
@@ -164,89 +289,20 @@ namespace RETIRODE_APP.Services
             PropertyInfo propertyInfo = device.GetType().GetProperty("Address");
             var macAddress = (string)propertyInfo.GetValue(device, null);
 
-            return macAddress.Substring(0, UniqueMacAddressLength).Equals(RetirodeUniqueMacAddressPart);
+            return macAddress.Substring(0, Constants.UniqueMacAddressLength).Equals(Constants.RetirodeUniqueMacAddressPart);
         }
 
+        private byte[] BuildProtocolMessage(Registers register, byte subRegister, int value)
+        {
+            return new[] { (byte)register, subRegister, Convert.ToByte(value) };
+        }
+
+        /// <inheritdoc cref="IRangeMeasurementService"/>
         public void Dispose()
         {
+            _firstCharacteristicDataReceive.ValueUpdated -= QueryResponseHandler;
             _connectedDevice.Dispose();
         }
 
-        private async void Init()
-        {
-            _firstService = await _connectedDevice.GetServiceAsync(GattFirstServiceId);
-            _firstCharacteristicDataReceive = await _firstService.GetCharacteristicAsync(GattFirstCharacteristicReceiveId);
-            _firstCharacteristicDataWrite = await _firstService.GetCharacteristicAsync(GattFirstCharacteristicWriteId);
-
-            _secondService = await _connectedDevice.GetServiceAsync(GattSecondServiceId);
-            _secondCharacteristicDataReceive = await _secondService.GetCharacteristicAsync(GattSecondCharacteristicReceiveId);
-            _secondCharacteristicDataWrite = await _secondService.GetCharacteristicAsync(GattSecondCharacteristicWriteId);
-        }
-
-        public void ReadFromDevice()
-        {
-            _firstCharacteristicDataReceive.ValueUpdated += QueryResponseHandler;
-        }
-
-        private async void QueryResponseHandler(object sender, CharacteristicUpdatedEventArgs e)
-        {
-            var data = await e.Characteristic.ReadAsync();
-
-            BluetoothResponseEvent.Invoke(Encoding.UTF8.GetString(data));
-
-            //with final data
-            //var responseItem = getQueryResponseItem(data);
-            //BluetoothResponseEvent.Invoke(responseItem);
-        }
-
-        private ResponseItem getQueryResponseItem(byte[] data)
-        {
-            switch ((Registers)data[0])
-            {
-                case Registers.LaserVoltage:
-                case Registers.SipmBiasPowerVoltage:
-                    return new ResponseItem()
-                    {
-                        Identifier = Encoding.UTF8.GetString(new[] { data[0] }),
-                        Target = Encoding.UTF8.GetString(new[] { data[1] }),
-                        Actual = Encoding.UTF8.GetString(new[] { data[2] })
-                    };
-                case Registers.Calibrate:
-                    return new ResponseItem()
-                    {
-                        Identifier = Encoding.UTF8.GetString(new[] { data[0] }),
-                        Calibrate_0 = Encoding.UTF8.GetString(new[] { data[1] }),
-                        Calibrate_62_5 = Encoding.UTF8.GetString(new[] { data[2] }),
-                        Calibrate_125 = Encoding.UTF8.GetString(new[] { data[3] }),
-                    };
-                default:
-                    break;
-            }
-            return new ResponseItem();
-        }
-
-        public async Task SwReset()
-        {
-            BeforeWriteToCharacteristic(_firstCharacteristicDataWrite, _firstService);
-            await WriteToCharacteristic(_firstCharacteristicDataWrite, (byte)Registers.SWReset);
-        }
-
-        public async Task SetLaserVoltage()
-        {
-            BeforeWriteToCharacteristic(_firstCharacteristicDataWrite, _firstService);
-            await WriteToCharacteristic(_firstCharacteristicDataWrite, (byte)Registers.LaserVoltage);
-        }
-
-        public async Task SetSipmBiasPowerVoltage()
-        {
-            BeforeWriteToCharacteristic(_firstCharacteristicDataWrite, _firstService);
-            await WriteToCharacteristic(_firstCharacteristicDataWrite, (byte)Registers.SipmBiasPowerVoltage);
-        }
-
-        public async Task Calibrate()
-        {
-            BeforeWriteToCharacteristic(_firstCharacteristicDataWrite, _firstService);
-            await WriteToCharacteristic(_firstCharacteristicDataWrite, (byte)Registers.Calibrate);
-        }
     }
 }

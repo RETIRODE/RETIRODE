@@ -8,30 +8,82 @@ namespace RETIRODE_APP.Services
 {
     public interface IRangeMeasurementService : IDisposable
     {
+        /// <summary>
+        /// 
+        /// </summary>
         event Action<BLEDevice> DeviceDiscoveredEvent;
 
-        event Action<string> BluetoothResponseEvent;
+        /// <summary>
+        /// 
+        /// </summary>
+        event Action<ResponseItem> QueryResponseEvent;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        event Action QueryDataReceivedEvent;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         Task StartMeasurement();
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         Task StopMeasurement();
 
-        Task<bool> ConnectToRSL10(BLEDevice bleDevice);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bleDevice"></param>
+        /// <returns></returns>
+        Task ConnectToRSL10(BLEDevice bleDevice);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         Task StartScanning();
 
-        void ReadFromDevice();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bleDevice"></param>
+        /// <returns></returns>
+        Task Disconnect(BLEDevice bleDevice);
 
-        Task<bool> CalibrateLIDAR();
-
-        Task<bool> Disconnect(BLEDevice bleDevice);
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         Task SwReset();
 
-        Task SetLaserVoltage();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="laserVoltage"></param>
+        /// <returns></returns>
+        Task SetLaserVoltage(int laserVoltage);
 
-        Task SetSipmBiasPowerVoltage();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sipmBiasPowerVoltage"></param>
+        /// <returns></returns>
+        Task SetSipmBiasPowerVoltage(int sipmBiasPowerVoltage);
 
-        Task Calibrate();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        Task CalibrateLidar();
+
+        /// <summary>
+        /// 
+        /// </summary>
         IList<BLEDevice> AvailableDevices { get; }
     }
 }

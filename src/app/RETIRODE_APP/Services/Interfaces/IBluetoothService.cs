@@ -1,20 +1,35 @@
 ﻿using Plugin.BLE.Abstractions.Contracts;
-using RETIRODE_APP.Models;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace RETIRODE_APP.Services
 {
     public interface IBluetoothService
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         Task StartScanning();
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="btDevice" <see cref="IDevice"/>></param>
+        /// <returns></returns>
         Task ConnectToDeviceAsync(IDevice btDevice);
 
-        Task<bool> WriteToCharacteristic(ICharacteristic characteristic, byte stopMeasurement);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="characteristic" <see cref="ICharacteristic"/>></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        Task<bool> WriteToCharacteristic(ICharacteristic characteristic, byte[] message);
 
-        Action<object, IDevice> DeviceFounded { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        Action<object, IDevice> DeviceFound { get; set; }
     }
 }
