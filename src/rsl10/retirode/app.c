@@ -35,7 +35,7 @@ char rx_buffer[101];
  * ------------------------------------------------------------------------- */
 void Usart_EventCallBack(uint32_t event)
 {
-	RETIRODE_LMP_UARTEventHandler(event);
+	RETIRODE_RMP_UARTEventHandler(event);
 }
 
 
@@ -112,24 +112,29 @@ void Initialize(void)
     __set_FAULTMASK(FAULTMASK_ENABLE_INTERRUPTS);
 }
 
-void RETIRODE_LMP_Handler(RETIRODE_LMP_Event_t event,
-        const void *p_param)
+void RETIRODE_RMP_Handler(RETIRODE_RMP_Event_t event,
+        						const void *p_param)
 {
 	switch(event)
 	{
-		case RETIRODE_LMP_EVENT_MEASUREMENT_DATA_READY:
+		case RETIRODE_RMP_EVENT_MEASUREMENT_DATA_READY:
 		{
-			int a = 4;
+			int a = 5;
 			break;
 		}
-		case RETIRODE_LMP_EVENT_ERROR:
+		case RETIRODE_RMP_EVENT_QUERY_RESPONSE_READY:
 		{
-			int b = 4;
+			int a = 5;
 			break;
 		}
-		case RETIRODE_LMP_EVENT_READY:
+		case RETIRODE_RMP_EVENT_ERROR:
 		{
-			int c = 9;
+			int a = 5;
+			break;
+		}
+		case RETIRODE_RMP_EVENT_READY:
+		{
+			int a = 5;
 			break;
 		}
 	}
@@ -152,28 +157,37 @@ int main(void)
 	/* Initialize the system */
 	Initialize();
 
-	RETIRODE_LMP_Initialize(uart, RETIRODE_LMP_Handler);
+	RETIRODE_RMP_Initialize(uart, RETIRODE_RMP_Handler);
 	PRINTF("DEVICE INITIALIZED\n");
 
-	//RETIRODE_LMP_WriteCommand("N64\r");
+	//RETIRODE_RMP_WriteCommand("N64\r");
 	int i = 0;
 	/* Spin loop */
 	while (true)
 	{
 		i++;
-		RETIRODE_LMP_MainLoop();
+		RETIRODE_RMP_MainLoop();
 
 
 		if(i == 100)
 		{
-			RETIRODE_LMP_PowerUpCommand();
+			RETIRODE_RMP_PowerUpCommand();
 		}
 
-		if(i == 2000)
+
+
+		if(i == 20000)
 		{
-			RETIRODE_LMP_MeasureCommand(4);
+			Sys_Delay_ProgramROM(SystemCoreClock);
+			RETIRODE_RMP_QueryCommand(B_REGISTER);
 		}
 
+
+		if(i == 99000)
+		{
+			Sys_Delay_ProgramROM(SystemCoreClock);
+			RETIRODE_RMP_MeasureCommand(1);
+		}
 
 		/* Refresh the watchdog timer */
  		Sys_Watchdog_Refresh();
