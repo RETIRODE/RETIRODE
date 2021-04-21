@@ -5,7 +5,7 @@ using SQLite;
 
 namespace RETIRODE_APP.Models
 {
-    public class CalibrationItem : BaseItem
+    public class CalibrationItem
     {
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }

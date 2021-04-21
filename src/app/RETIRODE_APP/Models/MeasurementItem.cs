@@ -5,7 +5,7 @@ using System.Text;
 
 namespace RETIRODE_APP.Models
 {
-    public class MeasurementItem : BaseItem
+    public class MeasurementItem
     {
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
