@@ -26,17 +26,13 @@ namespace RETIRODE_APP.Services
             Name = x.Name,
             State = x.State
         }).ToList();
-
-        IList<BLEDevice> IRangeMeasurementService.AvailableDevices => throw new NotImplementedException();
-
         private ICharacteristic _firstCharacteristicDataReceive;
         private ICharacteristic _firstCharacteristicDataWrite;
         private IService _firstService;
-        private ICharacteristic _secondCharacteristicDataReceive;
-        private ICharacteristic _secondCharacteristicDataWrite;
         private IService _secondService;
-
-
+        private ICharacteristic _secondServiceSendCommandCharacteristic;
+        private ICharacteristic _secondServiceSendQueryCharacteristic;
+        private ICharacteristic _secondServiceReceiveQueryCharacteristic;
         public RangeMeasurementService()
         {
             _availableDevices = new List<IDevice>();
@@ -68,22 +64,16 @@ namespace RETIRODE_APP.Services
                 await _bluetoothService.ConnectToDeviceAsync(_connectedDevice);
                 await InitializeBluetoothConnection();
             }
-            catch
+            catch(Exception ex)
             {
                 throw;
             }
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
-        public Task Disconnect(BLEDevice device)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task StartMeasurement()
         {
-            await WriteToCharacteristic(_firstCharacteristicDataWrite, (byte)RSL10Command.StartMeasurement);
+            await WriteToCharacteristic(_firstCharacteristicDataWrite, new[] { (byte)RSL10Command.StartMeasurement });
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
@@ -96,27 +86,27 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task StopMeasurement()
         {
-            await WriteToCharacteristic(_firstCharacteristicDataWrite, (byte)RSL10Command.StopMeasurement);
+            await WriteToCharacteristic(_firstCharacteristicDataWrite, new[] { (byte)RSL10Command.StopMeasurement });
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task SwReset()
         {
-            await WriteToCharacteristic(_firstCharacteristicDataWrite, new[] { (byte)Registers.SWReset, Convert.ToByte(0), Convert.ToByte(0)});
+            await WriteToCharacteristic(_secondServiceSendCommandCharacteristic, new[] { (byte)Registers.SWReset, Convert.ToByte(0), Convert.ToByte(0)});
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task SetLaserVoltage(int laserVoltage)
         {
             var message = BuildProtocolMessage(Registers.LaserVoltage, (byte)Voltage.Target, laserVoltage);
-            await WriteToCharacteristic(_firstCharacteristicDataWrite, message);
+            await WriteToCharacteristic(_secondServiceSendCommandCharacteristic, message);
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task SetSipmBiasPowerVoltage(int simpBiasPowerVoltage)
         {
             var message = BuildProtocolMessage(Registers.SipmBiasPowerVoltage, (byte)Voltage.Target, simpBiasPowerVoltage);
-            await WriteToCharacteristic(_firstCharacteristicDataWrite, message);
+            await WriteToCharacteristic(_secondServiceSendCommandCharacteristic, message);
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
@@ -126,14 +116,39 @@ namespace RETIRODE_APP.Services
             var messageNS62_5 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS62_5, 0);
             var messageNS125 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS125, 0);
 
-            await WriteToCharacteristic(_firstCharacteristicDataWrite, messageNS0);
-            await WriteToCharacteristic(_firstCharacteristicDataWrite, messageNS62_5);
-            await WriteToCharacteristic(_firstCharacteristicDataWrite, messageNS125);
+            await WriteToCharacteristic(_secondServiceSendCommandCharacteristic, messageNS0);
+            await WriteToCharacteristic(_secondServiceSendCommandCharacteristic, messageNS62_5);
+            await WriteToCharacteristic(_secondServiceSendCommandCharacteristic, messageNS125);
         }
 
-        private async void QueryResponseHandler(object sender, CharacteristicUpdatedEventArgs e)
+        public async Task SetPulseCount(int pulseCount)
         {
-            var data = await e.Characteristic.ReadAsync();
+            //TODO: change 1 to enum
+            var message = BuildProtocolMessage(Registers.PulseCount, 1, pulseCount);
+            await WriteToCharacteristic(_secondServiceSendCommandCharacteristic, message);
+        }
+
+        public async Task GetLaserVoltage(Voltage voltage)
+        {
+            var message = BuildProtocolMessage(Registers.LaserVoltage, (byte)voltage, 0);
+            await WriteToCharacteristic(_secondServiceSendQueryCharacteristic, message);
+        }
+
+        public async Task GetSipmBiasPowerVoltage(Voltage voltage)
+        {
+            var message = BuildProtocolMessage(Registers.LaserVoltage, (byte)voltage, 0);
+            await WriteToCharacteristic(_secondServiceSendQueryCharacteristic, message);
+        }
+
+        public async Task GetCalibration(Calibrate calibrate)
+        {
+            var message = BuildProtocolMessage(Registers.Calibrate, (byte)calibrate, 0);
+            await WriteToCharacteristic(_secondServiceSendQueryCharacteristic, message);
+        }
+
+        private void QueryResponseHandler(object sender, CharacteristicUpdatedEventArgs e)
+        {
+            var data = e.Characteristic.Value;
             if(data is null)
             {
                 return;
@@ -142,16 +157,17 @@ namespace RETIRODE_APP.Services
             QueryResponseEvent.Invoke(responseItem);
         }
 
-        private async void MeasurementDataHandler(object sender, CharacteristicUpdatedEventArgs e)
+        private void MeasurementDataHandler(object sender, CharacteristicUpdatedEventArgs e)
         {
-            var data = await e.Characteristic.ReadAsync();
+            var data =  e.Characteristic.Value;
 
             if (data is null)
             {
                 return;
             }
-            //var responseItem = GetQueryResponseItem(data);
-            //QueryDataReceivedEvent.Invoke(responseItem);
+
+            //Empty invoking .. structure of data isn't known yet.
+            QueryDataReceivedEvent.Invoke();
         }
         private ResponseItem GetQueryResponseItem(byte[] data)
         {
@@ -227,23 +243,40 @@ namespace RETIRODE_APP.Services
 
         private async Task InitializeBluetoothConnection()
         {
-            _firstService = await _connectedDevice.GetServiceAsync(Constants.GattFirstServiceId);
-            _firstCharacteristicDataReceive = await _firstService.GetCharacteristicAsync(Constants.GattFirstCharacteristicReceiveId);
-            _firstCharacteristicDataWrite = await _firstService.GetCharacteristicAsync(Constants.GattFirstCharacteristicWriteId);
+            try
+            {
+                //_firstService = await _connectedDevice.GetServiceAsync(Constants.GattFirstServiceId);
+                //_firstCharacteristicDataReceive = await _firstService.GetCharacteristicAsync(Constants.GattFirstCharacteristicReceiveId);
+                //_firstCharacteristicDataWrite = await _firstService.GetCharacteristicAsync(Constants.GattFirstCharacteristicWriteId);
 
-            _secondService = await _connectedDevice.GetServiceAsync(Constants.GattSecondServiceId);
-            _secondCharacteristicDataReceive = await _secondService.GetCharacteristicAsync(Constants.GattSecondCharacteristicReceiveId);
-            _secondCharacteristicDataWrite = await _secondService.GetCharacteristicAsync(Constants.GattSecondCharacteristicWriteId);
+                _secondService = await _connectedDevice.GetServiceAsync(Constants.GattQueryCommandServiceUUID);
+                _secondServiceSendCommandCharacteristic = await _secondService.GetCharacteristicAsync(Constants.SendCommandCharacteristicUUID);
+                _secondServiceSendQueryCharacteristic = await _secondService.GetCharacteristicAsync(Constants.SendQueryCharacteristicUUID);
+                _secondServiceReceiveQueryCharacteristic = await _secondService.GetCharacteristicAsync(Constants.ReceiveQueryCharacteristicUUID);
 
-            Helper.NullCheck(_firstService);
-            Helper.NullCheck(_firstCharacteristicDataReceive);
-            Helper.NullCheck(_firstCharacteristicDataWrite);
-            Helper.NullCheck(_secondService);
-            Helper.NullCheck(_secondCharacteristicDataReceive);
-            Helper.NullCheck(_secondCharacteristicDataWrite);
+                //Helper.NullCheck(_firstService);
+                //Helper.NullCheck(_firstCharacteristicDataReceive);
+                //Helper.NullCheck(_firstCharacteristicDataWrite);
+                Helper.NullCheck(_secondService);
+                Helper.NullCheck(_secondServiceSendCommandCharacteristic);
+                Helper.NullCheck(_secondServiceSendQueryCharacteristic);
+                Helper.NullCheck(_secondServiceReceiveQueryCharacteristic);
 
-            _firstCharacteristicDataReceive.ValueUpdated += QueryResponseHandler;
-            _secondCharacteristicDataReceive.ValueUpdated += MeasurementDataHandler;
+                _secondServiceReceiveQueryCharacteristic.ValueUpdated -= QueryResponseHandler;
+                _secondServiceReceiveQueryCharacteristic.ValueUpdated += QueryResponseHandler;
+                await _secondServiceReceiveQueryCharacteristic.StartUpdatesAsync();
+
+
+                // _firstCharacteristicDataReceive.ValueUpdated -= MeasurementDataHandler;
+                // _firstCharacteristicDataReceive.ValueUpdated += MeasurementDataHandler;
+                // await _firstCharacteristicDataReceive.StartUpdatesAsync();
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+
         }
 
         private async Task WriteToCharacteristic(ICharacteristic characteristic, byte[] command)
@@ -300,9 +333,9 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public void Dispose()
         {
-            _firstCharacteristicDataReceive.ValueUpdated -= QueryResponseHandler;
+            _firstCharacteristicDataReceive.ValueUpdated -= MeasurementDataHandler;
+            _secondServiceReceiveQueryCharacteristic.ValueUpdated -= QueryResponseHandler;
             _connectedDevice.Dispose();
         }
-
     }
 }

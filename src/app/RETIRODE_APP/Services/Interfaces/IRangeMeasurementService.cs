@@ -1,4 +1,5 @@
 ﻿using RETIRODE_APP.Models;
+using RETIRODE_APP.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -51,13 +52,6 @@ namespace RETIRODE_APP.Services
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="bleDevice"></param>
-        /// <returns></returns>
-        Task Disconnect(BLEDevice bleDevice);
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <returns></returns>
         Task SwReset();
 
@@ -84,6 +78,25 @@ namespace RETIRODE_APP.Services
         /// <summary>
         /// 
         /// </summary>
-        IList<BLEDevice> AvailableDevices { get; }
+        /// <returns></returns>
+        Task SetPulseCount(int pulseCount);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        Task GetLaserVoltage(Voltage voltage);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        Task GetSipmBiasPowerVoltage(Voltage voltage);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        Task GetCalibration(Calibrate calibrate);
     }
 }
