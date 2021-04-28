@@ -23,6 +23,12 @@ DRIVER_GPIO_t *gpio;
 char tx_buffer[] __attribute__ ((aligned(4))) = "RSL10 UART TEST";
 char rx_buffer[sizeof(tx_buffer)] __attribute__ ((aligned(4)));
 
+
+static APP_Environemnt_t app_env = { 0 };
+
+/** Cache for storing of image data before it gets transmitted over BLE. */
+static uint8_t app_data_cache_storage[APP_DATA_CACHE_SIZE];
+
 /* ----------------------------------------------------------------------------
  * Function      : void Button_EventCallback(void)
  * ----------------------------------------------------------------------------
@@ -103,6 +109,159 @@ void ToggleLed(uint32_t n, uint32_t delay_ms)
     }
 }
 
+
+static void APP_ReadNextDataChunk(void)
+{
+    if ((!app_env.isp_read_in_progress)
+        && (CIRCBUF_GetFree(&app_env.data_cache)
+            >= 4*64))
+    {
+
+
+        app_env.isp_read_in_progress = true;
+    }
+}
+
+static void APP_PushData(void)
+{
+    do
+    {
+        uint32_t max_data_to_push = RMTS_GetMax_TOFD_PushSize();
+        uint32_t data_available = CIRCBUF_GetUsed(&app_env.data_cache);
+
+        if ((max_data_to_push > 0) && (data_available > 0))
+        {
+            uint8_t buf[4*64];
+            uint32_t status;
+            uint32_t buf_to_write =
+                    (max_data_to_push > data_available) ? data_available :
+                                                          max_data_to_push;
+
+            if (buf_to_write > 4*64)
+            {
+                buf_to_write = 4*64;
+            }
+
+            status = CIRCBUF_PopFront(buf, buf_to_write, &app_env.data_cache);
+            //ENSURE(status == 0);
+
+            status = RMTS_TOFD_Push(buf, buf_to_write);
+            //ENSURE(status == PTSS_OK);
+
+            /* for unused variable warnings. */
+            (void)status;
+        }
+        else
+        {
+            break;
+        }
+    } while (1);
+}
+
+/**
+ * Event handler for the Range Finder BLE service.
+ */
+void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
+        const void *p_param)
+{
+    switch (opcode)
+    {
+       /* Connected peer device requested continuous image capture. */
+        case RMTS_OP_START_REQ:
+        {
+
+
+            break;
+        }
+
+        /* Connected peer device requested to abort any ongoing capture
+         * operation.
+         */
+        case RMTS_OP_CANCEL_REQ:
+        {
+
+            break;
+        }
+
+        /* Connected peer device indicates that it received image info and is
+         * ready to accept image data.
+         */
+        case RMTS_OP_DATA_TRANSFER_REQ:
+        {
+
+        	CIRCBUF_Initialize(app_data_cache_storage, APP_DATA_CACHE_SIZE,
+        	        	                    &app_env.data_cache);
+
+            app_env.isp_read_in_progress = 0;
+
+            APP_ReadNextDataChunk();
+
+
+            break;
+        }
+
+
+        /* RMTS is able to accept more data. */
+        case RMTS_OP_DATA_SPACE_AVAIL_IND:
+        {
+            /* Push any cached data. */
+            APP_PushData();
+
+            /* Start receiving more image data if cache has enough free space.
+             */
+            APP_ReadNextDataChunk();
+
+            break;
+        }
+
+        default:
+        {
+
+            break;
+        }
+    }
+}
+
+
+/**
+ * Event handler for the External Sensors Trigger BLE service.
+ */
+void APP_ESTS_EventHandler(ESTS_RF_SETTING_ID_t sidx,
+        const void *p_param)
+{
+    switch (sidx)
+    {
+       /* Connected peer device requested server reset. */
+        case ESTS_OP_SW_RESET:
+        {
+            break;
+        }
+		case ESTS_OP_LASER_VOLTAGE:
+		{
+			break;
+		}
+		case ESTS_OP_S_BIAS_POWER_VOLTAGE:
+		{
+			break;
+		}
+		case ESTS_OP_CALIBRATE:
+		{
+			break;
+		}
+		case ESTS_OP_PULSE_COUNT:
+		{
+			break;
+		}
+		default:
+		{
+
+			break;
+		}
+	}
+}
+
+
+
 /* ----------------------------------------------------------------------------
  * Function      : void Initialize(void)
  * ----------------------------------------------------------------------------
@@ -123,7 +282,7 @@ void Initialize(void)
     /* Test DIO12 to pause the program to make it easy to re-flash */
     DIO->CFG[RECOVERY_DIO] = DIO_MODE_INPUT  | DIO_WEAK_PULL_UP |
                              DIO_LPF_DISABLE | DIO_6X_DRIVE;
-    while (DIO_DATA->ALIAS[RECOVERY_DIO] == 0);
+    //while (DIO_DATA->ALIAS[RECOVERY_DIO] == 0);
 
     /* Prepare the 48 MHz crystal
      * Start and configure VDDRF */
@@ -170,6 +329,17 @@ void Initialize(void)
     /* Stop masking interrupts */
     __set_PRIMASK(PRIMASK_ENABLE_INTERRUPTS);
     __set_FAULTMASK(FAULTMASK_ENABLE_INTERRUPTS);
+
+    /* Initialize the kernel and Bluetooth stack */
+        {
+            int32_t status;
+
+            APP_BLE_PeripheralServerInitialize(ATT_RMTS_COUNT);
+
+            status = RMTS_Initialize(APP_RMTS_EventHandler);
+
+
+        }
 }
 
 /* ----------------------------------------------------------------------------
@@ -186,29 +356,33 @@ int main(void)
     int i;
 
     /* Initialize the system */
-    Initialize();
+    Device_Initialize();
     PRINTF("DEVICE INITIALIZED\n");
 
     /* Non-blocking receive. User is notified through Usart_EventCallBack
      * after UART_BUFFER_SIZE bytes are received */
-    uart->Receive(rx_buffer, (sizeof tx_buffer));
+    //uart->Receive(rx_buffer, (sizeof tx_buffer));
+
+    bool isp_busy = false;
 
     /* Spin loop */
     while (true)
     {
+    	Sys_Watchdog_Refresh();
+    	Kernel_Schedule();
         /* Here we demonstrate the ABORT_TRANSFER feature. Wait for first few bytes
          * to be transferred and if particular byte does not match abort the transfer. */
-        i = uart->GetRxCount() - BUFFER_OFFSET;
-        if ((i >= 0) && (tx_buffer[i] != rx_buffer[i]))
-        {
+        //i = uart->GetRxCount() - BUFFER_OFFSET;
+       // if ((i >= 0) && (tx_buffer[i] != rx_buffer[i]))
+        //{
             /* Abort current receive operation */
-            uart->Control(ARM_USART_ABORT_RECEIVE, 0);
+         //   uart->Control(ARM_USART_ABORT_RECEIVE, 0);
 
             /* Re-start receive operation */
-            uart->Receive(rx_buffer, (sizeof tx_buffer));
-        }
+          //  uart->Receive(rx_buffer, (sizeof tx_buffer));
+        //}
 
         /* Refresh the watchdog timer */
-        Sys_Watchdog_Refresh();
+        //Sys_Watchdog_Refresh();
     }
 }
