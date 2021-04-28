@@ -157,6 +157,21 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
  * Event handler for the External Sensors Trigger BLE service.
 **/
 
+void APP_ESTS_QUERY_RESPONSE_EventHandler(const uint8_t *p_param)
+{
+	uint8_t data[3];
+
+	            data[0] = p_param[0];
+	            data[1] = p_param[1];
+	            data[2] = p_param[2];
+
+	ESTS_NOTIFY_QUERY_RESPONSE(p_param);
+}
+/**
+ * Event handler for the External Sensors Trigger BLE service.
+**/
+
+
 void APP_ESTS_EventHandler(ESTS_RF_SETTING_ID_t sidx,
         const void *p_param)
 {
@@ -165,27 +180,61 @@ void APP_ESTS_EventHandler(ESTS_RF_SETTING_ID_t sidx,
        /** Connected peer device requested server reset. **/
         case ESTS_OP_SW_RESET:
         {
+        	ESTS_OP_SW_RESET_params_t *params = p_param;
             break;
         }
 		case ESTS_OP_LASER_VOLTAGE:
 		{
+			ETSS_LASER_VOLTAGE_params_t *params = p_param;
+			if(params->is_query == true)
+			{
+				//SEND UART QUERY REQUEST
+				uint8_t p_data[3];
+				p_data[0] = ESTS_OP_LASER_VOLTAGE;
+				p_data[1] = params->type;
+				p_data[2] = 150;
+				APP_ESTS_QUERY_RESPONSE_EventHandler(p_data);
+			}else{
+				//SEND UART COMMAND
+			}
 			break;
 		}
 		case ESTS_OP_S_BIAS_POWER_VOLTAGE:
 		{
+			ETSS_S_BIAS_POWER_VOLTAGE_params_t *params = p_param;
+			if(params->is_query == true)
+			{
+				//SEND UART QUERY REQUEST
+			}else{
+				//SEND UART COMMAND
+			}
 			break;
 		}
 		case ESTS_OP_CALIBRATE:
 		{
+			ETSS_CALIBRATE_params_t *params = p_param;
+
+			if(params->is_query == true)
+			{
+				//SEND UART QUERY REQUEST
+			}else{
+				//SEND UART COMMAND
+			}
 			break;
 		}
 		case ESTS_OP_PULSE_COUNT:
 		{
+			ETSS_PULSE_COUNT_params_t *params = p_param;
+			if(params->is_query == true)
+			{
+				//SEND UART QUERY REQUEST
+			}else{
+				//SEND UART COMMAND
+			}
 			break;
 		}
 		default:
 		{
-
 			break;
 		}
 	}
@@ -233,29 +282,6 @@ int main(void)
 	/* Spin loop */
 	while (true)
 	{
-		i++;
-		RETIRODE_RMP_MainLoop();
-
-
-		if(i == 100)
-		{
-			RETIRODE_RMP_PowerUpCommand();
-		}
-
-
-
-		if(i == 20000)
-		{
-			Sys_Delay_ProgramROM(SystemCoreClock);
-			RETIRODE_RMP_QueryCommand(B_REGISTER);
-		}
-
-
-		if(i == 99000)
-		{
-			Sys_Delay_ProgramROM(SystemCoreClock);
-			RETIRODE_RMP_MeasureCommand(1);
-		}
 
 		/* Refresh the watchdog timer */
 		Sys_Watchdog_Refresh();
