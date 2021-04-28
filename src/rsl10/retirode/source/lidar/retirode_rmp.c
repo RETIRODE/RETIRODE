@@ -6,13 +6,47 @@
  */
 #include <retirode_rmp.h>
 #include <rsl10.h>
-#define QUERY_CHAR "%??\r"
-#define ACK_CHAR "\r"
-#define COMMAND(dest, reg, value) BuildCommand(dest, reg, value)
-#define QUERY(dest, reg) ReplaceChar(dest, '%', reg)
+#define QUERY_STRING 				"%??\r"
+#define COMMAND_STRING 				"%$1\r"
+#define QUERY(dest, reg) 			ReplaceChar(dest, '%', reg)
+#define COMMAND(dest, reg, value)   ReplaceChar(dest, '%', reg); WriteValueToCommand(dest, '$', value);
 
-static void BuildCommand(char *destination, const char *reg, const char value[]);
 static char* ReplaceChar(char* str, char find, char replace);
+static void WriteValueToCommand(char* str,char find, uint16_t val);
+
+// DC-DC controller target voltage limits
+const float LASER_MAX_TARGET_VOLTAGE = 16.0;    // maximum setable LASER power supply target voltage
+const float LASER_MIN_TARGET_VOLTAGE = 5.0;     // minimum setable LASER power supply target voltage
+
+const float BIAS_MAX_TARGET_VOLTAGE = -45.0;    // maximum setable BIAS power supply target voltage
+const float BIAS_MIN_TARGET_VOLTAGE = -32.0;    // minimum setable BIAS power supply target voltage
+
+// DC-DC controller ADC conversion constants
+const float R22_UPPER = 100e3;                  // upper sensing resistor for LASER power supply output voltage measurement
+const float R27_LOWER = 8200;                   // lower sensing resistor for LASER power supply output voltage measurement
+const float LASER_MIN_MEAS_VOLTAGE = 4.0;       // minimum voltage measured at LASER power supply output
+const float LASER_MAX_MEAS_VOLTAGE = 17.5;      // maximum voltage measured at LASER power supply output
+
+const float R34_UPPER = 22e3;                   // upper sensing resistor for BIAS power supply output voltage measurement
+const float R32_LOWER = 348e3;                  // lower sensing resistor for BIAS power supply output voltage measurement
+const float BIAS_MIN_MEAS_VOLTAGE = -30.0;      // minimum voltage measured at BIAS power supply voltage
+const float BIAS_MAX_MEAS_VOLTAGE = -48.0;      // maximum voltage measured at BIAS power supply voltage
+
+const float ADC_TAU_LASER = (float) 27.7;       // time constant R25,C25 in ms - reduced for better coverage - tailored for LASER power supply according prototypes
+const float ADC_TAU_BIAS = (float) 27.4;        // time constant R25,C25 in ms - reduced for better coverage - tailored for BIAS power supply according prototypes
+const float ADC_SUPPLY_VOLTAGE = (float) 3.3;   // ADC comparator supply voltage
+const float ADC_OFFSET_LASER = (float) 36.5;    // calculation offset correction for LASER power supply
+const float ADC_OFFSET_BIAS = (float) 31.4;     // calculation offset correction for BIAS power supply
+const float ADC_LOWEST_COMP_VOLTAGE = (float) 0.55;     // compensating value for calculation of BIAS voltage values
+const float ADC_FREQUENCY = 16.0;                       // ADC system clock in MHz
+
+struct RETIRODE_RMP_SettingCommand_t
+{
+	char reg;
+
+	uint16_t value;
+};
+
 /**
  *Array of internal flags about the state of library and which application
  *issued commands are pending.
@@ -84,6 +118,7 @@ struct RETIRODE_RMP_Eviroment_t
 	/** Holds information about current measurement. */
 	struct RETIRODE_RMP_CurrentMeasurement_t current_measurement;
 
+	struct RETIRODE_RMP_SettingCommand_t current_command;
 	/** Holds latest query response */
 	char query_response_buffer[4];
 	/**
@@ -106,6 +141,12 @@ static void RETIRODE_RMP_MeasureStateHandler(void);
 static void RETIRODE_RMP_DataProcessingStateHandler(void);
 static void RETIRODE_RMP_MeasurementDataReadyStateHandler(void);
 
+static uint8_t FromRealLaserToNative(float realVoltage);
+static float FromNativeLaserToReal(uint8_t nativeVoltage);
+
+static uint8_t FromRealBiasToNative(float realVoltage);
+static float FromNativeBiasToReal(uint8_t nativeVoltage);
+
 static struct RETIRODE_RMP_Eviroment_t rmp_env;
 
 static
@@ -121,26 +162,16 @@ const RETIRODE_RMP_StateHandler_t retirode_lmp_state_handler[RETIRODE_RMP_STATE_
 [RETIRODE_RMP_STATE_MEASUREMENT_DATA_READY] = RETIRODE_RMP_MeasurementDataReadyStateHandler
 };
 
-/**
- *Function to build command/queries which will be send to LIDAR.
- *
- */
-static void BuildCommand(char *destination, const char *reg, const char value[])
-{
-	//Register
-	strncpy(destination, reg, 1);
-
-	//value
-	strncpy(destination + 1, value, 2);
-
-	//ack char
-	strncpy(destination + 3, ACK_CHAR, 1);
-}
-
 static char* ReplaceChar(char* str, char find, char replace){
     char *current_pos = strchr(str,find);
     *current_pos = replace;
     return str;
+}
+
+static void WriteValueToCommand(char* str, char find, uint16_t val)
+{
+	str[1] = (val >>  8) & 0xff;  /* next byte, bits 8-15 */
+	str[2] = val & 0xff;
 }
 
 /**
@@ -282,9 +313,17 @@ static void RETIRODE_RMP_PowerUpStateHandler(void)
 	{
 		//TODO: Check if lmp is initialized
 
-		char powerOn_cmd[4];
-		COMMAND(powerOn_cmd, D_REGISTER, "03");
-		status = RETIRODE_RMP_WriteCommand(powerOn_cmd);
+		uint32_t commandByte = 0;
+
+		//laser power
+		commandByte |= 0x01;
+
+		//bias power enable
+		commandByte |= 0x02;
+
+		char command[4] = COMMAND_STRING;
+		COMMAND(command, D_REGISTER,commandByte);
+		status = RETIRODE_RMP_WriteCommand(command);
 
 		if (status == ARM_DRIVER_OK)
 		{
@@ -310,7 +349,7 @@ static void RETIRODE_RMP_IdleStateHandler(void)
 		RETIRODE_RMP_SetState(RETIRODE_RMP_STATE_QUERY);
 	}
 	/** Setting command */
-	else if(1 < 0)
+	else if(rmp_env.current_command.reg)
 	{
 		RETIRODE_RMP_SetState(RETIRODE_RMP_STATE_SETTING);
 	}
@@ -321,18 +360,22 @@ static void RETIRODE_RMP_IdleStateHandler(void)
 	}
 }
 
+
 static void RETIRODE_RMP_SettingsStateHandler(void)
 {
 	int32_t status = ARM_DRIVER_OK;
 
-	char query[4];
-	QUERY(query, rmp_env.flag.cmd_query);
-	status = RETIRODE_RMP_WriteCommand(query);
+
+
+	char command[4] = COMMAND_STRING;
+	COMMAND(command, rmp_env.current_command.reg, rmp_env.current_command.value);
+	status = RETIRODE_RMP_WriteCommand(command);
 
 	if (status == ARM_DRIVER_OK)
 	{
-		rmp_env.flag.cmd_measure = 0;
-		RETIRODE_RMP_SetState(RETIRODE_RMP_STATE_MEASURE_DATA_PROCESSING);
+		rmp_env.current_command.reg = 0;
+		rmp_env.current_command.value = 0;
+		RETIRODE_RMP_SetState(RETIRODE_RMP_STATE_IDLE);
 	}
 	else
 	{
@@ -345,6 +388,7 @@ static void RETIRODE_RMP_MeasureStateHandler(void)
 	int32_t status = ARM_DRIVER_OK;
 	int32_t receive_status;
 	RETIRODE_RMP_WriteCommand("C04\r");
+
 	rmp_env.current_measurement.pulse_count = 100;
 	receive_status = RETIRODE_RMP_UARTReceiveMeasurementData(100);
 	status = RETIRODE_RMP_WriteCommand("N64\r");
@@ -424,7 +468,7 @@ static void RETIRODE_RMP_QueryStateHandler(void)
 
 	receive_status = RETIRODE_RMP_UARTReceiveQueryResponse();
 
-	char command[4] = QUERY_CHAR;
+	char command[4] = QUERY_STRING;
 	QUERY(command, rmp_env.flag.cmd_query);
 	status = RETIRODE_RMP_WriteCommand(command);
 
@@ -494,17 +538,173 @@ void RETIRODE_RMP_QueryCommand(char reg)
 	rmp_env.flag.cmd_query = reg;
 }
 
-void RETIRODE_RMP_SettingCommand(char reg, char char1, char char2)
+void RETIRODE_RMP_SettingCommand(char reg, uint16_t value)
 {
-
+	rmp_env.current_command.reg = reg;
+	rmp_env.current_command.value = value;
 }
 
 void RETIRODE_RMP_MeasureCommand(uint32_t measure_size)
 {
+	if(rmp_env.current_measurement.pulse_count == 0)
+	{
+		//default value
+		rmp_env.current_measurement.pulse_count = 100;
+	}
+
 	rmp_env.flag.cmd_measure = measure_size;
 }
 
 void RETIRODE_RMP_PowerUpCommand(void)
 {
 	rmp_env.flag.cmd_power_on = true;
+}
+
+void RETIRODE_RMP_SetPulseCountCommand(uint32_t count)
+{
+	rmp_env.current_measurement.pulse_count = count;
+}
+
+void RETIRODE_RMP_SoftwareResetCommand();
+
+void RETIRODE_RMP_SetPowerBiasTargetVoltateCommand(float voltage)
+{
+	uint8_t targetVoltageNative;
+
+	if (voltage < BIAS_MAX_TARGET_VOLTAGE)
+		// required target voltage is below usable range
+		voltage = BIAS_MAX_TARGET_VOLTAGE;
+
+	if (voltage > BIAS_MIN_TARGET_VOLTAGE)
+		// required target voltage is above usable range
+		voltage = BIAS_MIN_TARGET_VOLTAGE;
+
+	// convert real float voltage value to native HW value
+	targetVoltageNative = FromRealBiasToNative(voltage);
+
+	RETIRODE_RMP_SettingCommand(B_REGISTER, targetVoltageNative);
+}
+
+static uint8_t FromRealBiasToNative(float realVoltage)
+{
+    float compVoltage;
+    float adcRampTime;
+
+    uint8_t nativeValue;
+
+    // limit real value from bottom
+    if (realVoltage < BIAS_MAX_MEAS_VOLTAGE)
+        realVoltage = BIAS_MAX_MEAS_VOLTAGE;
+
+    // limit real value from top
+    if (realVoltage > BIAS_MIN_MEAS_VOLTAGE)
+        realVoltage = BIAS_MIN_MEAS_VOLTAGE;
+
+    // calculate ADC comparator voltage from real laser power supply outpu voltage
+    compVoltage = ADC_SUPPLY_VOLTAGE - R34_UPPER * (ADC_SUPPLY_VOLTAGE - realVoltage - ADC_LOWEST_COMP_VOLTAGE) / (R32_LOWER + R34_UPPER);
+
+    // calculate ADC ramp time from comparator voltage
+    adcRampTime = - ADC_TAU_BIAS * log(-((compVoltage / ADC_SUPPLY_VOLTAGE)-1));
+
+    // calculate ADC value from ADC ramp time
+    nativeValue = round(ADC_OFFSET_BIAS + (ADC_FREQUENCY * adcRampTime));
+
+    return nativeValue;
+}
+
+static float FromNativeBiasToReal(uint8_t nativeVoltage)
+{
+	float compVoltage;
+	float adcRampTime;
+
+	float realValue;
+
+	// limit native value from bottom
+	if (nativeVoltage < ADC_OFFSET_BIAS)
+		nativeVoltage = ADC_OFFSET_BIAS;
+
+	// calculate ADC ramp time from native value
+	adcRampTime = (nativeVoltage - ADC_OFFSET_BIAS) / ADC_FREQUENCY;
+
+	// calculate ADC comparator voltage from ADC ramp time
+	compVoltage = ADC_SUPPLY_VOLTAGE * (1 - exp(-adcRampTime / ADC_TAU_BIAS));
+
+	// calculate real voltage value from ADC comparator voltage
+	realValue = - ADC_LOWEST_COMP_VOLTAGE - ADC_SUPPLY_VOLTAGE * (R32_LOWER / R34_UPPER) + compVoltage * (1 + (R32_LOWER / R34_UPPER));
+
+	return realValue;
+}
+
+void RETIRODE_RMP_SetLaserPowerTargetVoltateCommand(float voltage)
+{
+	 uint8_t targetVoltageNative;
+
+	if (voltage < LASER_MIN_TARGET_VOLTAGE)
+		// required target voltage is below usable range
+		voltage = LASER_MIN_TARGET_VOLTAGE;
+
+	if (voltage > LASER_MAX_TARGET_VOLTAGE)
+		// required target voltage is above usable range
+		voltage = LASER_MAX_TARGET_VOLTAGE;
+
+	// convert real float voltage value to native HW value
+	targetVoltageNative = FromRealLaserToNative(voltage);
+
+	RETIRODE_RMP_SettingCommand(L_REGISTER, targetVoltageNative);
+}
+
+//*******************************************************************************
+//* convert LASER power voltage from real value to native representation in HW  *
+//*******************************************************************************
+static uint8_t FromRealLaserToNative(float realVoltage)
+{
+    float compVoltage;
+    float adcRampTime;
+
+    uint8_t nativeValue;
+
+    // limit real value from bottom
+    if (realVoltage < LASER_MIN_MEAS_VOLTAGE)
+        realVoltage = LASER_MIN_MEAS_VOLTAGE;
+
+    // limit real value from top
+    if (realVoltage > LASER_MAX_MEAS_VOLTAGE)
+        realVoltage = LASER_MAX_MEAS_VOLTAGE;
+
+    // calculate ADC comparator voltage from real laser power supply outpu voltage
+    compVoltage = realVoltage / (1 + (R22_UPPER / R27_LOWER));
+
+    // calculate ADC ramp time from comparator voltage
+    adcRampTime = - ADC_TAU_LASER * log(-((compVoltage / ADC_SUPPLY_VOLTAGE)-1));
+
+    // calculate ADC value from ADC ramp time
+    nativeValue = round(ADC_OFFSET_LASER + (ADC_FREQUENCY * adcRampTime));
+
+    return nativeValue;
+}
+
+//*******************************************************************************
+//* convert LASER power voltage from native representation in HW to real value  *
+//*******************************************************************************
+static float FromNativeLaserToReal(uint8_t nativeVoltage)
+{
+    float compVoltage;
+    float adcRampTime;
+
+    float realValue;
+
+    // limit native value from bottom
+    if (nativeVoltage < ADC_OFFSET_LASER)
+        nativeVoltage = ADC_OFFSET_LASER;
+
+    // calculate ADC ramp time from native value
+    adcRampTime = (nativeVoltage - ADC_OFFSET_LASER) / ADC_FREQUENCY;
+
+    // calculate ADC comparator voltage from ADC ramp time
+    compVoltage = ADC_SUPPLY_VOLTAGE * (1 - exp(-adcRampTime / ADC_TAU_LASER));
+
+    // calculate real voltage value from ADC comparator voltage
+    realValue = compVoltage * (1 + (R22_UPPER / R27_LOWER));
+
+    return realValue;
 }

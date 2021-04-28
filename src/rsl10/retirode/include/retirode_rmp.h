@@ -24,6 +24,7 @@ extern "C"
 #include <RTE_Device.h>
 #include <rsl10.h>
 #include <USART_RSLxx.h>
+#include <math.h>
 
 
 /* ----------------------------------------------------------------------------
@@ -43,6 +44,9 @@ extern "C"
 
 #define RETIRODE_RMP_DATA_RECEIVED_BUFFER_SIZE  	2000
 #define RETIRODE_RMP_MAX_DATA_CHUNK_SIZE			64
+
+
+
 
 typedef enum RETIRODE_RMP_State_t
 {
@@ -224,7 +228,11 @@ void RETIRODE_RMP_MeasureCommand(uint32_t measure_size);
 
 void RETIRODE_RMP_QueryCommand(char reg);
 
-void RETIRODE_RMP_SettingCommand(char reg, char char1, char char2);
+void RETIRODE_RMP_SoftwareResetCommand();
+void RETIRODE_RMP_SetLaserPowerTargetVoltateCommand(float voltage);
+void RETIRODE_RMP_SetPowerBiasTargetVoltateCommand(float voltage);
+void RETIRODE_RMP_SetPulseCountCommand(uint32_t count);
+void RETIRODE_RMP_SettingCommand(char reg, uint16_t value);
 
 /* ----------------------------------------------------------------------------
  * Close the 'extern "C"' block
