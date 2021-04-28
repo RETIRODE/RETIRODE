@@ -1,5 +1,8 @@
-﻿using RETIRODE_APP.Models;
+﻿using Nancy.TinyIoc;
+using RETIRODE_APP.Models;
+using RETIRODE_APP.Services;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Urho;
@@ -9,6 +12,7 @@ namespace RETIRODE_APP.ViewModels
 {
     class DepictionViewModel : Application
     {
+        private IDataStore _dataStore => TinyIoCContainer.Current.Resolve<IDataStore>();
         protected const float TouchSensitivity = 2;
         protected float Yaw { get; set; }
         protected float Pitch { get; set; }
@@ -142,12 +146,14 @@ namespace RETIRODE_APP.ViewModels
             return (float)Math.Sqrt((v1.X - v2.X) * (v1.X - v2.X) + (v1.Y - v2.Y) * (v1.Y - v2.Y));
         }
 
-        float CalculateDistanceFromTdc(float tdcValue)
+        async Task<float> CalculateDistanceFromTdc(float tdcValue)
         {
-            // TODO get from DB
-            float tdc0Value = 0;
-            float tdc62Value = 0;
-            float tdc125Value = 0;
+            var calibrationList = await _dataStore.GetEntitiesAsync<CalibrationItem>();
+            var calibration = new List<CalibrationItem>(calibrationList).FindLast(x => x.Id > 0);
+
+            float tdc0Value = calibration.Tdc_0;
+            float tdc62Value = calibration.Tdc_62;
+            float tdc125Value = calibration.Tdc_125;
 
             float tofValue;
 

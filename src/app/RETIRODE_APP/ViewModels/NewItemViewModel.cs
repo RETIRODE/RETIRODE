@@ -62,7 +62,7 @@ namespace RETIRODE_APP.ViewModels
 
             await _itemDataStore.CreateTableAsync<TestItem>();
             await _itemDataStore.AddEntityAsync<TestItem>(newItem);
- 
+
             // This will pop the current page off the navigation stack
             await Shell.Current.GoToAsync("..");
         }
