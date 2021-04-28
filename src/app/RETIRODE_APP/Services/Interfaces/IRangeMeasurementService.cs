@@ -26,7 +26,7 @@ namespace RETIRODE_APP.Services
         /// Event involves processed measured data from bluetooth
         /// which are interpretated as array of integers
         /// </summary>
-        event Action<int[]> QueryDataReceivedEvent;
+        event Action<int[]> MeasuredDataResponseEvent;
 
         /// <summary>
         /// 
