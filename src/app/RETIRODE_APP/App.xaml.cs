@@ -10,6 +10,8 @@ namespace RETIRODE_APP
 {
     public partial class App : Application
     {
+        public static Boolean isConnected;
+
         public App()
         {
             InitializeComponent();

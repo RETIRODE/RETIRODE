@@ -18,20 +18,19 @@
 
         <RefreshView x:DataType="local:BluetoothViewModel" Command="{Binding LoadDevicesCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}">
             <CollectionView x:Name="DevicesListView"
-                ItemsSource="{Binding Devices}"
-                SelectionMode="None"
-                BackgroundColor="{StaticResource Secondary}">
+                            ItemsSource="{Binding TestDevices}"
+                            BackgroundColor="{StaticResource Secondary}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <StackLayout Padding="130, 40, 0, 0" x:DataType="model:BLEDevice" Orientation="Horizontal">
                             <Image Source="icon_device.png" WidthRequest="50" HeightRequest="50"/>
-                            <Label Text="{Binding Name}" 
-                            LineBreakMode="NoWrap" 
-                            Style="{DynamicResource ListItemTextStyle}" 
-                            FontSize="20"
-                            TextColor="White" 
-                            HorizontalOptions="Center"
-                            Padding="10, 5"/>
+                            <Label  Text="{Binding Name}"
+                                    LineBreakMode="NoWrap" 
+                                    Style="{DynamicResource ListItemTextStyle}" 
+                                    FontSize="20"
+                                    TextColor="White" 
+                                    HorizontalOptions="Center"
+                                    Padding="10, 5"/>
                                 <StackLayout.GestureRecognizers>
                                     <TapGestureRecognizer 
                                     NumberOfTapsRequired="1"

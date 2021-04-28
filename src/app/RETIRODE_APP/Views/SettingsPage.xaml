@@ -19,13 +19,12 @@
                 <Setter Property="TextColor" Value="White"/>
             </Style>
 
-            <Style x:Key="TCDValue" TargetType="Label">
+            <Style x:Key="TCDValue" TargetType="Entry">
                 <Setter Property="HorizontalOptions" Value="Center"/>
                 <Setter Property="FontSize" Value="20"/>
                 <Setter Property="FontAttributes" Value="Bold"/>
                 <Setter Property="TextColor" Value="White"/>
                 <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
-                <Setter Property="Padding" Value="10"/>
                 <Setter Property="WidthRequest" Value="150"/>
             </Style>
 
@@ -54,15 +53,15 @@
 
                 <!-- TCD Cal 0.0 ns -->
                 <Label Text="0.0 ns:"/>
-                <Label Text="{Binding TCDCal0}" Grid.Row="1" Style="{StaticResource TCDValue}"/>
+                <Entry Text="{Binding TCDCal0, Mode=TwoWay}" Grid.Row="1" Style="{StaticResource TCDValue}"/>
 
                 <!-- TCD Cal 62.5 ns -->
                 <Label Text="62.5 ns:" Grid.Column="1"/>
-                <Label Text="{Binding TCDCal62}"  Grid.Column="1" Grid.Row="1" Style="{StaticResource TCDValue}"/>
+                <Entry Text="{Binding TCDCal62, Mode=TwoWay}"  Grid.Column="1" Grid.Row="1" Style="{StaticResource TCDValue}"/>
 
                 <!-- TCD Cal 125.0 ns -->
                 <Label Text="125.0 ns:" Grid.Column="2"/>
-                <Label Text="{Binding TCDCal125}" Grid.Column="2" Grid.Row="1" Style="{StaticResource TCDValue}"/>
+                <Entry Text="{Binding TCDCal125, Mode=TwoWay}" Grid.Column="2" Grid.Row="1" Style="{StaticResource TCDValue}"/>
 
 
 
@@ -83,12 +82,12 @@
 
                 <!-- Trigger Pulse -->
                 <Label Text="Trigger Pulse"/>
-                <Label Text="{Binding TriggerPulse}" Style="{StaticResource TCDValue}" Grid.Row="1"/>
+                <Entry Text="{Binding TriggerPulse, Mode=TwoWay}" Style="{StaticResource TCDValue}" Grid.Row="1"/>
 
 
                 <!-- Voltage target -->
                 <Label Text="Voltage target" Grid.Column="1"/>
-                <Label Text="{Binding VoltagePulse}" Style="{StaticResource TCDValue}" Grid.Column="1" Grid.Row="1"/>
+                <Entry Text="{Binding VoltagePulse, Mode=TwoWay}" Style="{StaticResource TCDValue}" Grid.Column="1" Grid.Row="1"/>
 
             </Grid>
 
@@ -123,19 +122,19 @@
 
                 <!-- Target[V] -->
                 <Label Text="Target[V]"/>
-                <Label Style="{StaticResource TCDValue}" Grid.Row="1" Text="{Binding SIPMTargetV}"/>
+                <Entry Style="{StaticResource TCDValue}" Grid.Row="1" Text="{Binding SIPMTargetV, Mode=TwoWay}"/>
                 <!-- Actual[V] -->
                 <Label Text="Actual[V]" Grid.Column="1"/>
-                <Label Style="{StaticResource TCDValue}" Grid.Column="1" Grid.Row="1" Text="{Binding SIPMActualV}"/>
+                <Entry Style="{StaticResource TCDValue}" Grid.Column="1" Grid.Row="1" Text="{Binding SIPMActualV, Mode=TwoWay}"/>
 
                 <!-- Laser power -->
 
                 <!-- Target[V] -->
                 <Label Text="Target[V]" Grid.Column="2"/>
-                <Label Style="{StaticResource TCDValue}" Grid.Column="2" Grid.Row="1" Text="{Binding LaserTargetV}"/>
+                <Entry Style="{StaticResource TCDValue}" Grid.Column="2" Grid.Row="1" Text="{Binding LaserTargetV, Mode=TwoWay}"/>
                 <!-- Actual[V] -->
                 <Label Text="Actual[V]" Grid.Column="3"/>
-                <Label Style="{StaticResource TCDValue}" Grid.Column="3" Grid.Row="1" Text="{Binding LaserActualV}"/>
+                <Entry Style="{StaticResource TCDValue}" Grid.Column="3" Grid.Row="1" Text="{Binding LaserActualV, Mode=TwoWay}"/>
             </Grid>
 
             <!-- SW Reset button -->

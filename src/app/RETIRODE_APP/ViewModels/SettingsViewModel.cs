@@ -32,7 +32,11 @@ namespace RETIRODE_APP.ViewModels
             throw new NotImplementedException();
         }
 
-        public double TCDCal0 { get; set; }
+        public double TCDCal0 
+        {
+            get;
+            set;
+        }
         public double TCDCal62 { get; set; }
         public double TCDCal125 { get; set; }
         public double TriggerPulse { get; set; }

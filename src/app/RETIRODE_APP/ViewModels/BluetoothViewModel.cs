@@ -10,12 +10,13 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Xamarin.CommunityToolkit.ObjectModel;
 using System.Threading;
+using RETIRODE_APP.Views;
 
 namespace RETIRODE_APP.ViewModels
 {
     public class BluetoothViewModel : BaseViewModel
     {
-        private BLEDevice _selectedDevice;
+        BLEDevice selectedDevice;
 
         public IRangeMeasurementService rangeMeasurementService;
         public ObservableCollection<BLEDevice> Devices { get; }
@@ -32,7 +33,17 @@ namespace RETIRODE_APP.ViewModels
             LoadDevicesCommand = new AsyncCommand(async () => await ExecuteLoadDevicesCommand());
             DeviceTapped = new Command<BLEDevice>(OnDeviceSelected);
             rangeMeasurementService.DeviceDiscoveredEvent += RangeMeasurementService_DeviceDiscoveredEvent;
-
+            TestDevices = new List<BLEDevice>();
+            TestDevices.Add(new BLEDevice
+            {
+                Name = "LIDAR",
+                Identifier = new Guid()
+            });
+            TestDevices.Add(new BLEDevice
+            {
+                Name = "NotLIDAR",
+                Identifier = new Guid()
+            });
         }
 
         private void RangeMeasurementService_DeviceDiscoveredEvent(BLEDevice device)
@@ -69,20 +80,21 @@ namespace RETIRODE_APP.ViewModels
 
         public BLEDevice SelectedDevice
         {
-            get => _selectedDevice;
+            get => selectedDevice;
             set
             {
-                SetProperty(ref _selectedDevice, value);
+                SetProperty(ref selectedDevice, value);
                 OnDeviceSelected(value);
             }
         }
 
-        public void OnDeviceSelected(BLEDevice device)
+        public async void OnDeviceSelected(BLEDevice device)
         {
             if (device == null)
                 return;
-
-            rangeMeasurementService.ConnectToRSL10(device);
+            await rangeMeasurementService.ConnectToRSL10(device);
+            await Application.Current.MainPage.DisplayAlert("Connecting...", "Connecting to device " + device.Name, "OK");
+            await Application.Current.MainPage.Navigation.PushAsync(new SettingsPage());
         }
     }
 }
