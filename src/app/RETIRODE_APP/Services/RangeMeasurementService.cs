@@ -249,7 +249,7 @@ namespace RETIRODE_APP.Services
                 //_firstCharacteristicDataReceive = await _firstService.GetCharacteristicAsync(Constants.GattFirstCharacteristicReceiveId);
                 //_firstCharacteristicDataWrite = await _firstService.GetCharacteristicAsync(Constants.GattFirstCharacteristicWriteId);
 
-                _secondService = await _connectedDevice.GetServiceAsync(Constants.GattQueryCommandServiceUUID);
+                _secondService = await _connectedDevice.GetServiceAsync(Constants.QueryCommandServiceUUID);
                 _secondServiceSendCommandCharacteristic = await _secondService.GetCharacteristicAsync(Constants.SendCommandCharacteristicUUID);
                 _secondServiceSendQueryCharacteristic = await _secondService.GetCharacteristicAsync(Constants.SendQueryCharacteristicUUID);
                 _secondServiceReceiveQueryCharacteristic = await _secondService.GetCharacteristicAsync(Constants.ReceiveQueryCharacteristicUUID);
