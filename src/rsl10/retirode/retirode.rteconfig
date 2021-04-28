@@ -12,6 +12,28 @@
       <file category="header" name="source/firmware/drivers/usart_driver/include/USART_RSLxx.h" version="1.0.0"/>
       <file category="source" name="source/firmware/drivers/usart_driver/source/USART_RSLxx.c" version="1.0.0"/>
     </component>
+    <component Capiversion="1.0.0" Cclass="Device" Cgroup="Bluetooth Core" Csub="BLE Abstraction" Cvariant="source" Cvendor="ONSemiconductor" Cversion="3.5.285" deviceDependent="1">
+      <package name="RSL10" url="www.onsemi.com" vendor="ONSemiconductor" version="3.5.285"/>
+      <file category="doc" deviceDependent="1" name="documentation/RSL10_firmware_reference.pdf"/>
+      <file attr="config" category="header" deviceDependent="1" name="source/firmware/ble_abstraction_layer/ble/include/ble_gap.h" version="1.0.0"/>
+      <file attr="config" category="header" deviceDependent="1" name="source/firmware/ble_abstraction_layer/ble/include/ble_gatt.h" version="1.0.0"/>
+      <file attr="config" category="header" deviceDependent="1" name="source/firmware/ble_abstraction_layer/ble/include/ble_l2c.h" version="1.0.0"/>
+      <file attr="config" category="header" deviceDependent="1" name="source/firmware/ble_abstraction_layer/ble/include/msg_handler.h" version="1.0.0"/>
+      <file attr="config" category="source" deviceDependent="1" name="source/firmware/ble_abstraction_layer/ble/source/ble_gap.c" version="1.0.0"/>
+      <file attr="config" category="source" deviceDependent="1" name="source/firmware/ble_abstraction_layer/ble/source/ble_gatt.c" version="1.0.0"/>
+      <file attr="config" category="source" deviceDependent="1" name="source/firmware/ble_abstraction_layer/ble/source/ble_l2c.c" version="1.0.0"/>
+      <file attr="config" category="source" deviceDependent="1" name="source/firmware/ble_abstraction_layer/ble/source/msg_handler.c" version="1.0.0"/>
+    </component>
+    <component Capiversion="1.0.0" Cclass="Device" Cgroup="Bluetooth Core" Csub="BLE Stack" Cvariant="release" Cvendor="ONSemiconductor" Cversion="3.5.285" deviceDependent="1">
+      <package name="RSL10" url="www.onsemi.com" vendor="ONSemiconductor" version="3.5.285"/>
+      <file category="doc" deviceDependent="1" name="documentation/RSL10_firmware_reference.pdf"/>
+      <file category="library" deviceDependent="1" name="lib/ble_core/Release/libblelib.a"/>
+    </component>
+    <component Capiversion="1.0.0" Cclass="Device" Cgroup="Bluetooth Core" Csub="Kernel" Cvariant="release" Cvendor="ONSemiconductor" Cversion="3.5.285" deviceDependent="1">
+      <package name="RSL10" url="www.onsemi.com" vendor="ONSemiconductor" version="3.5.285"/>
+      <file category="doc" deviceDependent="1" name="documentation/RSL10_firmware_reference.pdf"/>
+      <file category="library" deviceDependent="1" name="lib/ble_core/Release/libkelib.a"/>
+    </component>
     <component Cclass="Device" Cgroup="Libraries" Csub="DMA" Cvariant="source" Cvendor="ONSemiconductor" Cversion="3.5.285" deviceDependent="1">
       <package name="RSL10" url="www.onsemi.com" vendor="ONSemiconductor" version="3.5.285"/>
       <file category="doc" deviceDependent="1" name="documentation/RSL10_firmware_reference.pdf"/>
@@ -98,6 +120,15 @@
     </component>
   </components>
   <apis>
+    <api Capiversion="1.0.0" Cclass="Device" Cgroup="Bluetooth Core" Cvendor="ONSemiconductor" Cversion="1.0.0" exclusive="0">
+      <package name="RSL10" url="www.onsemi.com" vendor="ONSemiconductor" version="3.5.285"/>
+      <file category="doc" name="documentation/RSL10_firmware_reference.pdf"/>
+      <file category="include" name="include/kernel/"/>
+      <file category="include" name="include/ble/"/>
+      <file category="include" name="include/bb/"/>
+      <file category="include" name="include/ble/profiles/"/>
+      <file category="source" condition="Not_IAR_Condition" name="source/firmware/ble_abstraction_layer/ble/source/stubprf.c"/>
+    </api>
     <api Capiversion="2.3.0" Cclass="CMSIS Driver" Cgroup="USART" Cvendor="ARM" Cversion="2.3.0" exclusive="0">
       <package name="CMSIS" url="http://www.keil.com/pack/" vendor="ARM" version="5.6.0"/>
       <file category="doc" name="CMSIS/Documentation/Driver/html/group__usart__interface__gr.html"/>

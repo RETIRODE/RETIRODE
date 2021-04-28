@@ -3415,7 +3415,7 @@
 //   <i> Defines gpio pad number to be used as a rx data line.
 //   <i> Default: 0
 #ifndef RTE_USART0_RX_PIN_DEFAULT
- #define RTE_USART0_RX_PIN_DEFAULT  4
+ #define RTE_USART0_RX_PIN_DEFAULT  2
 #endif
 //   <o>TX data gpio pad
 //       <0x0=> 0
@@ -3437,7 +3437,7 @@
 //   <i> Defines gpio pad number to be used as a tx data line.
 //   <i> Default: 0
 #ifndef RTE_USART0_TX_PIN_DEFAULT
- #define RTE_USART0_TX_PIN_DEFAULT  2
+ #define RTE_USART0_TX_PIN_DEFAULT  3
 #endif
 // </h>
 // <h>Interrupt priority configuration
