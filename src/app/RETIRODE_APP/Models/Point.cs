@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace RETIRODE_APP.Models
 {
@@ -16,7 +15,7 @@ namespace RETIRODE_APP.Models
 
             var rand = new Random();
 
-            for (int i=0; i< count; i++)
+            for (int i = 0; i < count; i++)
             {
                 float x = (float)rand.NextDouble() + rand.Next(-1, 1);
                 float y = (float)rand.NextDouble() + rand.Next(-1, 1);
