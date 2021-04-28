@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace RETIRODE_APP.Models
 {
@@ -8,6 +6,6 @@ namespace RETIRODE_APP.Models
     {
         StartLidar = 0x01,
         StopLidar = 0x02,
-        StartTransfer= 0x03
+        StartTransfer = 0x03
     }
 }

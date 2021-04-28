@@ -1,7 +1,4 @@
 ﻿using RETIRODE_APP.Models.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace RETIRODE_APP.Models
 {
