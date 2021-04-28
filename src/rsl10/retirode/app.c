@@ -92,14 +92,14 @@ static void APP_PushData(void)
 }
 
 /**
- * Event handler for the Range Finder BLE service.
- */
+ * Event handler for the Range Finder BLE service.*/
+
 void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
         const void *p_param)
 {
     switch (opcode)
     {
-       /* Connected peer device requested continuous image capture. */
+       /* Connected peer device requested continuous image capture.*/
         case RMTS_OP_START_REQ:
         {
 
@@ -108,8 +108,7 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
         }
 
         /* Connected peer device requested to abort any ongoing capture
-         * operation.
-         */
+         * operation.*/
         case RMTS_OP_CANCEL_REQ:
         {
 
@@ -117,8 +116,8 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
         }
 
         /* Connected peer device indicates that it received image info and is
-         * ready to accept image data.
-         */
+         * ready to accept image data.*/
+
         case RMTS_OP_DATA_TRANSFER_REQ:
         {
 
@@ -134,14 +133,14 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
         }
 
 
-        /* RMTS is able to accept more data. */
+        /** RMTS is able to accept more data. */
         case RMTS_OP_DATA_SPACE_AVAIL_IND:
         {
-            /* Push any cached data. */
+            /* Push any cached data.*/
             APP_PushData();
 
-            /* Start receiving more image data if cache has enough free space.
-             */
+            /* Start receiving more image data if cache has enough free space. */
+
             APP_ReadNextDataChunk();
 
             break;
@@ -154,17 +153,16 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
         }
     }
 }
-
-
 /**
  * Event handler for the External Sensors Trigger BLE service.
- */
+**/
+
 void APP_ESTS_EventHandler(ESTS_RF_SETTING_ID_t sidx,
         const void *p_param)
 {
     switch (sidx)
     {
-       /* Connected peer device requested server reset. */
+       /** Connected peer device requested server reset. **/
         case ESTS_OP_SW_RESET:
         {
             break;
@@ -193,11 +191,10 @@ void APP_ESTS_EventHandler(ESTS_RF_SETTING_ID_t sidx,
 	}
 }
 
-
 void RETIRODE_RMP_Handler(RETIRODE_RMP_Event_t event,
         						const void *p_param)
 {
-	switch(event)
+ 	switch(event)
 	{
 		case RETIRODE_RMP_EVENT_MEASUREMENT_DATA_READY:
 		{
