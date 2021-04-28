@@ -67,31 +67,13 @@
 
             </Grid>
 
-            <!-- Calibrate button -->
-            <Button Text="Calibrate" Margin="20, 0, 20, 20" Command="{Binding Calibrate }"/>
 
-            <Grid Margin="20,10,20,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="30" />
-                    <RowDefinition Height="50" />
-                </Grid.RowDefinitions>
-
-                <!-- Trigger Pulse -->
-                <Label Text="Trigger Pulse"/>
-                <Entry Text="{Binding TriggerPulse, Mode=TwoWay}" Style="{StaticResource TCDValue}" Grid.Row="1"/>
+            <!-- Trigger Pulse -->
+            <Label Text="Trigger Pulse"/>
+            <Entry Text="{Binding TriggerPulse, Mode=TwoWay}" Style="{StaticResource TCDValue}" Grid.Row="1"/>
 
 
-                <!-- Voltage target -->
-                <Label Text="Voltage target" Grid.Column="1"/>
-                <Entry Text="{Binding VoltagePulse, Mode=TwoWay}" Style="{StaticResource TCDValue}" Grid.Column="1" Grid.Row="1"/>
-
-            </Grid>
-
-            <Grid Margin="20,20,20,0">
+            <Grid Margin="20,30,20,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
@@ -137,8 +119,27 @@
                 <Entry Style="{StaticResource TCDValue}" Grid.Column="3" Grid.Row="1" Text="{Binding LaserActualV, Mode=TwoWay}"/>
             </Grid>
 
-            <!-- SW Reset button -->
-            <Button Text="SW Reset" Margin="20, 20" Command="{Binding SWReset }"/>
+            <Grid Margin="20,10,20,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50" />
+                </Grid.RowDefinitions>
+
+                <!-- Calibrate button -->
+                <Button Text="Calibrate" Command="{Binding CalibrateCommand }"/>
+
+                <!-- SW Reset button -->
+                <Button Text="SW Reset" Command="{Binding SWReset }" Grid.Column="1"/>
+
+            </Grid>
+
+            <Button Margin="20,30,20,20" Text="SCAN"
+                        Clicked="StartDepictionButton_Clicked"
+                        BackgroundColor="{StaticResource Orange}"
+                        TextColor="White" />
 
         </StackLayout>
 
