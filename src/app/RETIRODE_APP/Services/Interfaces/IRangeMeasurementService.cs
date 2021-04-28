@@ -1,8 +1,6 @@
 ﻿using RETIRODE_APP.Models;
 using RETIRODE_APP.Models.Enums;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace RETIRODE_APP.Services
