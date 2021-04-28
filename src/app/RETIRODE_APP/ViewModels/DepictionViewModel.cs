@@ -171,5 +171,14 @@ namespace RETIRODE_APP.ViewModels
             float distance = 0.15f * tofValue;
             return distance;
         }
+
+        Point CreatePoint(float distance, float angle_1, float angle_2)
+        {
+            float Px = distance * (float)(Math.Sin(angle_1) * Math.Cos(angle_2));
+            float Py = distance * (float)(Math.Sin(angle_1) * Math.Sin(angle_2));
+            float Pz = distance * (float)Math.Cos(angle_1);
+
+            return (new Point { x = Px, y = Py, z = Pz });
+        }
     }
 }
