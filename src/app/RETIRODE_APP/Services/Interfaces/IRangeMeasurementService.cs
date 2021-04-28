@@ -22,9 +22,11 @@ namespace RETIRODE_APP.Services
         event Action<ResponseItem> QueryResponseEvent;
 
         /// <summary>
-        /// Event is fired when response from measuring is given
+        /// Event is fired when response from measuring is given.
+        /// Event involves processed measured data from bluetooth
+        /// which are interpretated as array of integers
         /// </summary>
-        event Action QueryDataReceivedEvent;
+        event Action<int[]> QueryDataReceivedEvent;
 
         /// <summary>
         /// 
