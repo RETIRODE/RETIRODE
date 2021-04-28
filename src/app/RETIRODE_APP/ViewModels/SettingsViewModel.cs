@@ -23,14 +23,14 @@ namespace RETIRODE_APP.ViewModels
 
         public SettingsViewModel()
         {
-            //SetVariables();
+            SetVariables();
             Title = "Settings";
 
             rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
             rangeMeasurementService.QueryResponseEvent += RangeMeasurementService_QueryResponseEvent;
 
-            SWReset = new Command(onSWReset);
-            CalibrateCommand = new Command(onCalibrate);
+            SWReset = new Command(OnSWReset);
+            CalibrateCommand = new Command(OnCalibrate);
         }
 
         private async void SetVariables()
@@ -62,42 +62,58 @@ namespace RETIRODE_APP.ViewModels
                     break;
 
                 case RangeFinderValues.LaserVoltageTarget:
-                    LaserTargetV = Convert.ToDouble(responseItem.Value);
+                    LaserTargetV = Convert.ToInt32(responseItem.Value);
                     break;
 
                 case RangeFinderValues.LaserVoltageActual:
-                    LaserActualV = Convert.ToDouble(responseItem.Value);
+                    LaserActualV = Convert.ToInt32(responseItem.Value);
                     break;
 
                 case RangeFinderValues.SipmBiasPowerVoltageTarget:
-                    SIPMTargetV = Convert.ToDouble(responseItem.Value);
+                    SIPMTargetV = Convert.ToInt32(responseItem.Value);
                     break;
 
                 case RangeFinderValues.SipmBiasPowerVoltageActual:
-                    SIPMActualV = Convert.ToDouble(responseItem.Value);
+                    SIPMActualV = Convert.ToInt32(responseItem.Value);
                     break;
             }
         }
 
-        public async void onSWReset()
+        public async void OnSWReset()
         {
             await rangeMeasurementService.SwReset();
         }
 
-        public async void onCalibrate()
+        public async void OnCalibrate()
         {
             await rangeMeasurementService.CalibrateLidar();
         }
 
+        public async void OnSetPulseCount(object sender, FocusEventArgs e)
+        {
+            await rangeMeasurementService.SetPulseCount(TriggerPulse);
+        }
+
+        public async void OnSetSipmVoltage(object sender, FocusEventArgs e)
+        {
+            await rangeMeasurementService.SetSipmBiasPowerVoltage(SIPMTargetV);
+        }
+
+        public async void OnSetLaserVoltage(object sender, FocusEventArgs e)
+        {
+            await rangeMeasurementService.SetLaserVoltage(LaserTargetV);
+        }
+
+
+
         public double TCDCal0 { get; set; }
         public double TCDCal62 { get; set; }
         public double TCDCal125 { get; set; }
-        public int TriggerPulse { get;set; }
-        public double VoltagePulse { get; set; }
-        public double SIPMTargetV { get; set; }
-        public double SIPMActualV { get; set; }
-        public double LaserTargetV { get; set; }
-        public double LaserActualV { get; set; }
+        public int TriggerPulse { get; set; }
+        public int SIPMTargetV { get; set; }
+        public int SIPMActualV { get; set; }
+        public int LaserTargetV { get; set; }
+        public int LaserActualV { get; set; }
     }
 }
  

@@ -53,7 +53,11 @@
 
                 <!-- TCD Cal 0.0 ns -->
                 <Label Text="0.0 ns:"/>
-                <Entry Text="{Binding TCDCal0, Mode=TwoWay}" Grid.Row="1" Style="{StaticResource TCDValue}"/>
+                <Entry Text="{Binding TCDCal0, Mode=TwoWay}" Grid.Row="1" Style="{StaticResource TCDValue}">
+                    <Entry.Behaviors>
+                        
+                    </Entry.Behaviors>
+                </Entry>
 
                 <!-- TCD Cal 62.5 ns -->
                 <Label Text="62.5 ns:" Grid.Column="1"/>
@@ -70,7 +74,7 @@
 
             <!-- Trigger Pulse -->
             <Label Text="Trigger Pulse"/>
-            <Entry Text="{Binding TriggerPulse, Mode=TwoWay}" Style="{StaticResource TCDValue}" Grid.Row="1"/>
+            <Entry Text="{Binding TriggerPulse, Mode=TwoWay}" Style="{StaticResource TCDValue}" Grid.Row="1" Unfocused="{Binding OnSetPulseCount}"/>
 
 
             <Grid Margin="20,30,20,0">
@@ -104,7 +108,7 @@
 
                 <!-- Target[V] -->
                 <Label Text="Target[V]"/>
-                <Entry Style="{StaticResource TCDValue}" Grid.Row="1" Text="{Binding SIPMTargetV, Mode=TwoWay}"/>
+                <Entry Style="{StaticResource TCDValue}" Grid.Row="1" Text="{Binding SIPMTargetV, Mode=TwoWay}" Unfocused="{Binding OnSetSipmVoltage}"/>
                 <!-- Actual[V] -->
                 <Label Text="Actual[V]" Grid.Column="1"/>
                 <Entry Style="{StaticResource TCDValue}" Grid.Column="1" Grid.Row="1" Text="{Binding SIPMActualV, Mode=TwoWay}"/>
@@ -113,7 +117,7 @@
 
                 <!-- Target[V] -->
                 <Label Text="Target[V]" Grid.Column="2"/>
-                <Entry Style="{StaticResource TCDValue}" Grid.Column="2" Grid.Row="1" Text="{Binding LaserTargetV, Mode=TwoWay}"/>
+                <Entry Style="{StaticResource TCDValue}" Grid.Column="2" Grid.Row="1" Text="{Binding LaserTargetV, Mode=TwoWay}" Unfocused="{Binding OnSetLaserVoltage}"/>
                 <!-- Actual[V] -->
                 <Label Text="Actual[V]" Grid.Column="3"/>
                 <Entry Style="{StaticResource TCDValue}" Grid.Column="3" Grid.Row="1" Text="{Binding LaserActualV, Mode=TwoWay}"/>
