@@ -16,6 +16,8 @@
 
 #include "app.h"
 
+extern  ARM_DRIVER_USART Driver_USART0;
+
 
 static void Device_SetPowerSupplies(void)
 {
@@ -191,18 +193,25 @@ void Device_Initialize(void)
     }
 
 
-#if (CFG_SMARTSHOT_APP_SLEEP_ENABLED == 1)
-    /* Trim startup RC oscillator to 3 MHz (required by Sys_PowerModes_Wakeup)
-     */
-    Sys_Clocks_OscRCCalibratedConfig(3000);
 
-    /* Configure deep sleep feature. */
-    APP_SleepModeConfigure();
-#endif /* if (CFG_SMARTSHOT_APP_SLEEP_ENABLED == 1) */
+    /* Initialize usart driver structure */
 
-    /* Initialize peripheral drivers.
-     * Automatic peripheral configuration must be enabled in RTE_Device.h !
-     */
+
+	 /* Initialize usart, register callback function */
+    Driver_USART0.Initialize(Usart_EventCallBack);
+
+    Driver_USART0.PowerControl(ARM_POWER_FULL);
+
+    Driver_USART0.Control(ARM_USART_MODE_ASYNCHRONOUS |
+						ARM_USART_DATA_BITS_8 |
+						ARM_USART_PARITY_NONE |
+						ARM_USART_STOP_BITS_1 |
+						ARM_USART_FLOW_CONTROL_NONE,115200);
+
+    Driver_USART0.Control(ARM_USART_CONTROL_TX,1);
+    Driver_USART0.Control(ARM_USART_CONTROL_RX,1);
+
+	 RETIRODE_RMP_Initialize(&Driver_USART0, RETIRODE_RMP_Handler);
 
     /* Stop masking interrupts */
     __set_PRIMASK(PRIMASK_ENABLE_INTERRUPTS);

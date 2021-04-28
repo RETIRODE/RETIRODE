@@ -42,6 +42,7 @@ extern "C"
 #include "calibration.h"
 #include <ble_gap.h>
 #include <ble_gatt.h>
+#include <retirode_rmp.h>
 
 /* ----------------------------------------------------------------------------
  * Defines
@@ -138,6 +139,9 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
         const void *p_param);
 void APP_ESTS_EventHandler(ESTS_RF_SETTING_ID_t sidx,
         const void *p_param);
+void RETIRODE_RMP_Handler(RETIRODE_RMP_Event_t event,
+        						const void *p_param);
+
 void Device_Initialize(void);
 
 /* ----------------------------------------------------------------------------
