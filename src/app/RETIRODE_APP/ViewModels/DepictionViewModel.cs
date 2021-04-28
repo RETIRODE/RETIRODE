@@ -41,10 +41,26 @@ namespace RETIRODE_APP.ViewModels
         protected override async void Start()
         {
             base.Start();
-            // todo odregistrovat event
+            _measurementService.MeasuredDataResponseEvent += _measurementService_MeasuredDataResponseEvent;
             await _measurementService.StartMeasurement();
 
             await Create3DObjects();
+        }
+
+        private async void _measurementService_MeasuredDataResponseEvent(int[] obj)
+        {
+            foreach (var item in obj)
+            {
+                var distance = await CalculateDistanceFromTdc(item);
+                var point = CreatePoint(distance, 0f, 0f);
+                AddPointToScene(point);
+            }
+        }
+
+        protected override async void Stop()
+        {
+            _measurementService.MeasuredDataResponseEvent -= _measurementService_MeasuredDataResponseEvent;
+            await _measurementService.StopMeasurement(); 
         }
 
         protected override void OnUpdate(float timeStep)
