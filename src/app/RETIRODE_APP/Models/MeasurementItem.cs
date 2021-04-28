@@ -14,7 +14,8 @@ namespace RETIRODE_APP.Models
         [ForeignKey(typeof(CalibrationItem))]
         public int Calibration_id { get; set; }
         public float Tdc_value { get; set; }
-        public float Angle { get; set; }
+        public float Angle_1 { get; set; }
+        public float Angle_2 { get; set; }
 
     }
 }
