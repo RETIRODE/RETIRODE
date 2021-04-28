@@ -73,7 +73,7 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task StartMeasurement()
         {
-            await WriteToCharacteristic(_firstCharacteristicDataWrite, new[] { (byte)RSL10Command.StartMeasurement });
+            await WriteToCharacteristic(_firstCharacteristicDataWrite, new[] { (byte)RSL10Command.StartLidar });
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
@@ -86,7 +86,7 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task StopMeasurement()
         {
-            await WriteToCharacteristic(_firstCharacteristicDataWrite, new[] { (byte)RSL10Command.StopMeasurement });
+            await WriteToCharacteristic(_firstCharacteristicDataWrite, new[] { (byte)RSL10Command.StopLidar });
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
