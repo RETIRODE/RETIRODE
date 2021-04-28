@@ -13,11 +13,13 @@ namespace RETIRODE_APP.ViewModels
     class DepictionViewModel : Application
     {
         private IDataStore _dataStore => TinyIoCContainer.Current.Resolve<IDataStore>();
+        private IRangeMeasurementService _measurementService => TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
         protected const float TouchSensitivity = 2;
         protected float Yaw { get; set; }
         protected float Pitch { get; set; }
         protected bool TouchEnabled { get; set; }
         protected Node CameraNode { get; set; }
+        protected Scene Scene { get; set; }
 
         bool movementsEnabled;
         Node plotNode;
@@ -39,6 +41,8 @@ namespace RETIRODE_APP.ViewModels
         protected override async void Start()
         {
             base.Start();
+            // todo odregistrovat event
+            await _measurementService.StartMeasurement();
 
             await Create3DObjects();
         }
@@ -72,6 +76,7 @@ namespace RETIRODE_APP.ViewModels
             if (Input.GetKeyDown(Key.S)) CameraNode.Translate(-Vector3.UnitZ * moveSpeed * timeStep);
             if (Input.GetKeyDown(Key.A)) CameraNode.Translate(-Vector3.UnitX * moveSpeed * timeStep);
             if (Input.GetKeyDown(Key.D)) CameraNode.Translate(Vector3.UnitX * moveSpeed * timeStep);
+            if (Input.GetKeyDown(Key.E)) AddPointToScene(new Point { x = 0, y = 0, z = 0});
 
             base.OnUpdate(timeStep);
         }
@@ -79,35 +84,40 @@ namespace RETIRODE_APP.ViewModels
         private async Task Create3DObjects()
         {
             // Scene
-            var scene = new Scene();
-            scene.CreateComponent<Octree>();
+            Scene = new Scene();
+            Scene.CreateComponent<Octree>();
 
             var points = Point.GenerateRandomPoints(200);
 
             foreach(Point p in points)
             {
-                plotNode = scene.CreateChild();
-                plotNode.Position = new Vector3(p.x, p.y, p.z + 5);
-                plotNode.SetScale(0.05f);
-
-                // Sphere Model
-                StaticModel modelObject = plotNode.CreateComponent<StaticModel>();
-                modelObject.Model = ResourceCache.GetModel("Models/Sphere.mdl");
+                AddPointToScene(p);
             }
 
             // Light
-            Node light = scene.CreateChild(name: "light");
+            Node light = Scene.CreateChild(name: "light");
             light.SetDirection(new Vector3(0.4f, -0.5f, 0.3f));
             light.CreateComponent<Light>();
 
             // Camera
-            CameraNode = scene.CreateChild(name: "camera");
+            CameraNode = Scene.CreateChild(name: "camera");
             Camera camera = CameraNode.CreateComponent<Camera>();
 
             // Viewport
-            Renderer.SetViewport(0, new Viewport(scene, camera, null));
+            Renderer.SetViewport(0, new Viewport(Scene, camera, null));
 
             movementsEnabled = true;
+        }
+
+        protected void AddPointToScene(Point point)
+        {
+            plotNode = Scene.CreateChild();
+            plotNode.Position = new Vector3(point.x, point.y, point.z + 5);
+            plotNode.SetScale(0.05f);
+
+            // Sphere Model
+            StaticModel modelObject = plotNode.CreateComponent<StaticModel>();
+            modelObject.Model = ResourceCache.GetModel("Models/Sphere.mdl");
         }
 
         protected void MoveCameraByTouches(float timeStep)
