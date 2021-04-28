@@ -26,8 +26,6 @@ static uint8_t ESTS_Send_Query_Handler(uint8_t conidx, uint16_t atsidx,
         uint16_t operation);
 
 
-static ESTS_MSG_ID_COUNT = 0;
-
 static ESTS_Environment_t ESTS_env = { 0 };
 
 const struct att_db_desc ESTS_att_db[ATT_ESTS_COUNT] =
@@ -98,25 +96,38 @@ const struct att_db_desc ESTS_att_db[ATT_ESTS_COUNT] =
             NULL),                                 /* callback */
 };
 
-static void ESTS_AppMsgHandler(ke_msg_id_t const msg_id, void const *param,
-        ke_task_id_t const dest_id, ke_task_id_t const src_id)
+int32_t ESTS_NOTIFY_QUERY_RESPONSE(const uint8_t *p_param)
 {
-    if ((msg_id >= ESTS_env.msg_id_offset)
-        && (msg_id < (ESTS_env.msg_id_offset + ESTS_MSG_ID_COUNT)))
-    {
-        uint8_t sidx = msg_id - ESTS_env.msg_id_offset;
+    int32_t status = ESTS_OK;
 
-        /* It is possible the client disconnected since the message was
-         * scheduled.
-         */
+    if (1==1)
+    {
         if (ESTS_env.state == ESTS_STATE_CONNECTED)
         {
-            /* It is possible that the client disabled this trigger in the
-             * meantime.
-             */
+            uint16_t attidx = ESTS_env.att.attidx_offset + ATT_ESTS_RANGE_FINDER_RECEIVE_QUERY_VAL_0;
+            uint16_t att_handle = GATTM_GetHandle(attidx);
+            uint8_t data[ESTS_CHAR_VALUE_SIZE];
+
+            data[0] = p_param[0];
+            data[1] = p_param[1];
+            data[2] = p_param[2];
+
+
+            GATTC_SendEvtCmd(0, GATTC_NOTIFY, attidx, att_handle,
+            		ESTS_CHAR_VALUE_SIZE, data);
 
         }
+        else
+        {
+            status = -1;
+        }
     }
+    else
+    {
+        status = -1;
+    }
+
+    return status;
 }
 
 static void ESTS_BleMsgHandler(ke_msg_id_t const msg_id, void const *param,
@@ -130,12 +141,10 @@ static void ESTS_BleMsgHandler(ke_msg_id_t const msg_id, void const *param,
 
             ESTS_env.state = ESTS_STATE_CONNECTED;
 
-            /* Make sure all connection related variables are reset.*/
-            for (ESTS_RF_SETTING_ID_t tidx = 0; tidx < ESTS_RF_SETTING_ID_COUNT; ++tidx)
-            {
-                //ESTS_env.att.receive_query[tidx].ccc[0] = 0;
-               // ESTS_env.att.receive_query[tidx].ccc[1] = 0;
-            }
+
+            ESTS_env.att.receive_query.ccc[0] = 0;
+            ESTS_env.att.receive_query.ccc[1] = 0;
+
 
 
             break;
@@ -146,13 +155,6 @@ static void ESTS_BleMsgHandler(ke_msg_id_t const msg_id, void const *param,
 
 
             ESTS_env.state = ESTS_STATE_IDLE;
-
-            /* Disable any active triggers upon disconnection. */
-            for (ESTS_RF_SETTING_ID_t tidx = 0; tidx < ESTS_RF_SETTING_ID_COUNT; ++tidx)
-            {
-                //ESTS_ConfigureTriggerSource(tidx, false);
-            }
-
 
             break;
         }
@@ -189,13 +191,11 @@ int32_t ESTS_Initialize(ESTS_ControlHandler control_event_handler)
         return ESTS_ERR_INSUFFICIENT_ATT_DB_SIZE;
     }
 
-    ESTS_env.msg_id_offset = APP_BLE_PeripheralServerRegisterKernelMsgIds(
-               ESTS_MSG_ID_COUNT);
+
 
        ESTS_env.state = ESTS_STATE_IDLE;
 
        /* Listen for specific BLE kernel messages. */
-       MsgHandler_Add(TASK_ID_APP, ESTS_AppMsgHandler);
        MsgHandler_Add(GAPC_DISCONNECT_IND, ESTS_BleMsgHandler);
        MsgHandler_Add(GAPC_CONNECTION_REQ_IND, ESTS_BleMsgHandler);
 
@@ -206,7 +206,58 @@ static uint8_t ESTS_Send_Command_Handler(uint8_t conidx, uint16_t atsidx,
         uint16_t handle, uint8_t *to, const uint8_t *from, uint16_t length,
         uint16_t operation)
 {
-	return 0;
+	if (length != ESTS_CHAR_VALUE_SIZE  )
+		    {
+		        return -1;
+		    }
+		if (ESTS_env.state != ESTS_STATE_CONNECTED)
+		    {
+				return -1;
+		    }
+
+		    uint8_t status = -1;
+
+
+		    switch (from[0])
+		    {
+
+		        case ESTS_OP_LASER_VOLTAGE:
+				{
+					ETSS_LASER_VOLTAGE_params_t params;
+					params.is_query = true;
+					params.type = from[1];
+					params.value = from[2];
+					ESTS_env.att.send_command.callback(ESTS_OP_LASER_VOLTAGE, (void*)&params);
+					status = 1;
+					break;
+				}
+		        case ESTS_OP_S_BIAS_POWER_VOLTAGE:
+				{
+					ETSS_S_BIAS_POWER_VOLTAGE_params_t params;
+					params.is_query = true;
+					params.type = from[1];
+					params.value = from[2];
+					ESTS_env.att.send_command.callback(ESTS_OP_S_BIAS_POWER_VOLTAGE, (void*)&params);
+					status = 1;
+					break;
+				}
+		        case ESTS_OP_CALIBRATE:
+				{
+					ETSS_CALIBRATE_params_t params;
+					params.is_query = true;
+					params.type = from[1];
+					params.value = from[2];
+					ESTS_env.att.send_command.callback(ESTS_OP_CALIBRATE, (void*)&params);
+					status = 1;
+					break;
+				}
+		        default:
+				{
+					status = -1;
+				}
+		    }
+
+		    return status;
 }
 
 
@@ -214,5 +265,76 @@ static uint8_t ESTS_Send_Query_Handler(uint8_t conidx, uint16_t atsidx,
         uint16_t handle, uint8_t *to, const uint8_t *from, uint16_t length,
         uint16_t operation)
 {
-	return 0;
+
+	if (length != ESTS_CHAR_VALUE_SIZE  )
+	    {
+	        return -1;
+	    }
+	if (ESTS_env.state != ESTS_STATE_CONNECTED)
+	    {
+			return -1;
+	    }
+
+	    uint8_t status = -1;
+
+
+	    switch (from[0])
+	    {
+	        case ESTS_OP_SW_RESET:
+	        {
+	        	ESTS_OP_SW_RESET_params_t params;
+	        	params.is_query = false;
+	        	params.type = from[1];
+	        	params.value = from[2];
+	        	ESTS_env.att.send_command.callback(ESTS_OP_SW_RESET, (void*)&params);
+	            status = 1;
+	            break;
+	        }
+	        case ESTS_OP_LASER_VOLTAGE:
+			{
+				ETSS_LASER_VOLTAGE_params_t params;
+				params.is_query = false;
+				params.type = from[1];
+				params.value = from[2];
+				ESTS_env.att.send_command.callback(ESTS_OP_LASER_VOLTAGE, (void*)&params);
+				status = 1;
+				break;
+			}
+	        case ESTS_OP_S_BIAS_POWER_VOLTAGE:
+			{
+				ETSS_S_BIAS_POWER_VOLTAGE_params_t params;
+				params.is_query = false;
+				params.type = from[1];
+				params.value = from[2];
+				ESTS_env.att.send_command.callback(ESTS_OP_S_BIAS_POWER_VOLTAGE, (void*)&params);
+				status = 1;
+				break;
+			}
+	        case ESTS_OP_CALIBRATE:
+			{
+				ETSS_CALIBRATE_params_t params;
+				params.is_query = false;
+				params.type = from[1];
+				params.value = from[2];
+				ESTS_env.att.send_command.callback(ESTS_OP_CALIBRATE, (void*)&params);
+				status = 1;
+				break;
+			}
+	        case ESTS_OP_PULSE_COUNT:
+			{
+				ETSS_PULSE_COUNT_params_t params;
+				params.is_query = false;
+				params.type = from[1];
+				params.value = from[2];
+				ESTS_env.att.send_command.callback(ESTS_OP_PULSE_COUNT, (void*)&params);
+				status = 1;
+				break;
+			}
+	        default:
+			{
+				status = -1;
+			}
+	    }
+
+	    return status;
 }

@@ -188,6 +188,23 @@ typedef enum ESTS_PULSE_COUNT_TYPE_t
 
 } ESTS_PULSE_COUNT_TYPE_t;
 
+typedef struct ESTS_OP_SW_RESET_params_t
+{
+    /** Condition if came from query characteristic */
+    bool is_query;
+
+    /** Type of SW RESET
+     *      *
+     * Only 0 is allowed
+     *
+     *  */
+    uint8_t type;
+
+    /** Query response value or command value*/
+    uint8_t value;
+
+} ESTS_OP_SW_RESET_params_t;
+
 
 typedef struct ETSS_LASER_VOLTAGE_params_t
 {
@@ -271,7 +288,7 @@ typedef void (*ESTS_ControlHandler)(ESTS_RF_SETTING_ID_t sidx,
  * --------------------------------------------------------------------------*/
 
 int32_t ESTS_Initialize(ESTS_ControlHandler control_event_handler);
-
+int32_t ESTS_NOTIFY_QUERY_RESPONSE(const uint8_t *p_param);
 
 
 #ifdef __cplusplus

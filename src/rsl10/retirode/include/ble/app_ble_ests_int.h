@@ -132,7 +132,7 @@ typedef struct ESTS_Environment_t
     /**
          * Message ID of the first registered message type in kernel.
          */
-        uint16_t msg_id_offset;
+     uint16_t msg_id_offset;
 
 } ESTS_Environment_t;
 
