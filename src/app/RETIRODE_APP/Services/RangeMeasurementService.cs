@@ -26,13 +26,18 @@ namespace RETIRODE_APP.Services
             Name = x.Name,
             State = x.State
         }).ToList();
-        private ICharacteristic _firstCharacteristicDataReceive;
-        private ICharacteristic _firstCharacteristicDataWrite;
+        private ICharacteristic _firstTimeOfFlightDataCharacteristic;
+        private ICharacteristic _firstControlPointCharacteristic;
+        private ICharacteristic _firstInfoCharacteristic;
         private IService _firstService;
         private IService _secondService;
         private ICharacteristic _secondServiceSendCommandCharacteristic;
         private ICharacteristic _secondServiceSendQueryCharacteristic;
         private ICharacteristic _secondServiceReceiveQueryCharacteristic;
+
+        private bool _isDataSize = false;
+        private int _dataSize = 0;
+        private CalibrationState _calibrationState = CalibrationState.NoState;
         public RangeMeasurementService()
         {
             _availableDevices = new List<IDevice>();
@@ -48,6 +53,8 @@ namespace RETIRODE_APP.Services
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public event Action QueryDataReceivedEvent;
+
+        private event Action DataSizeReceivedEvent;
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task ConnectToRSL10(BLEDevice bleDevice)
@@ -73,7 +80,18 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task StartMeasurement()
         {
-            await WriteToCharacteristic(_firstCharacteristicDataWrite, new[] { (byte)RSL10Command.StartLidar });
+            await WriteToCharacteristic(_firstControlPointCharacteristic, new[] { (byte)RSL10Command.StartLidar });
+
+            _firstInfoCharacteristic.ValueUpdated -= DataSizeHandler;
+            _firstInfoCharacteristic.ValueUpdated += DataSizeHandler;
+            await _firstInfoCharacteristic.StartUpdatesAsync();
+
+        }
+
+        private void DataSizeHandler(object sender, CharacteristicUpdatedEventArgs e)
+        {
+            _isDataSize = true;
+            _dataSize = Convert.ToInt32(e.Characteristic.Value);
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
@@ -86,7 +104,7 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task StopMeasurement()
         {
-            await WriteToCharacteristic(_firstCharacteristicDataWrite, new[] { (byte)RSL10Command.StopLidar });
+            await WriteToCharacteristic(_firstInfoCharacteristic, new[] { (byte)RSL10Command.StopLidar });
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
@@ -112,15 +130,17 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task CalibrateLidar()
         {
-            var messageNS0 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS0, 0);
-            var messageNS62_5 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS62_5, 0);
-            var messageNS125 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS125, 0);
-
-            await WriteToCharacteristic(_secondServiceSendCommandCharacteristic, messageNS0);
-            await WriteToCharacteristic(_secondServiceSendCommandCharacteristic, messageNS62_5);
-            await WriteToCharacteristic(_secondServiceSendCommandCharacteristic, messageNS125);
+            if (_calibrationState == CalibrationState.NoState)
+            {
+                var messageNS0 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS0, 0);
+                await WriteToCharacteristic(_secondServiceSendCommandCharacteristic, messageNS0);
+                _calibrationState = CalibrationState.NS0;
+            }
+            else
+            {
+                throw new Exception("Currently calibrating LIDAR");
+            }
         }
-
         public async Task SetPulseCount(int pulseCount)
         {
             //TODO: change 1 to enum
@@ -146,8 +166,21 @@ namespace RETIRODE_APP.Services
             await WriteToCharacteristic(_secondServiceSendQueryCharacteristic, message);
         }
 
-        private void QueryResponseHandler(object sender, CharacteristicUpdatedEventArgs e)
+        private async void QueryResponseHandler(object sender, CharacteristicUpdatedEventArgs e)
         {
+            if (_calibrationState == CalibrationState.NS0)
+            {
+                var messageNS62_5 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS62_5, 0);
+                await WriteToCharacteristic(_secondServiceSendCommandCharacteristic, messageNS62_5);
+                _calibrationState = CalibrationState.NS62_5;
+            }
+            else if (_calibrationState == CalibrationState.NS62_5)
+            {
+                var messageNS125 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS125, 0);
+                await WriteToCharacteristic(_secondServiceSendCommandCharacteristic, messageNS125);
+                _calibrationState = CalibrationState.NoState;
+            }
+
             var data = e.Characteristic.Value;
             if(data is null)
             {
@@ -245,18 +278,20 @@ namespace RETIRODE_APP.Services
         {
             try
             {
-                //_firstService = await _connectedDevice.GetServiceAsync(Constants.GattFirstServiceId);
-                //_firstCharacteristicDataReceive = await _firstService.GetCharacteristicAsync(Constants.GattFirstCharacteristicReceiveId);
-                //_firstCharacteristicDataWrite = await _firstService.GetCharacteristicAsync(Constants.GattFirstCharacteristicWriteId);
+                _firstService = await _connectedDevice.GetServiceAsync(Constants.RangeMeasurementTransferServiceUUID);
+                _firstTimeOfFlightDataCharacteristic = await _firstService.GetCharacteristicAsync(Constants.RMTTimeOfFlightDataCharacteristic);
+                _firstControlPointCharacteristic = await _firstService.GetCharacteristicAsync(Constants.RMTControlPointCharacteristic);
+                _firstInfoCharacteristic = await _firstService.GetCharacteristicAsync(Constants.RMTInfoCharacteristic);
 
                 _secondService = await _connectedDevice.GetServiceAsync(Constants.QueryCommandServiceUUID);
                 _secondServiceSendCommandCharacteristic = await _secondService.GetCharacteristicAsync(Constants.SendCommandCharacteristicUUID);
                 _secondServiceSendQueryCharacteristic = await _secondService.GetCharacteristicAsync(Constants.SendQueryCharacteristicUUID);
                 _secondServiceReceiveQueryCharacteristic = await _secondService.GetCharacteristicAsync(Constants.ReceiveQueryCharacteristicUUID);
 
-                //Helper.NullCheck(_firstService);
-                //Helper.NullCheck(_firstCharacteristicDataReceive);
-                //Helper.NullCheck(_firstCharacteristicDataWrite);
+                Helper.NullCheck(_firstService);
+                Helper.NullCheck(_firstTimeOfFlightDataCharacteristic);
+                Helper.NullCheck(_firstControlPointCharacteristic);
+                Helper.NullCheck(_firstInfoCharacteristic);
                 Helper.NullCheck(_secondService);
                 Helper.NullCheck(_secondServiceSendCommandCharacteristic);
                 Helper.NullCheck(_secondServiceSendQueryCharacteristic);
@@ -267,9 +302,9 @@ namespace RETIRODE_APP.Services
                 await _secondServiceReceiveQueryCharacteristic.StartUpdatesAsync();
 
 
-                // _firstCharacteristicDataReceive.ValueUpdated -= MeasurementDataHandler;
-                // _firstCharacteristicDataReceive.ValueUpdated += MeasurementDataHandler;
-                // await _firstCharacteristicDataReceive.StartUpdatesAsync();
+                _firstTimeOfFlightDataCharacteristic.ValueUpdated -= MeasurementDataHandler;
+                _firstTimeOfFlightDataCharacteristic.ValueUpdated += MeasurementDataHandler;
+                await _firstTimeOfFlightDataCharacteristic.StartUpdatesAsync();
 
             }
             catch (Exception ex)
@@ -333,7 +368,7 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public void Dispose()
         {
-            _firstCharacteristicDataReceive.ValueUpdated -= MeasurementDataHandler;
+            _firstTimeOfFlightDataCharacteristic.ValueUpdated -= MeasurementDataHandler;
             _secondServiceReceiveQueryCharacteristic.ValueUpdated -= QueryResponseHandler;
             _connectedDevice.Dispose();
         }
