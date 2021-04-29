@@ -211,7 +211,7 @@ void Device_Initialize(void)
     Driver_USART0.Control(ARM_USART_CONTROL_TX,1);
     Driver_USART0.Control(ARM_USART_CONTROL_RX,1);
 
-	 RETIRODE_RMP_Initialize(&Driver_USART0, RETIRODE_RMP_Handler);
+	RETIRODE_RMP_Initialize(&Driver_USART0, RETIRODE_RMP_Handler);
 
     /* Stop masking interrupts */
     __set_PRIMASK(PRIMASK_ENABLE_INTERRUPTS);

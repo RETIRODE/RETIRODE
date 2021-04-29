@@ -96,7 +96,7 @@ const struct att_db_desc ESTS_att_db[ATT_ESTS_COUNT] =
             NULL),                                 /* callback */
 };
 
-int32_t ESTS_NOTIFY_QUERY_RESPONSE(const uint8_t *p_param)
+int32_t ESTS_NOTIFY_QUERY_RESPONSE(const uint16_t *p_param)
 {
     int32_t status = ESTS_OK;
 
@@ -106,7 +106,7 @@ int32_t ESTS_NOTIFY_QUERY_RESPONSE(const uint8_t *p_param)
         {
             uint16_t attidx = ESTS_env.att.attidx_offset + ATT_ESTS_RANGE_FINDER_RECEIVE_QUERY_VAL_0;
             uint16_t att_handle = GATTM_GetHandle(attidx);
-            uint8_t data[ESTS_CHAR_VALUE_SIZE];
+            uint16_t data[3];
 
             data[0] = p_param[0];
             data[1] = p_param[1];
@@ -114,7 +114,7 @@ int32_t ESTS_NOTIFY_QUERY_RESPONSE(const uint8_t *p_param)
 
 
             GATTC_SendEvtCmd(0, GATTC_NOTIFY, attidx, att_handle,
-            		ESTS_CHAR_VALUE_SIZE, data);
+            		6, data);
 
         }
         else
@@ -224,7 +224,7 @@ static uint8_t ESTS_Send_Command_Handler(uint8_t conidx, uint16_t atsidx,
 		        case ESTS_OP_LASER_VOLTAGE:
 				{
 					ETSS_LASER_VOLTAGE_params_t params;
-					params.is_query = true;
+					params.is_query = false;
 					params.type = from[1];
 					params.value = from[2];
 					ESTS_env.att.send_command.callback(ESTS_OP_LASER_VOLTAGE, (void*)&params);
@@ -234,7 +234,7 @@ static uint8_t ESTS_Send_Command_Handler(uint8_t conidx, uint16_t atsidx,
 		        case ESTS_OP_S_BIAS_POWER_VOLTAGE:
 				{
 					ETSS_S_BIAS_POWER_VOLTAGE_params_t params;
-					params.is_query = true;
+					params.is_query = false;
 					params.type = from[1];
 					params.value = from[2];
 					ESTS_env.att.send_command.callback(ESTS_OP_S_BIAS_POWER_VOLTAGE, (void*)&params);
@@ -244,7 +244,7 @@ static uint8_t ESTS_Send_Command_Handler(uint8_t conidx, uint16_t atsidx,
 		        case ESTS_OP_CALIBRATE:
 				{
 					ETSS_CALIBRATE_params_t params;
-					params.is_query = true;
+					params.is_query = false;
 					params.type = from[1];
 					params.value = from[2];
 					ESTS_env.att.send_command.callback(ESTS_OP_CALIBRATE, (void*)&params);
@@ -283,7 +283,7 @@ static uint8_t ESTS_Send_Query_Handler(uint8_t conidx, uint16_t atsidx,
 	        case ESTS_OP_SW_RESET:
 	        {
 	        	ESTS_OP_SW_RESET_params_t params;
-	        	params.is_query = false;
+	        	params.is_query = true;
 	        	params.type = from[1];
 	        	params.value = from[2];
 	        	ESTS_env.att.send_command.callback(ESTS_OP_SW_RESET, (void*)&params);
@@ -293,7 +293,7 @@ static uint8_t ESTS_Send_Query_Handler(uint8_t conidx, uint16_t atsidx,
 	        case ESTS_OP_LASER_VOLTAGE:
 			{
 				ETSS_LASER_VOLTAGE_params_t params;
-				params.is_query = false;
+				params.is_query = true;
 				params.type = from[1];
 				params.value = from[2];
 				ESTS_env.att.send_command.callback(ESTS_OP_LASER_VOLTAGE, (void*)&params);
@@ -303,7 +303,7 @@ static uint8_t ESTS_Send_Query_Handler(uint8_t conidx, uint16_t atsidx,
 	        case ESTS_OP_S_BIAS_POWER_VOLTAGE:
 			{
 				ETSS_S_BIAS_POWER_VOLTAGE_params_t params;
-				params.is_query = false;
+				params.is_query = true;
 				params.type = from[1];
 				params.value = from[2];
 				ESTS_env.att.send_command.callback(ESTS_OP_S_BIAS_POWER_VOLTAGE, (void*)&params);
@@ -313,7 +313,7 @@ static uint8_t ESTS_Send_Query_Handler(uint8_t conidx, uint16_t atsidx,
 	        case ESTS_OP_CALIBRATE:
 			{
 				ETSS_CALIBRATE_params_t params;
-				params.is_query = false;
+				params.is_query = true;
 				params.type = from[1];
 				params.value = from[2];
 				ESTS_env.att.send_command.callback(ESTS_OP_CALIBRATE, (void*)&params);
@@ -323,7 +323,7 @@ static uint8_t ESTS_Send_Query_Handler(uint8_t conidx, uint16_t atsidx,
 	        case ESTS_OP_PULSE_COUNT:
 			{
 				ETSS_PULSE_COUNT_params_t params;
-				params.is_query = false;
+				params.is_query = true;
 				params.type = from[1];
 				params.value = from[2];
 				ESTS_env.att.send_command.callback(ESTS_OP_PULSE_COUNT, (void*)&params);

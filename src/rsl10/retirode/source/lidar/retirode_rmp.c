@@ -6,6 +6,8 @@
  */
 #include <retirode_rmp.h>
 #include <rsl10.h>
+#include <math.h>
+
 #define QUERY_STRING 				"%??\r"
 #define COMMAND_STRING 				"%$1\r"
 #define QUERY(dest, reg) 			ReplaceChar(dest, '%', reg)
@@ -490,7 +492,9 @@ static void RETIRODE_RMP_QueryResponseStateHandler(void)
 	{
 		static RETIRODE_RMP_Query_response_t data;
 
-		memcpy(&data.response, rmp_env.query_response_buffer, 4);
+		data.reg = rmp_env.query_response_buffer[0];
+		data.value = strtol(rmp_env.query_response_buffer + 1, NULL, 16);
+
 		RETIRODE_RMP_SendQueryResponseReadyEvent(&data);
 	 	RETIRODE_RMP_SetState(RETIRODE_RMP_STATE_IDLE);
 	}
@@ -565,7 +569,8 @@ void RETIRODE_RMP_SetPulseCountCommand(uint32_t count)
 	rmp_env.current_measurement.pulse_count = count;
 }
 
-void RETIRODE_RMP_SoftwareResetCommand();
+void RETIRODE_RMP_SoftwareResetCommand()
+{}
 
 void RETIRODE_RMP_SetPowerBiasTargetVoltateCommand(float voltage)
 {
@@ -582,7 +587,7 @@ void RETIRODE_RMP_SetPowerBiasTargetVoltateCommand(float voltage)
 	// convert real float voltage value to native HW value
 	targetVoltageNative = FromRealBiasToNative(voltage);
 
-	RETIRODE_RMP_SettingCommand(B_REGISTER, targetVoltageNative);
+	RETIRODE_RMP_SettingCommand(RETIRODE_RMP_ACTUAL_BIAS_VOLTAGE_REGISTER, targetVoltageNative);
 }
 
 static uint8_t FromRealBiasToNative(float realVoltage)
@@ -604,10 +609,10 @@ static uint8_t FromRealBiasToNative(float realVoltage)
     compVoltage = ADC_SUPPLY_VOLTAGE - R34_UPPER * (ADC_SUPPLY_VOLTAGE - realVoltage - ADC_LOWEST_COMP_VOLTAGE) / (R32_LOWER + R34_UPPER);
 
     // calculate ADC ramp time from comparator voltage
-    adcRampTime = - ADC_TAU_BIAS * log(-((compVoltage / ADC_SUPPLY_VOLTAGE)-1));
+   // adcRampTime = - ADC_TAU_BIAS * log(-((compVoltage / ADC_SUPPLY_VOLTAGE)-1));
 
     // calculate ADC value from ADC ramp time
-    nativeValue = round(ADC_OFFSET_BIAS + (ADC_FREQUENCY * adcRampTime));
+   // nativeValue = round(ADC_OFFSET_BIAS + (ADC_FREQUENCY * adcRampTime));
 
     return nativeValue;
 }
@@ -650,7 +655,7 @@ void RETIRODE_RMP_SetLaserPowerTargetVoltateCommand(float voltage)
 	// convert real float voltage value to native HW value
 	targetVoltageNative = FromRealLaserToNative(voltage);
 
-	RETIRODE_RMP_SettingCommand(L_REGISTER, targetVoltageNative);
+	RETIRODE_RMP_SettingCommand(RETIRODE_RMP_ACTUAL_LASER_VOLTAGE_REGISTER, targetVoltageNative);
 }
 
 //*******************************************************************************
@@ -675,10 +680,10 @@ static uint8_t FromRealLaserToNative(float realVoltage)
     compVoltage = realVoltage / (1 + (R22_UPPER / R27_LOWER));
 
     // calculate ADC ramp time from comparator voltage
-    adcRampTime = - ADC_TAU_LASER * log(-((compVoltage / ADC_SUPPLY_VOLTAGE)-1));
+    //adcRampTime = - ADC_TAU_LASER * log (-((compVoltage / ADC_SUPPLY_VOLTAGE)-1));
 
     // calculate ADC value from ADC ramp time
-    nativeValue = round(ADC_OFFSET_LASER + (ADC_FREQUENCY * adcRampTime));
+   // nativeValue = round(ADC_OFFSET_LASER + (ADC_FREQUENCY * adcRampTime));
 
     return nativeValue;
 }

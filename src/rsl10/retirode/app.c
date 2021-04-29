@@ -157,15 +157,36 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
  * Event handler for the External Sensors Trigger BLE service.
 **/
 
-void APP_ESTS_QUERY_RESPONSE_EventHandler(const uint8_t *p_param)
+void APP_ESTS_Push_Query_Data(const RETIRODE_RMP_Query_response_t *p_param)
 {
-	uint8_t data[3];
 
-	            data[0] = p_param[0];
-	            data[1] = p_param[1];
-	            data[2] = p_param[2];
+	uint16_t response[3];
+	switch (p_param->reg)
+	{
+		case RETIRODE_RMP_ACTUAL_LASER_VOLTAGE_REGISTER:
+		{
+			response[0] = ESTS_OP_LASER_VOLTAGE;
+			response[1] = ESTS_OP_LASER_VOLTAGE_ACTUAL;
+			response[2] = p_param->value;
+			break;
+		}
+		case RETIRODE_RMP_ACTUAL_BIAS_VOLTAGE_REGISTER:
+		{
+			response[0] = ESTS_OP_S_BIAS_POWER_VOLTAGE;
+			response[1] = ESTS_OP_S_BIAS_POWER_VOLTAGE_ACTUAL;
+			response[2] = p_param->value;
+			break;
+		}
+		case RETIRODE_RMP_PULSE_COUNT_REGISTER:
+		{
+			response[0] = ESTS_OP_PULSE_COUNT;
+			response[1] = ESTS_OP_PULSE_COUNT_VALUE;
+			response[2] = p_param->value;
+			break;
+		}
+	}
 
-	ESTS_NOTIFY_QUERY_RESPONSE(p_param);
+	ESTS_NOTIFY_QUERY_RESPONSE(response);
 }
 /**
  * Event handler for the External Sensors Trigger BLE service.
@@ -181,6 +202,8 @@ void APP_ESTS_EventHandler(ESTS_RF_SETTING_ID_t sidx,
         case ESTS_OP_SW_RESET:
         {
         	ESTS_OP_SW_RESET_params_t *params = p_param;
+
+        	RETIRODE_RMP_SoftwareResetCommand();
             break;
         }
 		case ESTS_OP_LASER_VOLTAGE:
@@ -188,14 +211,14 @@ void APP_ESTS_EventHandler(ESTS_RF_SETTING_ID_t sidx,
 			ETSS_LASER_VOLTAGE_params_t *params = p_param;
 			if(params->is_query == true)
 			{
-				//SEND UART QUERY REQUEST
-				uint8_t p_data[3];
-				p_data[0] = ESTS_OP_LASER_VOLTAGE;
-				p_data[1] = params->type;
-				p_data[2] = 150;
-				APP_ESTS_QUERY_RESPONSE_EventHandler(p_data);
-			}else{
-				//SEND UART COMMAND
+				if(params->type & 0x02)
+				{
+					RETIRODE_RMP_QueryCommand(RETIRODE_RMP_ACTUAL_LASER_VOLTAGE_REGISTER);
+				}
+			}
+			else
+			{
+				RETIRODE_RMP_SetLaserPowerTargetVoltateCommand(params->value);
 			}
 			break;
 		}
@@ -204,9 +227,14 @@ void APP_ESTS_EventHandler(ESTS_RF_SETTING_ID_t sidx,
 			ETSS_S_BIAS_POWER_VOLTAGE_params_t *params = p_param;
 			if(params->is_query == true)
 			{
-				//SEND UART QUERY REQUEST
-			}else{
-				//SEND UART COMMAND
+				if(params->type & 0x02)
+				{
+					RETIRODE_RMP_QueryCommand(RETIRODE_RMP_ACTUAL_BIAS_VOLTAGE_REGISTER);
+				}
+			}
+			else
+			{
+				RETIRODE_RMP_SetPowerBiasTargetVoltateCommand(params->value);
 			}
 			break;
 		}
@@ -227,9 +255,11 @@ void APP_ESTS_EventHandler(ESTS_RF_SETTING_ID_t sidx,
 			ETSS_PULSE_COUNT_params_t *params = p_param;
 			if(params->is_query == true)
 			{
-				//SEND UART QUERY REQUEST
-			}else{
-				//SEND UART COMMAND
+				RETIRODE_RMP_QueryCommand(RETIRODE_RMP_PULSE_COUNT_REGISTER);
+			}
+			else
+			{
+				RETIRODE_RMP_SetPulseCountCommand(params->value);
 			}
 			break;
 		}
@@ -252,7 +282,8 @@ void RETIRODE_RMP_Handler(RETIRODE_RMP_Event_t event,
 		}
 		case RETIRODE_RMP_EVENT_QUERY_RESPONSE_READY:
 		{
-			int a = 5;
+			RETIRODE_RMP_Query_response_t *params = p_param;
+			APP_ESTS_Push_Query_Data(params);
 			break;
 		}
 		case RETIRODE_RMP_EVENT_ERROR:
@@ -282,6 +313,14 @@ int main(void)
 	/* Spin loop */
 	while (true)
 	{
+		i++;
+
+		RETIRODE_RMP_MainLoop();
+
+		if(i == 20)
+		{
+			RETIRODE_RMP_PowerUpCommand();
+		}
 
 		/* Refresh the watchdog timer */
 		Sys_Watchdog_Refresh();

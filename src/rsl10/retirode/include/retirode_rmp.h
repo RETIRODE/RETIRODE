@@ -24,7 +24,6 @@ extern "C"
 #include <RTE_Device.h>
 #include <rsl10.h>
 #include <USART_RSLxx.h>
-#include <math.h>
 
 
 /* ----------------------------------------------------------------------------
@@ -35,10 +34,10 @@ extern "C"
 #define W_REGISTER                 'W'
 #define P_REGISTER                 'P'
 #define p_REGISTER                 'p'
-#define N_REGISTER                 'N'
+#define RETIRODE_RMP_PULSE_COUNT_REGISTER		                  'N'
 #define D_REGISTER                 'D'
-#define L_REGISTER                 'L'
-#define B_REGISTER                 'B'
+#define RETIRODE_RMP_ACTUAL_LASER_VOLTAGE_REGISTER                'L'
+#define RETIRODE_RMP_ACTUAL_BIAS_VOLTAGE_REGISTER                 'B'
 #define I_REGISTER                 'I'
 #define b_REGISTER                 'b'
 
@@ -168,7 +167,10 @@ typedef struct RETIRODE_RMP_Data_t
 typedef struct RETIRODE_RMP_Query_response_t
 {
     /** Response from RF */
-    char response[4];
+	char reg;
+
+	uint32_t value;
+
 } RETIRODE_RMP_Query_response_t;
 
 /** Function prototype for RETIRODE_RMP library event handler.

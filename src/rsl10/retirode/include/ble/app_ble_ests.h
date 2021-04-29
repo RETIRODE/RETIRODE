@@ -25,7 +25,7 @@ extern "C"
  * --------------------------------------------------------------------------*/
 
 #define ESTS_SVC_UUID \
-    { 0x03, 0x00, 0x13, 0xac, 0x42, 0x24, \
+    { 0x03, 0x00, 0x13, 0xac, 0x42, 0x02, \
       0xb3, 0xa8, \
       0xeb, 0x11, \
       0x7b, 0x9d, \
@@ -33,7 +33,7 @@ extern "C"
 
 /** 128-bit UUID for the External Sensor Trigger Service - Range finder send command */
 #define ESTS_RFSC_UUID \
-    { 0x03, 0x00, 0x13, 0xac, 0x42, 0x24, \
+    { 0x03, 0x00, 0x13, 0xac, 0x42, 0x02, \
       0xb3, 0xa8, \
       0xeb, 0x11, \
       0x7b, 0x9d, \
@@ -41,7 +41,7 @@ extern "C"
 
 /** 128-bit UUID for the External Sensor Trigger Service - Range finder send query */
 #define ESTS_RFSQ_UUID \
-    { 0x03, 0x00, 0x13, 0xac, 0x42, 0x24, \
+    { 0x03, 0x00, 0x13, 0xac, 0x42, 0x02, \
       0xb3, 0xa8, \
       0xeb, 0x11, \
       0x7b, 0x9d, \
@@ -49,7 +49,7 @@ extern "C"
 
 /** 128-bit UUID for the External Sensor Trigger Service - Range finder recieve query */
 #define ESTS_RFRQ_UUID \
-    { 0x03, 0x00, 0x13, 0xac, 0x42, 0x24, \
+    { 0x03, 0x00, 0x13, 0xac, 0x42, 0x02, \
       0xb3, 0xa8, \
       0xeb, 0x11, \
       0x7b, 0x9d, \
@@ -288,7 +288,7 @@ typedef void (*ESTS_ControlHandler)(ESTS_RF_SETTING_ID_t sidx,
  * --------------------------------------------------------------------------*/
 
 int32_t ESTS_Initialize(ESTS_ControlHandler control_event_handler);
-int32_t ESTS_NOTIFY_QUERY_RESPONSE(const uint8_t *p_param);
+int32_t ESTS_NOTIFY_QUERY_RESPONSE(const uint16_t *p_param);
 
 
 #ifdef __cplusplus
