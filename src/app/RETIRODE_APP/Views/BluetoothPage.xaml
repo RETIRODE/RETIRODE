@@ -18,7 +18,7 @@
 
         <RefreshView x:DataType="local:BluetoothViewModel" Command="{Binding LoadDevicesCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}">
             <CollectionView x:Name="DevicesListView"
-                            ItemsSource="{Binding TestDevices}"
+                            ItemsSource="{Binding Devices}"
                             BackgroundColor="{StaticResource Secondary}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>

@@ -1,48 +1,78 @@
-﻿using System;
-using System.Windows.Input;
-using Xamarin.Forms;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Xamarin.CommunityToolkit.ObjectModel;
-using System.Threading;
-using RETIRODE_APP.Services;
-using Nancy.TinyIoc;
+﻿using Nancy.TinyIoc;
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Models.Enums;
+using RETIRODE_APP.Services;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Xamarin.CommunityToolkit.ObjectModel;
 
 namespace RETIRODE_APP.ViewModels
 {
-    class SettingsViewModel : BaseViewModel
-    {
-        public IRangeMeasurementService rangeMeasurementService;
+    public class SettingsViewModel : BaseViewModel
+    {        
+        public double TCDCal0 { get; set; }
+        public double TCDCal62 { get; set; }
+        public double TCDCal125 { get; set; }
+        public int TriggerPulse { get; set; }
+        public int SIPMTargetV { get; set; }
+        public int SIPMActualV { get; set; }
+        public int LaserTargetV { get; set; }
+        public int LaserActualV { get; set; }
+        public ICommand SoftwareResetCommand { get; set; }
+        public ICommand CalibrateCommand { get; set; }
+        public ICommand SetTriggerPulseCommand { get; set; }
+        public ICommand SetTargetSimpBiasPowerVoltageCommand { get; set; }
+        public ICommand SetTargetLaserPowerVolateCommand { get; set; }
 
-        public Command SWReset { get; set; }
-        public Command CalibrateCommand { get; set; }
 
+        private CancellationTokenSource _poolingRoutineCancelation;
+        public IRangeMeasurementService _rangeMeasurementService;
         public SettingsViewModel()
         {
-            SetVariables();
             Title = "Settings";
+            _rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
+            _rangeMeasurementService.QueryResponseEvent += RangeMeasurementService_QueryResponseEvent;
 
-            rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
-            rangeMeasurementService.QueryResponseEvent += RangeMeasurementService_QueryResponseEvent;
-
-            SWReset = new Command(OnSWReset);
-            CalibrateCommand = new Command(OnCalibrate);
+            SoftwareResetCommand = new AsyncCommand(async () => await ResetLidar());
+            CalibrateCommand = new AsyncCommand(async () => await CalibrateLidar());
+            SetTriggerPulseCommand = new AsyncCommand(async () => await SetTriggerPulse());
+            SetTargetSimpBiasPowerVoltageCommand = new AsyncCommand(async () => await SetTargetSimpBiasPowerVoltage());
+            SetTargetLaserPowerVolateCommand = new AsyncCommand(async () => await SetTargetLaserPowerVoltage());
+            StartPoolingRoutine();
         }
 
-        private async void SetVariables()
+        private async Task SetTriggerPulse()
         {
-            await rangeMeasurementService.GetCalibration(Calibrate.NS0);
-            await rangeMeasurementService.GetCalibration(Calibrate.NS62_5);
-            await rangeMeasurementService.GetCalibration(Calibrate.NS125);
+            try
+            {
+                await WithBusy(() => _rangeMeasurementService.SetPulseCount(TriggerPulse));
+            }
+            catch (Exception ex)
+            {
+                await ShowError("Setting pulse count failed");
+            }
+        }
 
-            await rangeMeasurementService.GetSipmBiasPowerVoltage(Voltage.Actual);
-            await rangeMeasurementService.GetSipmBiasPowerVoltage(Voltage.Target);
-            await rangeMeasurementService.GetLaserVoltage(Voltage.Actual);
-            await rangeMeasurementService.GetLaserVoltage(Voltage.Target);
+        private void StartPoolingRoutine()
+        {
+            _poolingRoutineCancelation = new CancellationTokenSource();
+            PoolingRoutine(_poolingRoutineCancelation.Token);
+        }
+
+        private void PoolingRoutine(CancellationToken cancellationToken)
+        {
+            Task.Run(async () =>
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    await _rangeMeasurementService.GetSipmBiasPowerVoltage(Voltage.Actual);
+                    await _rangeMeasurementService.GetLaserVoltage(Voltage.Actual);
+
+                    await Task.Delay(1000);
+                }
+            });
         }
 
         private void RangeMeasurementService_QueryResponseEvent(ResponseItem responseItem)
@@ -79,41 +109,53 @@ namespace RETIRODE_APP.ViewModels
             }
         }
 
-        public async void OnSWReset()
-        {
-            await rangeMeasurementService.SwReset();
+        public async Task ResetLidar()
+        {            
+            try
+            {
+                await WithBusy(() =>_rangeMeasurementService.SwReset());
+            }
+            catch (Exception ex)
+            {
+                await ShowError("Calibrating lidar failed");
+            }
         }
 
-        public async void OnCalibrate()
+        public async Task CalibrateLidar()
         {
-            await rangeMeasurementService.CalibrateLidar();
-        }
-
-        public async void OnSetPulseCount(object sender, FocusEventArgs e)
-        {
-            await rangeMeasurementService.SetPulseCount(TriggerPulse);
-        }
-
-        public async void OnSetSipmVoltage(object sender, FocusEventArgs e)
-        {
-            await rangeMeasurementService.SetSipmBiasPowerVoltage(SIPMTargetV);
-        }
-
-        public async void OnSetLaserVoltage(object sender, FocusEventArgs e)
-        {
-            await rangeMeasurementService.SetLaserVoltage(LaserTargetV);
+            try
+            {
+                await WithBusy(() => _rangeMeasurementService.CalibrateLidar());
+            }
+            catch (Exception ex)
+            {
+                await ShowError("Calibrating lidar failed");
+            }            
         }
 
 
+        public async Task SetTargetSimpBiasPowerVoltage()
+        {
+            try
+            {
+                await WithBusy(() => _rangeMeasurementService.SetSipmBiasPowerVoltage(SIPMTargetV));
+            }
+            catch (Exception ex)
+            {
+                await ShowError("Setting SiMP bias power voltage failed");
+            }            
+        }
 
-        public double TCDCal0 { get; set; }
-        public double TCDCal62 { get; set; }
-        public double TCDCal125 { get; set; }
-        public int TriggerPulse { get; set; }
-        public int SIPMTargetV { get; set; }
-        public int SIPMActualV { get; set; }
-        public int LaserTargetV { get; set; }
-        public int LaserActualV { get; set; }
+        public async Task SetTargetLaserPowerVoltage()
+        {
+            try
+            {
+                await WithBusy(() => _rangeMeasurementService.SetLaserVoltage(LaserTargetV));
+            }
+            catch (Exception ex)
+            {
+                await ShowError("Setting laser voltage failed");
+            }            
+        }       
     }
 }
- 

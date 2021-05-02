@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="RETIRODE_APP.Views.SettingsPage"
+             xmlns:toolkit="http://xamarin.com/schemas/2020/toolkit"
              xmlns:local="clr-namespace:RETIRODE_APP.ViewModels"
              Title="{Binding Title}"
              BackgroundColor="{StaticResource Secondary}">
@@ -19,11 +20,14 @@
                 <Setter Property="TextColor" Value="White"/>
             </Style>
 
+
+            
             <Style x:Key="TCDValue" TargetType="Entry">
                 <Setter Property="HorizontalOptions" Value="Center"/>
                 <Setter Property="FontSize" Value="20"/>
                 <Setter Property="FontAttributes" Value="Bold"/>
                 <Setter Property="TextColor" Value="White"/>
+                <Setter Property="Keyboard" Value="Numeric"/>
                 <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
                 <Setter Property="WidthRequest" Value="150"/>
             </Style>
@@ -37,9 +41,9 @@
     </ContentPage.Resources>
 
     <ContentPage.Content>
-
         <StackLayout>
 
+            <ActivityIndicator Color="Orange" IsRunning="{Binding IsBusy}" />
             <Grid Margin="20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -53,28 +57,39 @@
 
                 <!-- TCD Cal 0.0 ns -->
                 <Label Text="0.0 ns:"/>
-                <Entry Text="{Binding TCDCal0, Mode=TwoWay}" Grid.Row="1" Style="{StaticResource TCDValue}">
-                    <Entry.Behaviors>
-                        
-                    </Entry.Behaviors>
-                </Entry>
+                <Entry Text="{Binding TCDCal0, Mode=TwoWay}" 
+                       Grid.Row="1"
+                       IsEnabled="False"
+                       Style="{StaticResource TCDValue}"/>
 
                 <!-- TCD Cal 62.5 ns -->
                 <Label Text="62.5 ns:" Grid.Column="1"/>
-                <Entry Text="{Binding TCDCal62, Mode=TwoWay}"  Grid.Column="1" Grid.Row="1" Style="{StaticResource TCDValue}"/>
+                <Entry Text="{Binding TCDCal62, Mode=TwoWay}"  
+                       Grid.Column="1" 
+                       Grid.Row="1"
+                       IsEnabled="False"
+                       Style="{StaticResource TCDValue}"/>
 
                 <!-- TCD Cal 125.0 ns -->
                 <Label Text="125.0 ns:" Grid.Column="2"/>
-                <Entry Text="{Binding TCDCal125, Mode=TwoWay}" Grid.Column="2" Grid.Row="1" Style="{StaticResource TCDValue}"/>
-
-
-
+                <Entry Text="{Binding TCDCal125, Mode=TwoWay}" 
+                       Grid.Column="2" 
+                       Grid.Row="1" 
+                       IsEnabled="False"
+                       Style="{StaticResource TCDValue}"/>
             </Grid>
 
 
             <!-- Trigger Pulse -->
             <Label Text="Trigger Pulse"/>
-            <Entry Text="{Binding TriggerPulse, Mode=TwoWay}" Style="{StaticResource TCDValue}" Grid.Row="1" Unfocused="{Binding OnSetPulseCount}"/>
+            <Entry Text="{Binding TriggerPulse, Mode=TwoWay}"
+                   Style="{StaticResource TCDValue}" Grid.Row="1">
+                <Entry.Behaviors>
+                    <toolkit:EventToCommandBehavior 
+                            EventName="Unfocused"
+                            Command="{Binding SetTriggerPulseCommand}"/>
+                </Entry.Behaviors>
+            </Entry>
 
 
             <Grid Margin="20,30,20,0">
@@ -108,19 +123,43 @@
 
                 <!-- Target[V] -->
                 <Label Text="Target[V]"/>
-                <Entry Style="{StaticResource TCDValue}" Grid.Row="1" Text="{Binding SIPMTargetV, Mode=TwoWay}" Unfocused="{Binding OnSetSipmVoltage}"/>
+                <Entry Style="{StaticResource TCDValue}" Grid.Row="1" Text="{Binding SIPMTargetV, Mode=TwoWay}">
+                    <Entry.Behaviors>
+                        <toolkit:EventToCommandBehavior 
+                            EventName="Unfocused"
+                            Command="{Binding SetTargetSimpBiasPowerVoltageCommand}"/>
+                    </Entry.Behaviors>
+                </Entry>
+                
                 <!-- Actual[V] -->
                 <Label Text="Actual[V]" Grid.Column="1"/>
-                <Entry Style="{StaticResource TCDValue}" Grid.Column="1" Grid.Row="1" Text="{Binding SIPMActualV, Mode=TwoWay}"/>
+                <Entry Style="{StaticResource TCDValue}" 
+                       Grid.Column="1" 
+                       Grid.Row="1" 
+                       IsEnabled="False"
+                       Text="{Binding SIPMActualV, Mode=TwoWay}"/>
 
                 <!-- Laser power -->
 
                 <!-- Target[V] -->
                 <Label Text="Target[V]" Grid.Column="2"/>
-                <Entry Style="{StaticResource TCDValue}" Grid.Column="2" Grid.Row="1" Text="{Binding LaserTargetV, Mode=TwoWay}" Unfocused="{Binding OnSetLaserVoltage}"/>
+                <Entry Style="{StaticResource TCDValue}" 
+                       Grid.Column="2" 
+                       Grid.Row="1"                               
+                       Text="{Binding LaserTargetV, Mode=TwoWay}">
+                    <Entry.Behaviors>
+                        <toolkit:EventToCommandBehavior 
+                            EventName="Unfocused"
+                            Command="{Binding SetTargetLaserPowerVolateCommand}"/>
+                    </Entry.Behaviors>
+                </Entry>
                 <!-- Actual[V] -->
                 <Label Text="Actual[V]" Grid.Column="3"/>
-                <Entry Style="{StaticResource TCDValue}" Grid.Column="3" Grid.Row="1" Text="{Binding LaserActualV, Mode=TwoWay}"/>
+                <Entry Style="{StaticResource TCDValue}"
+                       IsEnabled="False"
+                       Grid.Column="3"
+                       Grid.Row="1"
+                       Text="{Binding LaserActualV, Mode=TwoWay}"/>
             </Grid>
 
             <Grid Margin="20,10,20,0">
@@ -133,10 +172,10 @@
                 </Grid.RowDefinitions>
 
                 <!-- Calibrate button -->
-                <Button Text="Calibrate" Command="{Binding CalibrateCommand }"/>
+                <Button Text="Calibrate" Command="{Binding CalibrateCommand}"/>
 
                 <!-- SW Reset button -->
-                <Button Text="SW Reset" Command="{Binding SWReset }" Grid.Column="1"/>
+                <Button Text="SW Reset" Command="{Binding SoftwareResetCommand}" Grid.Column="1"/>
 
             </Grid>
 
