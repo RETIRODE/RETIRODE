@@ -3,7 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="RETIRODE_APP.Views.BluetoothPage"
              xmlns:local="clr-namespace:RETIRODE_APP.ViewModels"
+             xmlns:toolkit="http://xamarin.com/schemas/2020/toolkit"
              xmlns:model="clr-namespace:RETIRODE_APP.Models" 
+             BackgroundColor="{StaticResource Secondary}"
              Title="{Binding Title}">
 
     <ContentPage.ToolbarItems>
@@ -14,16 +16,46 @@
         <local:BluetoothViewModel />
     </ContentPage.BindingContext>
 
+    <ContentPage.Resources>
+
+        <ResourceDictionary>
+
+            <Style TargetType="StackLayout">
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup>
+                            <VisualState Name="Normal"/>
+                            <VisualState Name="Selected">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+        
+    </ContentPage.Resources>
+
     <StackLayout>
 
-        <RefreshView x:DataType="local:BluetoothViewModel" Command="{Binding LoadDevicesCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}">
+        <!-- testdata rewrite "TestDevices" to "Devices" -->
+
+        <RefreshView x:DataType="local:BluetoothViewModel" Command="{Binding LoadDevicesCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}" Margin="50, 20">
             <CollectionView x:Name="DevicesListView"
                             ItemsSource="{Binding TestDevices}"
-                            BackgroundColor="{StaticResource Secondary}">
+                            SelectionMode="Single">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <StackLayout Padding="130, 40, 0, 0" x:DataType="model:BLEDevice" Orientation="Horizontal">
+                        <StackLayout 
+                            Padding="20, 20" 
+                            x:DataType="model:BLEDevice" 
+                            Orientation="Horizontal" 
+                            VerticalOptions="Center">
+
                             <Image Source="icon_device.png" WidthRequest="50" HeightRequest="50"/>
+
                             <Label  Text="{Binding Name}"
                                     LineBreakMode="NoWrap" 
                                     Style="{DynamicResource ListItemTextStyle}" 
@@ -31,18 +63,21 @@
                                     TextColor="White" 
                                     HorizontalOptions="Center"
                                     Padding="10, 5"/>
-                                <StackLayout.GestureRecognizers>
-                                    <TapGestureRecognizer 
+
+                            <StackLayout.GestureRecognizers>
+                                <TapGestureRecognizer 
                                     NumberOfTapsRequired="1"
                                     Command="{Binding Source={RelativeSource AncestorType={x:Type local:BluetoothViewModel}}, Path=DeviceTapped}"		
                                     CommandParameter="{Binding .}">
-                                    </TapGestureRecognizer>
-                                </StackLayout.GestureRecognizers>
+                                </TapGestureRecognizer>
+                            </StackLayout.GestureRecognizers>
+
                         </StackLayout>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
         </RefreshView>
+
     </StackLayout>
 
 </ContentPage>

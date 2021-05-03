@@ -1,28 +1,27 @@
 ﻿using Nancy.TinyIoc;
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Services;
+using RETIRODE_APP.Views;
 using System;
-using System.Windows.Input;
-using Xamarin.Forms;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using System.Collections.Generic;
+using System.Windows.Input;
 using Xamarin.CommunityToolkit.ObjectModel;
-using System.Threading;
-using RETIRODE_APP.Views;
+using Xamarin.Forms;
 
 namespace RETIRODE_APP.ViewModels
 {
     public class BluetoothViewModel : BaseViewModel
     {
         BLEDevice selectedDevice;
-
         public IRangeMeasurementService rangeMeasurementService;
         public ObservableCollection<BLEDevice> Devices { get; }
-        public IAsyncCommand LoadDevicesCommand { get; }
-        public Command<BLEDevice> DeviceTapped { get; }
+        public ICommand LoadDevicesCommand { get; }
+        public IAsyncCommand<BLEDevice> DeviceTapped { get; }
 
+        //Test data to be deleted
         public IList<BLEDevice> TestDevices { get; }
 
         public BluetoothViewModel()
@@ -30,9 +29,11 @@ namespace RETIRODE_APP.ViewModels
             rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
             Title = "Bluetooth";
             Devices = new ObservableCollection<BLEDevice>();
-            LoadDevicesCommand = new AsyncCommand(async () => await ExecuteLoadDevicesCommand());
-            DeviceTapped = new Command<BLEDevice>(OnDeviceSelected);
+            LoadDevicesCommand = new Command(ExecuteLoadDevicesCommand);
+            DeviceTapped = new AsyncCommand<BLEDevice>(async (device) => await OnDeviceSelected(device));
             rangeMeasurementService.DeviceDiscoveredEvent += RangeMeasurementService_DeviceDiscoveredEvent;
+
+            //Test data to be deleted
             TestDevices = new List<BLEDevice>();
             TestDevices.Add(new BLEDevice
             {
@@ -51,24 +52,16 @@ namespace RETIRODE_APP.ViewModels
             Devices.Add(device);
         }
 
-        public ICommand OpenWebCommand { get; }
-
-        private async Task ExecuteLoadDevicesCommand()
-        {
-            IsBusy = true;
-
+        private async void ExecuteLoadDevicesCommand()
+        {            
             try
-            {                
+            {
+                ShowBusy(() => Devices.Count > 0, 5);
                 await rangeMeasurementService.StartScanning();
-                Devices.Clear();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-            }
-            finally
-            {
-                IsBusy = false;
             }
         }
 
@@ -88,13 +81,21 @@ namespace RETIRODE_APP.ViewModels
             }
         }
 
-        public async void OnDeviceSelected(BLEDevice device)
+        public async Task OnDeviceSelected(BLEDevice device)
         {
             if (device == null)
                 return;
-            await rangeMeasurementService.ConnectToRSL10(device);
-            await Application.Current.MainPage.DisplayAlert("Connecting...", "Connecting to device " + device.Name, "OK");
-            await Application.Current.MainPage.Navigation.PushAsync(new SettingsPage());
+
+            try
+            {
+                await WithBusy(() => rangeMeasurementService.ConnectToRSL10(device));
+                await Application.Current.MainPage.Navigation.PushAsync(new SettingsPage());
+            }
+            catch (Exception ex)
+            {
+                await ShowError($"Connecting to {device.Name} failed");
+            }            
         }
+
     }
 }
