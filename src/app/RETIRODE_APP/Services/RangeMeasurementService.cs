@@ -1,9 +1,11 @@
 ﻿using Nancy.TinyIoc;
 using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Abstractions.EventArgs;
+using Plugin.BLE.Abstractions.Exceptions;
 using RETIRODE_APP.Helpers;
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Models.Enums;
+using RETIRODE_APP.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -61,14 +63,14 @@ namespace RETIRODE_APP.Services
                 var device = _availableDevices.FirstOrDefault(foundDevice => foundDevice.Name == bleDevice.Name);
                 if (device == null)
                 {
-                    throw new Exception("Cannot connect to device");
+                    throw new NoDeviceFoundException("No device found");
                 }
 
                 _connectedDevice = device;
                 await _bluetoothService.ConnectToDeviceAsync(_connectedDevice);
                 await InitializeBluetoothConnection();
             }
-            catch (Exception ex)
+            catch (DeviceConnectionException ex)
             {
                 throw;
             }
@@ -183,6 +185,7 @@ namespace RETIRODE_APP.Services
             {
                 return;
             }
+          
             var responseItem = GetQueryResponseItem(data);
             QueryResponseEvent.Invoke(responseItem);
         }
@@ -209,12 +212,12 @@ namespace RETIRODE_APP.Services
             {
                 case Registers.LaserVoltage:
 
-                    if (data[1] == (byte)Voltage.Actual)
+                    if (data[2]== (byte)Voltage.Actual)
                     {
                         return new ResponseItem()
                         {
                             Identifier = RangeFinderValues.LaserVoltageActual,
-                            Value = Encoding.UTF8.GetString(new[] { data[2] })
+                            Value = Encoding.UTF8.GetString(new[] { data[4], data[5] })
                         };
                     }
                     else
@@ -222,17 +225,17 @@ namespace RETIRODE_APP.Services
                         return new ResponseItem()
                         {
                             Identifier = RangeFinderValues.LaserVoltageTarget,
-                            Value = Encoding.UTF8.GetString(new[] { data[2] })
+                            Value = Encoding.UTF8.GetString(new[] { data[4], data[5] })
                         };
                     }
                 case Registers.SipmBiasPowerVoltage:
 
-                    if (data[1] == (byte)Voltage.Actual)
+                    if (data[2] == (byte)Voltage.Actual)
                     {
                         return new ResponseItem()
                         {
                             Identifier = RangeFinderValues.SipmBiasPowerVoltageActual,
-                            Value = Encoding.UTF8.GetString(new[] { data[2] })
+                            Value = Encoding.UTF8.GetString(new[] { data[4], data[5] })
                         };
                     }
                     else
@@ -240,12 +243,12 @@ namespace RETIRODE_APP.Services
                         return new ResponseItem()
                         {
                             Identifier = RangeFinderValues.SipmBiasPowerVoltageTarget,
-                            Value = Encoding.UTF8.GetString(new[] { data[2] })
+                            Value = Encoding.UTF8.GetString(new[] { data[4], data[5] })
                         };
                     }
 
                 case Registers.Calibrate:
-                    if (data[1] == (byte)Calibrate.NS0)
+                    if (data[2] == (byte)Calibrate.NS0)
                     {
                         return new ResponseItem()
                         {
@@ -253,7 +256,7 @@ namespace RETIRODE_APP.Services
                             Value = Encoding.UTF8.GetString(new[] { data[2] })
                         };
                     }
-                    else if (data[1] == (byte)Calibrate.NS62_5)
+                    else if (data[3] == (byte)Calibrate.NS62_5)
                     {
                         return new ResponseItem()
                         {
