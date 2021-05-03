@@ -81,8 +81,8 @@ namespace RETIRODE_APP.Services
         {
             if (!_isDataSize)
             {
-                await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StartLidar });
                 await _RMTInfoCharacteristic.StartUpdatesAsync();
+                await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StartLidar });
             }
         }
 
@@ -90,7 +90,10 @@ namespace RETIRODE_APP.Services
         {
             _isDataSize = true;
             _dataSize = Convert.ToInt32(e.Characteristic.Value);
-            await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StartTransfer });
+
+            //request any value from offered interval <0, {_dataSize}>
+            var RandomValueInRange = new Random().Next(0, _dataSize);
+            await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StartTransfer, Convert.ToByte(RandomValueInRange) });
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
@@ -165,8 +168,13 @@ namespace RETIRODE_APP.Services
             await WriteToCharacteristic(_sendQueryCharacteristic, message);
         }
 
-        private void QueryResponseHandler(object sender, CharacteristicUpdatedEventArgs e)
+        private async void QueryResponseHandler(object sender, CharacteristicUpdatedEventArgs e)
         {
+            if (_calibrationState != CalibrationState.NoState)
+            {
+                await CalibratingLidar();
+            }
+
             var data = e.Characteristic.Value;
             if (data is null)
             {
@@ -177,21 +185,8 @@ namespace RETIRODE_APP.Services
             QueryResponseEvent.Invoke(responseItem);
         }
 
-        private async void MeasurementDataHandler(object sender, CharacteristicUpdatedEventArgs e)
+        private void MeasurementDataHandler(object sender, CharacteristicUpdatedEventArgs e)
         {
-            if (_calibrationState == CalibrationState.NS0)
-            {
-                var messageNS62_5 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS62_5, 0);
-                await WriteToCharacteristic(_sendCommandCharacteristic, messageNS62_5);
-                _calibrationState = CalibrationState.NS62_5;
-            }
-            else if (_calibrationState == CalibrationState.NS62_5)
-            {
-                var messageNS125 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS125, 0);
-                await WriteToCharacteristic(_sendCommandCharacteristic, messageNS125);
-                _calibrationState = CalibrationState.NoState;
-            }
-
             var data = e.Characteristic.Value;
             int[] parsedData = { };
 
@@ -205,6 +200,28 @@ namespace RETIRODE_APP.Services
                 parsedData[i] = Convert.ToInt32(data[i]);
             }
             MeasuredDataResponseEvent.Invoke(parsedData);
+        }
+
+        private async Task CalibratingLidar()
+        {
+            if (_calibrationState == CalibrationState.NS0)
+            {
+                var messageNS62_5 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS62_5, 0);
+                await WriteToCharacteristic(_sendCommandCharacteristic, messageNS62_5);
+                _calibrationState = CalibrationState.NS62_5;
+            }
+            else if (_calibrationState == CalibrationState.NS62_5)
+            {
+                var messageNS125 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS125, 0);
+                await WriteToCharacteristic(_sendCommandCharacteristic, messageNS125);
+                _calibrationState = CalibrationState.NS125;
+            }
+            else if (_calibrationState == CalibrationState.NS125)
+            {
+                var messageNS125 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.EndCommand, 0);
+                await WriteToCharacteristic(_sendCommandCharacteristic, messageNS125);
+                _calibrationState = CalibrationState.NoState;
+            }
         }
         private ResponseItem GetQueryResponseItem(byte[] data)
         {
