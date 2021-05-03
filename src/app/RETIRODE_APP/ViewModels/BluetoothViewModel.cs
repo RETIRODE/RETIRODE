@@ -3,6 +3,7 @@ using RETIRODE_APP.Models;
 using RETIRODE_APP.Services;
 using RETIRODE_APP.Views;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -20,6 +21,9 @@ namespace RETIRODE_APP.ViewModels
         public ICommand LoadDevicesCommand { get; }
         public IAsyncCommand<BLEDevice> DeviceTapped { get; }
 
+        //Test data to be deleted
+        public IList<BLEDevice> TestDevices { get; }
+
         public BluetoothViewModel()
         {
             rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
@@ -28,6 +32,19 @@ namespace RETIRODE_APP.ViewModels
             LoadDevicesCommand = new Command(ExecuteLoadDevicesCommand);
             DeviceTapped = new AsyncCommand<BLEDevice>(async (device) => await OnDeviceSelected(device));
             rangeMeasurementService.DeviceDiscoveredEvent += RangeMeasurementService_DeviceDiscoveredEvent;
+
+            //Test data to be deleted
+            TestDevices = new List<BLEDevice>();
+            TestDevices.Add(new BLEDevice
+            {
+                Name = "LIDAR",
+                Identifier = new Guid()
+            });
+            TestDevices.Add(new BLEDevice
+            {
+                Name = "NotLIDAR",
+                Identifier = new Guid()
+            });
         }
 
         private void RangeMeasurementService_DeviceDiscoveredEvent(BLEDevice device)
@@ -79,5 +96,6 @@ namespace RETIRODE_APP.ViewModels
                 await ShowError($"Connecting to {device.Name} failed");
             }            
         }
+
     }
 }
