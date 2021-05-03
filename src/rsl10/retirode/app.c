@@ -40,21 +40,6 @@ void Usart_EventCallBack(uint32_t event)
 	RETIRODE_RMP_UARTEventHandler(event);
 }
 
-
-
-
-static void APP_ReadNextDataChunk(void)
-{
-    if ((!app_env.isp_read_in_progress)
-        && (CIRCBUF_GetFree(&app_env.data_cache)
-            >= 4*64))
-    {
-
-
-        app_env.isp_read_in_progress = true;
-    }
-}
-
 static void APP_PushData(void)
 {
     do
@@ -103,7 +88,8 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
         case RMTS_OP_START_REQ:
         {
 
-
+        	//MARTIN ZACNI MERAT
+        	//KED BUDES RDY VOLAJ RMTS_Start_TOFD_Transfer(uint32_t TOFD_size)
             break;
         }
 
@@ -126,25 +112,12 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
 
             app_env.isp_read_in_progress = 0;
 
-            APP_ReadNextDataChunk();
-
-
-            break;
-        }
-
-
-        /** RMTS is able to accept more data. */
-        case RMTS_OP_DATA_SPACE_AVAIL_IND:
-        {
-            /* Push any cached data.*/
             APP_PushData();
 
-            /* Start receiving more image data if cache has enough free space. */
-
-            APP_ReadNextDataChunk();
 
             break;
         }
+
 
         default:
         {

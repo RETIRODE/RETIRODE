@@ -224,23 +224,19 @@ static void RMTS_MsgHandler(ke_msg_id_t const msg_id, void const *param,
     }
 }
 
-static uint8_t RMTS_ProcessDataMeasurementRequest(uint8_t capture_type)
+static uint8_t RMTS_Start_Data_Measurement_Process()
 {
-    //REQUIRE((capture_type == RMTS_CONTROL_POINT_OPCODE_START_REQ));
-
-    uint8_t err = ATT_ERR_NO_ERROR;
+    uint8_t err = -1;
 
     if (RMTS_env.transfer.state == RMTS_STATE_CONNECTED)
     {
         if (RMTS_env.att.info.ccc[0] == ATT_CCC_START_NTF)
         {
             RMTS_env.transfer.state = RMTS_STATE_START_REQUEST;
-            RMTS_env.att.cp.capture_mode = capture_type;
 
-            if (capture_type == RMTS_CONTROL_POINT_OPCODE_START_REQ)
-            {
-                RMTS_env.att.cp.callback(RMTS_OP_START_REQ, NULL);
-            }
+
+            RMTS_env.att.cp.callback(RMTS_OP_START_REQ, NULL);
+
 
         }
         else
@@ -256,13 +252,13 @@ static uint8_t RMTS_ProcessDataMeasurementRequest(uint8_t capture_type)
     return err;
 }
 
-static uint8_t RMTS_ProcessMeasuredRangeDataTransferRequest(uint8_t packet_count)
+static uint8_t RMTS_Start_Measured_Data_Transfer(uint8_t packet_count)
 {
     uint8_t err = ATT_ERR_NO_ERROR;
 
     if (RMTS_env.transfer.state >= RMTS_STATE_TOFD_INFO_PROVIDED)
     {
-       RMTS_env.transfer.state = RMTS_STATE_TOFD_TRANSMISSION;
+    	RMTS_env.transfer.state = RMTS_STATE_TOFD_TRANSMISSION;
 
         RMTS_env.att.cp.callback(RMTS_OP_DATA_TRANSFER_REQ, NULL);
     }
@@ -274,7 +270,7 @@ static uint8_t RMTS_ProcessMeasuredRangeDataTransferRequest(uint8_t packet_count
     return err;
 }
 
-static uint8_t RMTS_ProcessAbortCaptureRequest(void)
+static uint8_t RMTS_Abort_Data_Measurement_Process(void)
 {
     uint8_t status = ATT_ERR_NO_ERROR;
 
@@ -310,7 +306,7 @@ static uint8_t RMTS_ControlPointWriteHandler(uint8_t conidx, uint16_t attidx,
         {
             if (length == 1)
             {
-                status = RMTS_ProcessDataMeasurementRequest(from[0]);
+                status = RMTS_Start_Data_Measurement_Process();
             }
             else
             {
@@ -323,7 +319,7 @@ static uint8_t RMTS_ControlPointWriteHandler(uint8_t conidx, uint16_t attidx,
         {
             if (length == 1)
             {
-                status = RMTS_ProcessAbortCaptureRequest();
+                status = RMTS_Abort_Data_Measurement_Process();
             }
             else
             {
@@ -336,7 +332,7 @@ static uint8_t RMTS_ControlPointWriteHandler(uint8_t conidx, uint16_t attidx,
         {
             if (length == 1)
             {
-                status = RMTS_ProcessMeasuredRangeDataTransferRequest(from[1]);
+                status = RMTS_Start_Measured_Data_Transfer(from[1]);
             }
             else
             {

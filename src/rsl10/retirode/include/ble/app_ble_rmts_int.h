@@ -85,8 +85,7 @@ typedef struct RMTS_ControlPointCharacteristic_t
 
     uint8_t value[RMTS_CONTROL_POINT_VALUE_LENGTH];
 
-    /** Type of capture operation. */
-    uint8_t capture_mode;
+
 } RMTS_ControlPointAttribute_t;
 
 /** Stores values required for Info Characteristic attributes. */
