@@ -165,7 +165,19 @@ namespace RETIRODE_APP.Services
             await WriteToCharacteristic(_sendQueryCharacteristic, message);
         }
 
-        private async void QueryResponseHandler(object sender, CharacteristicUpdatedEventArgs e)
+        private void QueryResponseHandler(object sender, CharacteristicUpdatedEventArgs e)
+        {
+            var data = e.Characteristic.Value;
+            if (data is null)
+            {
+                return;
+            }
+
+            var responseItem = GetQueryResponseItem(data);
+            QueryResponseEvent.Invoke(responseItem);
+        }
+
+        private async void MeasurementDataHandler(object sender, CharacteristicUpdatedEventArgs e)
         {
             if (_calibrationState == CalibrationState.NS0)
             {
@@ -180,18 +192,6 @@ namespace RETIRODE_APP.Services
                 _calibrationState = CalibrationState.NoState;
             }
 
-            var data = e.Characteristic.Value;
-            if (data is null)
-            {
-                return;
-            }
-          
-            var responseItem = GetQueryResponseItem(data);
-            QueryResponseEvent.Invoke(responseItem);
-        }
-
-        private void MeasurementDataHandler(object sender, CharacteristicUpdatedEventArgs e)
-        {
             var data = e.Characteristic.Value;
             int[] parsedData = { };
 
