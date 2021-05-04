@@ -106,5 +106,6 @@ namespace RETIRODE_APP.Services
         /// </summary>
         /// <returns></returns>
         Task GetCalibration(Calibrate calibrate);
+        Task StopScanning();
     }
 }

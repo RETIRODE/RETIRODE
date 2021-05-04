@@ -5,7 +5,6 @@ using Plugin.BLE.Abstractions.Exceptions;
 using RETIRODE_APP.Helpers;
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Models.Enums;
-using RETIRODE_APP.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,12 +20,6 @@ namespace RETIRODE_APP.Services
         private readonly IBluetoothService _bluetoothService;
         private IList<IDevice> _availableDevices;
         private IDevice _connectedDevice;
-        private IList<BLEDevice> AvailableDevices => _availableDevices.Select(x => new BLEDevice()
-        {
-            Identifier = x.Id,
-            Name = x.Name,
-            State = x.State
-        }).ToList();
         private ICharacteristic _RMTTimeOfFlightDataCharacteristic;
         private ICharacteristic _RMTControlPointCharacteristic;
         private ICharacteristic _RMTInfoCharacteristic;
@@ -63,7 +56,7 @@ namespace RETIRODE_APP.Services
                 var device = _availableDevices.FirstOrDefault(foundDevice => foundDevice.Name == bleDevice.Name);
                 if (device == null)
                 {
-                    throw new NoDeviceFoundException("No device found");
+                    throw new Exception("No device found");
                 }
 
                 _connectedDevice = device;
@@ -99,8 +92,20 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task StartScanning()
         {
+            if (_bluetoothService.IsScanning)
+            {
+                return;
+            }
+                
+
             _availableDevices.Clear();
             await _bluetoothService.StartScanning();
+        }
+
+        /// <inheritdoc cref="IRangeMeasurementService"/>
+        public async Task StopScanning()
+        {
+            await _bluetoothService.StopScanning();
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>

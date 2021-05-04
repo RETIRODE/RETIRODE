@@ -92,6 +92,12 @@ namespace RETIRODE_APP.ViewModels
             }, tokenSource.Token);
         }
 
+        protected async Task<bool> ShowDialog(string message)
+        {
+            return await Application.Current.MainPage.DisplayAlert("Question?", message, "Yes", "No");
+        }
+
+
         #region INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = "")

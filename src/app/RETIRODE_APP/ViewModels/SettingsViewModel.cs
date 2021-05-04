@@ -2,29 +2,108 @@
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Models.Enums;
 using RETIRODE_APP.Services;
+using RETIRODE_APP.Views;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.CommunityToolkit.ObjectModel;
+using Xamarin.Forms;
 
 namespace RETIRODE_APP.ViewModels
 {
     public class SettingsViewModel : BaseViewModel
-    {        
-        public double TCDCal0 { get; set; }
-        public double TCDCal62 { get; set; }
-        public double TCDCal125 { get; set; }
-        public int TriggerPulse { get; set; }
-        public int SIPMTargetV { get; set; }
-        public int SIPMActualV { get; set; }
-        public int LaserTargetV { get; set; }
-        public int LaserActualV { get; set; }
+    {
+        #region GUI Properties
+
+        private double _tcdcal0;
+        public double TCDCal0 { 
+            get { return _tcdcal0;  }
+            set
+            {
+                _tcdcal0 = value;
+                OnPropertyChanged(nameof(TCDCal0));
+            }
+        }
+        private double _tcdcal62;
+        public double TCDCal62
+        {
+            get { return _tcdcal62; }
+            set
+            {
+                _tcdcal62 = value;
+                OnPropertyChanged(nameof(TCDCal62));
+            }
+        }
+        private double _tcdcal125;
+        public double TCDCal125
+        {
+            get { return _tcdcal125; }
+            set
+            {
+                _tcdcal125 = value;
+                OnPropertyChanged(nameof(TCDCal125));
+            }
+        }
+        private int _triggerpulse;
+        public int TriggerPulse
+        {
+            get { return _triggerpulse; }
+            set
+            {
+                _triggerpulse = value;
+                OnPropertyChanged(nameof(TriggerPulse));
+            }
+        }
+        private int _sipmtargetv;
+        public int SIPMTargetV
+        {
+            get { return _sipmtargetv; }
+            set
+            {
+                _sipmtargetv = value;
+                OnPropertyChanged(nameof(SIPMTargetV));
+            }
+        }
+        private int _sipmactualv;
+        public int SIPMActualV
+        {
+            get { return _sipmactualv; }
+            set
+            {
+                _sipmactualv = value;
+                OnPropertyChanged(nameof(SIPMActualV));
+            }
+        }
+        private int _lasertargetv;
+        public int LaserTargetV
+        {
+            get { return _lasertargetv; }
+            set
+            {
+                _lasertargetv = value;
+                OnPropertyChanged(nameof(LaserTargetV));
+            }
+        }
+        private int _laseractualv;
+        public int LaserActualV
+        {
+            get { return _laseractualv; }
+            set
+            {
+                _laseractualv = value;
+                OnPropertyChanged(nameof(LaserActualV));
+            }
+        }
+
+        #endregion
+
         public ICommand SoftwareResetCommand { get; set; }
         public ICommand CalibrateCommand { get; set; }
         public ICommand SetTriggerPulseCommand { get; set; }
         public ICommand SetTargetSimpBiasPowerVoltageCommand { get; set; }
         public ICommand SetTargetLaserPowerVolateCommand { get; set; }
+        public ICommand StartDepictionCommand { get; set; }
 
 
         private CancellationTokenSource _poolingRoutineCancelation;
@@ -33,6 +112,8 @@ namespace RETIRODE_APP.ViewModels
         {
             Title = "Settings";
             _rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
+
+            _rangeMeasurementService.QueryResponseEvent -= RangeMeasurementService_QueryResponseEvent;
             _rangeMeasurementService.QueryResponseEvent += RangeMeasurementService_QueryResponseEvent;
 
             SoftwareResetCommand = new AsyncCommand(async () => await ResetLidar());
@@ -40,6 +121,7 @@ namespace RETIRODE_APP.ViewModels
             SetTriggerPulseCommand = new AsyncCommand(async () => await SetTriggerPulse());
             SetTargetSimpBiasPowerVoltageCommand = new AsyncCommand(async () => await SetTargetSimpBiasPowerVoltage());
             SetTargetLaserPowerVolateCommand = new AsyncCommand(async () => await SetTargetLaserPowerVoltage());
+            StartDepictionCommand = new AsyncCommand(async () => await StartDepiction());
             StartPoolingRoutine();
         }
 
@@ -67,10 +149,26 @@ namespace RETIRODE_APP.ViewModels
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    await _rangeMeasurementService.GetSipmBiasPowerVoltage(Voltage.Actual);
-                    await _rangeMeasurementService.GetLaserVoltage(Voltage.Actual);
+                    try
+                    {
+                        await _rangeMeasurementService.GetSipmBiasPowerVoltage(Voltage.Actual);
+                        await _rangeMeasurementService.GetLaserVoltage(Voltage.Actual);
 
-                    await Task.Delay(1000);
+                        await Task.Delay(1000);
+                    }
+                    catch ( Exception ex)
+                    {
+                        await ShowError("Could not get data");
+                        if (await ShowDialog("Load data again?"))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    
                 }
             });
         }
@@ -117,7 +215,7 @@ namespace RETIRODE_APP.ViewModels
             }
             catch (Exception ex)
             {
-                await ShowError("Calibrating lidar failed");
+                await ShowError("Reseting lidar failed");
             }
         }
 
@@ -156,6 +254,21 @@ namespace RETIRODE_APP.ViewModels
             {
                 await ShowError("Setting laser voltage failed");
             }            
-        }       
+        }
+        
+
+        private async Task StartDepiction()
+        {
+            if(TCDCal0 != 0 && TCDCal62 != 0 && TCDCal125 != 0)
+            {
+                App.isCalibrated = true;
+                await Application.Current.MainPage.Navigation.PushAsync(new DepictionPage());
+            }
+            else
+            {
+                await ShowError("Lidar not calibrated");
+            }
+
+        }
     }
 }

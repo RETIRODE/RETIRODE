@@ -14,12 +14,15 @@ namespace RETIRODE_APP.Views
     {
         public SettingsPage()
         {
-            InitializeComponent();
-        }
-
-        private void StartDepictionButton_Clicked(object sender, EventArgs e)
-        {
-            Navigation.PushAsync(new DepictionPage());
+            try
+            {
+                InitializeComponent();
+            }
+            catch (Exception ex)
+            {
+                
+            }
+            
         }
     }
 
