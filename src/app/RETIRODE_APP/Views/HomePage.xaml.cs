@@ -14,23 +14,18 @@ namespace RETIRODE_APP.Views
     [DesignTimeVisible(false)]
     public partial class HomePage : ContentPage
     {
-        public static Boolean isConnected;
-        public static Boolean isCalibrated;
-
         public HomePage()
         {
             InitializeComponent();
-            isConnected = false;
-            isCalibrated = false;
         }
 
         private void StartDepictionButton_Clicked(object sender, EventArgs e)
         {
-            if (!isConnected)
+            if (!App.isConnected)
             {
                 Navigation.PushAsync(new BluetoothPage());
             }
-            else if (!isCalibrated)
+            else if (!App.isCalibrated)
             {
                 Navigation.PushAsync(new SettingsPage());
             }
