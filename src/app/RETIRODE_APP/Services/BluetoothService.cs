@@ -34,9 +34,16 @@ namespace RETIRODE_APP.Services
         }
 
         /// <inheritdoc cref="IBluetoothService"/>
-        public async Task StartScanning()
+        public Task StartScanning()
         {
-            await _bluetoothAdapter.StartScanningForDevicesAsync();
+            return _bluetoothAdapter.StartScanningForDevicesAsync();            
+        }
+
+        public bool IsScanning => _bluetoothAdapter.IsScanning;
+
+        public Task StopScanning()
+        {
+            return _bluetoothAdapter.StopScanningForDevicesAsync();
         }
 
         /// <inheritdoc cref="IBluetoothService"/>

@@ -29,8 +29,10 @@ namespace RETIRODE_APP.ViewModels
             rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
             Title = "Bluetooth";
             Devices = new ObservableCollection<BLEDevice>();
-            LoadDevicesCommand = new Command(ExecuteLoadDevicesCommand);
+            LoadDevicesCommand = new AsyncCommand(async () => await ExecuteLoadDevicesCommand());
             DeviceTapped = new AsyncCommand<BLEDevice>(async (device) => await OnDeviceSelected(device));
+
+            rangeMeasurementService.DeviceDiscoveredEvent -= RangeMeasurementService_DeviceDiscoveredEvent;
             rangeMeasurementService.DeviceDiscoveredEvent += RangeMeasurementService_DeviceDiscoveredEvent;
 
             //Test data to be deleted
@@ -52,7 +54,7 @@ namespace RETIRODE_APP.ViewModels
             Devices.Add(device);
         }
 
-        private async void ExecuteLoadDevicesCommand()
+        private async Task ExecuteLoadDevicesCommand()
         {            
             try
             {
@@ -76,8 +78,8 @@ namespace RETIRODE_APP.ViewModels
             get => selectedDevice;
             set
             {
+                selectedDevice = value;
                 SetProperty(ref selectedDevice, value);
-                OnDeviceSelected(value);
             }
         }
 
@@ -88,6 +90,8 @@ namespace RETIRODE_APP.ViewModels
 
             try
             {
+                await rangeMeasurementService.StopScanning();
+
                 await WithBusy(() => rangeMeasurementService.ConnectToRSL10(device));
                 await Application.Current.MainPage.Navigation.PushAsync(new SettingsPage());
                 App.isConnected = true;

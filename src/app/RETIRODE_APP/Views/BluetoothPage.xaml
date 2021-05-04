@@ -42,9 +42,9 @@
 
         <!-- testdata rewrite "TestDevices" to "Devices" -->
 
-        <RefreshView x:DataType="local:BluetoothViewModel" Command="{Binding LoadDevicesCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}" Margin="50, 20">
+        <RefreshView x:DataType="local:BluetoothViewModel" IsRefreshing="{Binding IsBusy, Mode=TwoWay}" Margin="50, 20">
             <CollectionView x:Name="DevicesListView"
-                            ItemsSource="{Binding TestDevices}"
+                            ItemsSource="{Binding Devices}"
                             SelectionMode="Single">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>

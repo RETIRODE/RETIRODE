@@ -14,13 +14,15 @@ namespace RETIRODE_APP.ViewModels
 {
     public class SettingsViewModel : BaseViewModel
     {
+        #region GUI Properties
+
         private double _tcdcal0;
         public double TCDCal0 { 
             get { return _tcdcal0;  }
             set
             {
                 _tcdcal0 = value;
-                OnPropertyChanged(nameof(_tcdcal0));
+                OnPropertyChanged(nameof(TCDCal0));
             }
         }
         private double _tcdcal62;
@@ -30,7 +32,7 @@ namespace RETIRODE_APP.ViewModels
             set
             {
                 _tcdcal62 = value;
-                OnPropertyChanged(nameof(_tcdcal62));
+                OnPropertyChanged(nameof(TCDCal62));
             }
         }
         private double _tcdcal125;
@@ -40,7 +42,7 @@ namespace RETIRODE_APP.ViewModels
             set
             {
                 _tcdcal125 = value;
-                OnPropertyChanged(nameof(_tcdcal125));
+                OnPropertyChanged(nameof(TCDCal125));
             }
         }
         private int _triggerpulse;
@@ -50,7 +52,7 @@ namespace RETIRODE_APP.ViewModels
             set
             {
                 _triggerpulse = value;
-                OnPropertyChanged(nameof(_triggerpulse));
+                OnPropertyChanged(nameof(TriggerPulse));
             }
         }
         private int _sipmtargetv;
@@ -60,7 +62,7 @@ namespace RETIRODE_APP.ViewModels
             set
             {
                 _sipmtargetv = value;
-                OnPropertyChanged(nameof(_sipmtargetv));
+                OnPropertyChanged(nameof(SIPMTargetV));
             }
         }
         private int _sipmactualv;
@@ -70,7 +72,7 @@ namespace RETIRODE_APP.ViewModels
             set
             {
                 _sipmactualv = value;
-                OnPropertyChanged(nameof(_sipmactualv));
+                OnPropertyChanged(nameof(SIPMActualV));
             }
         }
         private int _lasertargetv;
@@ -80,7 +82,7 @@ namespace RETIRODE_APP.ViewModels
             set
             {
                 _lasertargetv = value;
-                OnPropertyChanged(nameof(_lasertargetv));
+                OnPropertyChanged(nameof(LaserTargetV));
             }
         }
         private int _laseractualv;
@@ -90,9 +92,11 @@ namespace RETIRODE_APP.ViewModels
             set
             {
                 _laseractualv = value;
-                OnPropertyChanged(nameof(_laseractualv));
+                OnPropertyChanged(nameof(LaserActualV));
             }
         }
+
+        #endregion
 
         public ICommand SoftwareResetCommand { get; set; }
         public ICommand CalibrateCommand { get; set; }
@@ -108,6 +112,8 @@ namespace RETIRODE_APP.ViewModels
         {
             Title = "Settings";
             _rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
+
+            _rangeMeasurementService.QueryResponseEvent -= RangeMeasurementService_QueryResponseEvent;
             _rangeMeasurementService.QueryResponseEvent += RangeMeasurementService_QueryResponseEvent;
 
             SoftwareResetCommand = new AsyncCommand(async () => await ResetLidar());

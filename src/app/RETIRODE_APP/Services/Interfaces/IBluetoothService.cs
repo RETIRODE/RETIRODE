@@ -28,10 +28,12 @@ namespace RETIRODE_APP.Services
         /// <param name="message"></param>
         /// <returns></returns>
         Task<bool> WriteToCharacteristic(ICharacteristic characteristic, byte[] message);
+        Task StopScanning();
 
         /// <summary>
         /// event fired when some device nearby is found
         /// </summary>
         Action<object, IDevice> DeviceFound { get; set; }
+        bool IsScanning { get; }
     }
 }
