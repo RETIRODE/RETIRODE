@@ -152,6 +152,13 @@ namespace RETIRODE_APP.Services
             await WriteToCharacteristic(_sendCommandCharacteristic, message);
         }
 
+        public async Task GetPulseCount()
+        {
+            //TODO: change 1 to enum
+            var message = BuildProtocolMessage(Registers.PulseCount, 0, 0);
+            await WriteToCharacteristic(_sendQueryCharacteristic, message);
+        }
+
         public async Task GetLaserVoltage(Voltage voltage)
         {
             var message = BuildProtocolMessage(Registers.LaserVoltage, (byte)voltage, 0);
@@ -276,7 +283,7 @@ namespace RETIRODE_APP.Services
                             Value = GetDataFromResponse(data)
                         };
                     }
-                    else if (data[3] == (byte)Calibrate.NS62_5)
+                    else if (data[2] == (byte)Calibrate.NS62_5)
                     {
                         return new ResponseItem()
                         {
@@ -292,6 +299,12 @@ namespace RETIRODE_APP.Services
                             Value = GetDataFromResponse(data)
                         };
                     }
+                case Registers.PulseCount:
+                    return new ResponseItem()
+                    {
+                        Identifier = RangeFinderValues.PulseCount,
+                        Value = GetDataFromResponse(data)
+                    };
                 default:
                     break;
             }
