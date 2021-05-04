@@ -90,6 +90,7 @@ namespace RETIRODE_APP.ViewModels
             {
                 await WithBusy(() => rangeMeasurementService.ConnectToRSL10(device));
                 await Application.Current.MainPage.Navigation.PushAsync(new SettingsPage());
+                App.isConnected = true;
             }
             catch (Exception ex)
             {
