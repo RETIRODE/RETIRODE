@@ -6,6 +6,6 @@ namespace RETIRODE_APP.Models
     {
         public RangeFinderValues Identifier { get; set; }
 
-        public string Value { get; set; }
+        public double Value { get; set; }
     }
 }

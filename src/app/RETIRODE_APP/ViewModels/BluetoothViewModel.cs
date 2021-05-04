@@ -35,18 +35,6 @@ namespace RETIRODE_APP.ViewModels
             rangeMeasurementService.DeviceDiscoveredEvent -= RangeMeasurementService_DeviceDiscoveredEvent;
             rangeMeasurementService.DeviceDiscoveredEvent += RangeMeasurementService_DeviceDiscoveredEvent;
 
-            //Test data to be deleted
-            TestDevices = new List<BLEDevice>();
-            TestDevices.Add(new BLEDevice
-            {
-                Name = "LIDAR",
-                Identifier = new Guid()
-            });
-            TestDevices.Add(new BLEDevice
-            {
-                Name = "NotLIDAR",
-                Identifier = new Guid()
-            });
         }
 
         private void RangeMeasurementService_DeviceDiscoveredEvent(BLEDevice device)
@@ -58,6 +46,7 @@ namespace RETIRODE_APP.ViewModels
         {            
             try
             {
+                Devices.Clear();
                 ShowBusy(() => Devices.Count > 0, 5);
                 await rangeMeasurementService.StartScanning();
             }

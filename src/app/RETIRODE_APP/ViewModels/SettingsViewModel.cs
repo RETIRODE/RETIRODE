@@ -98,6 +98,7 @@ namespace RETIRODE_APP.ViewModels
 
         #endregion
 
+    {        
         public ICommand SoftwareResetCommand { get; set; }
         public ICommand CalibrateCommand { get; set; }
         public ICommand SetTriggerPulseCommand { get; set; }
@@ -153,7 +154,6 @@ namespace RETIRODE_APP.ViewModels
                     {
                         await _rangeMeasurementService.GetSipmBiasPowerVoltage(Voltage.Actual);
                         await _rangeMeasurementService.GetLaserVoltage(Voltage.Actual);
-
                         await Task.Delay(1000);
                     }
                     catch ( Exception ex)

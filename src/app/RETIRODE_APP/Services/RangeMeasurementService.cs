@@ -74,7 +74,6 @@ namespace RETIRODE_APP.Services
         {
             if (!_isDataSize)
             {
-                await _RMTInfoCharacteristic.StartUpdatesAsync();
                 await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StartLidar });
             }
         }
@@ -96,8 +95,6 @@ namespace RETIRODE_APP.Services
             {
                 return;
             }
-                
-
             _availableDevices.Clear();
             await _bluetoothService.StartScanning();
         }
@@ -163,7 +160,7 @@ namespace RETIRODE_APP.Services
 
         public async Task GetSipmBiasPowerVoltage(Voltage voltage)
         {
-            var message = BuildProtocolMessage(Registers.LaserVoltage, (byte)voltage, 0);
+            var message = BuildProtocolMessage(Registers.SipmBiasPowerVoltage, (byte)voltage, 0);
             await WriteToCharacteristic(_sendQueryCharacteristic, message);
         }
 
@@ -230,24 +227,25 @@ namespace RETIRODE_APP.Services
         }
         private ResponseItem GetQueryResponseItem(byte[] data)
         {
+            
             switch ((Registers)data[0])
             {
                 case Registers.LaserVoltage:
 
-                    if (data[2]== (byte)Voltage.Actual)
+                    if (data[2] == (byte)Voltage.Actual)
                     {
                         return new ResponseItem()
                         {
                             Identifier = RangeFinderValues.LaserVoltageActual,
-                            Value = Encoding.UTF8.GetString(new[] { data[4], data[5] })
-                        };
+                            Value = GetDataFromResponse(data)
+                    };
                     }
                     else
                     {
                         return new ResponseItem()
                         {
                             Identifier = RangeFinderValues.LaserVoltageTarget,
-                            Value = Encoding.UTF8.GetString(new[] { data[4], data[5] })
+                            Value = GetDataFromResponse(data)
                         };
                     }
                 case Registers.SipmBiasPowerVoltage:
@@ -257,7 +255,7 @@ namespace RETIRODE_APP.Services
                         return new ResponseItem()
                         {
                             Identifier = RangeFinderValues.SipmBiasPowerVoltageActual,
-                            Value = Encoding.UTF8.GetString(new[] { data[4], data[5] })
+                            Value = GetDataFromResponse(data)
                         };
                     }
                     else
@@ -265,7 +263,7 @@ namespace RETIRODE_APP.Services
                         return new ResponseItem()
                         {
                             Identifier = RangeFinderValues.SipmBiasPowerVoltageTarget,
-                            Value = Encoding.UTF8.GetString(new[] { data[4], data[5] })
+                            Value = GetDataFromResponse(data)
                         };
                     }
 
@@ -275,7 +273,7 @@ namespace RETIRODE_APP.Services
                         return new ResponseItem()
                         {
                             Identifier = RangeFinderValues.CalibrateNS0,
-                            Value = Encoding.UTF8.GetString(new[] { data[2] })
+                            Value = GetDataFromResponse(data)
                         };
                     }
                     else if (data[3] == (byte)Calibrate.NS62_5)
@@ -283,7 +281,7 @@ namespace RETIRODE_APP.Services
                         return new ResponseItem()
                         {
                             Identifier = RangeFinderValues.Calibrate62_5,
-                            Value = Encoding.UTF8.GetString(new[] { data[2] })
+                            Value = GetDataFromResponse(data)
                         };
                     }
                     else
@@ -291,13 +289,19 @@ namespace RETIRODE_APP.Services
                         return new ResponseItem()
                         {
                             Identifier = RangeFinderValues.Calibrate125,
-                            Value = Encoding.UTF8.GetString(new[] { data[2] })
+                            Value = GetDataFromResponse(data)
                         };
                     }
                 default:
                     break;
             }
             return new ResponseItem();
+        }
+
+        private static int GetDataFromResponse(byte[] data)
+        {
+            var k = BitConverter.ToString(new[] { data[5], data[4] }).Replace("-", "");
+            return Convert.ToInt32(k, 16);
         }
 
         private async Task InitializeBluetoothConnection()
@@ -329,6 +333,7 @@ namespace RETIRODE_APP.Services
 
                 _RMTInfoCharacteristic.ValueUpdated -= DataSizeHandler;
                 _RMTInfoCharacteristic.ValueUpdated += DataSizeHandler;
+                await _RMTInfoCharacteristic.StartUpdatesAsync();
 
                 _RMTTimeOfFlightDataCharacteristic.ValueUpdated -= MeasurementDataHandler;
                 _RMTTimeOfFlightDataCharacteristic.ValueUpdated += MeasurementDataHandler;
