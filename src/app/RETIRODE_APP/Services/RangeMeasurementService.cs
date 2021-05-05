@@ -2,6 +2,7 @@
 using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Abstractions.EventArgs;
 using Plugin.BLE.Abstractions.Exceptions;
+using Polly;
 using RETIRODE_APP.Helpers;
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Models.Enums;
@@ -349,17 +350,11 @@ namespace RETIRODE_APP.Services
 
         private async Task WriteToCharacteristic(ICharacteristic characteristic, byte[] command)
         {
-            try
-            {
-                if (!await _bluetoothService.WriteToCharacteristic(characteristic, command))
-                {
-                    throw new Exception("Error with send command to characteristic");
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
+            await Policy
+                    .Handle<NullReferenceException>()
+                    .OrResult<bool>(result => result == false)
+                    .WaitAndRetryAsync(5, time => TimeSpan.FromMilliseconds(100))
+                    .ExecuteAsync(() => _bluetoothService.WriteToCharacteristic(characteristic, command));
         }
 
         private async void DeviceDiscovered(object sender, IDevice device)
