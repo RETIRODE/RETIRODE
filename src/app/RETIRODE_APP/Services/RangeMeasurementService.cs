@@ -3,6 +3,7 @@ using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Abstractions.EventArgs;
 using Plugin.BLE.Abstractions.Exceptions;
 using Polly;
+using RETIRODE_APP.Exceptions;
 using RETIRODE_APP.Helpers;
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Models.Enums;
@@ -52,22 +53,29 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task ConnectToRSL10(BLEDevice bleDevice)
         {
-            try
+            var device = _availableDevices.FirstOrDefault(foundDevice => foundDevice.Name == bleDevice.Name);
+            if (device == null)
             {
-                var device = _availableDevices.FirstOrDefault(foundDevice => foundDevice.Name == bleDevice.Name);
-                if (device == null)
-                {
-                    throw new Exception("No device found");
-                }
+                throw new InvalidOperationException(String.Format("Device {0} with ID {1} is not available",
+                    bleDevice.Name, bleDevice.Identifier));
+            }
 
-                _connectedDevice = device;
-                await _bluetoothService.ConnectToDeviceAsync(_connectedDevice);
-                await InitializeBluetoothConnection();
-            }
-            catch (DeviceConnectionException ex)
+            if(_connectedDevice != null && _connectedDevice != device)
             {
-                throw;
+                throw new AlreadyConnectedDeviceException("Device is already connected to another BLE device");
             }
+            if(_connectedDevice != null && _connectedDevice == device)
+            {
+                return;
+            }
+
+            await Policy
+                .Handle<DeviceConnectionException>()
+                .WaitAndRetryAsync(5, time => TimeSpan.FromMilliseconds(100))
+                .ExecuteAsync(() => _bluetoothService.ConnectToDeviceAsync(device));
+
+            _connectedDevice = device;
+            await InitializeBluetoothConnection();
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
