@@ -86,9 +86,9 @@ namespace RETIRODE_APP.Services
             return await _connection.Table<MeasurementItem>().Where(i => i.Id == id).FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<MeasurementItem>> ListMeasurementByCalibrationAsync(CalibrationItem calibration)
+        public async Task<IEnumerable<MeasurementItem>> ListMeasurementByCalibrationAsync(int calibrationId)
         {
-            var items = await _connection.Table<MeasurementItem>().Where(i => i.Calibration_id == calibration.Id).ToListAsync();
+            var items = await _connection.Table<MeasurementItem>().Where(i => i.Calibration_id == calibrationId).ToListAsync();
             return items;
         }
 

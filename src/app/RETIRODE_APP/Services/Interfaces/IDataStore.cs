@@ -8,7 +8,7 @@ namespace RETIRODE_APP.Services
 {
     public interface IDataStore
     {
-        Task<IEnumerable<MeasurementItem>> ListMeasurementByCalibrationAsync(CalibrationItem calibration);
+        Task<IEnumerable<MeasurementItem>> ListMeasurementByCalibrationAsync(int calibrationId);
         Task<CalibrationItem> GetCalibrationItemAsync(int id);
         Task<MeasurementItem> GetMeasurementAsync(int id);
         Task<bool> AddEntityAsync<T>(T item) where T : class, new();

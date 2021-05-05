@@ -14,12 +14,17 @@ namespace RETIRODE_APP.ViewModels
     {
         private IDataStore _dataStore => TinyIoCContainer.Current.Resolve<IDataStore>();
         private IRangeMeasurementService _measurementService => TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
-        protected const float TouchSensitivity = 2;
-        protected float Yaw { get; set; }
-        protected float Pitch { get; set; }
-        protected bool TouchEnabled { get; set; }
-        protected Node CameraNode { get; set; }
-        protected Scene Scene { get; set; }
+        private const float TouchSensitivity = 2;
+        private float Yaw { get; set; }
+        private float Pitch { get; set; }
+        private Node CameraNode { get; set; }
+        private Scene Scene { get; set; }
+        private DateTime StartMeasuringTime { get; set; }
+        private float Tdc0Value { get; set; }
+        private float Tdc62Value { get; set; }
+        private float Tdc125Value { get; set; }
+        private CalibrationItem Calibration { get; set; }
+
 
         bool movementsEnabled;
         Node plotNode;
@@ -41,17 +46,19 @@ namespace RETIRODE_APP.ViewModels
         protected override async void Start()
         {
             base.Start();
-            _measurementService.MeasuredDataResponseEvent += _measurementService_MeasuredDataResponseEvent;
-            await _measurementService.StartMeasurement();
-
-            await Create3DObjects();
+            SetCalibration();
+            //_measurementService.MeasuredDataResponseEvent += _measurementService_MeasuredDataResponseEvent;
+            //await _measurementService.StartMeasurement();
+            StartMeasuringTime = DateTime.Now;
+            await CreateScene();
+            AddTestDataFromDB();
         }
 
-        private async void _measurementService_MeasuredDataResponseEvent(int[] obj)
+        private void _measurementService_MeasuredDataResponseEvent(int[] obj)
         {
             foreach (var item in obj)
             {
-                var distance = await CalculateDistanceFromTdc(item);
+                var distance = CalculateDistanceFromTdc(item);
                 var point = CreatePoint(distance, 0f, 0f);
                 AddPointToScene(point);
             }
@@ -59,9 +66,10 @@ namespace RETIRODE_APP.ViewModels
 
         protected override async void Stop()
         {
-            _measurementService.MeasuredDataResponseEvent -= _measurementService_MeasuredDataResponseEvent;
-            await _measurementService.StopMeasurement(); 
+           // _measurementService.MeasuredDataResponseEvent -= _measurementService_MeasuredDataResponseEvent;
+           // await _measurementService.StopMeasurement(); 
         }
+
 
         protected override void OnUpdate(float timeStep)
         {
@@ -97,38 +105,55 @@ namespace RETIRODE_APP.ViewModels
             base.OnUpdate(timeStep);
         }
 
-        private async Task Create3DObjects()
+        private async Task CreateScene()
         {
             // Scene
             Scene = new Scene();
             Scene.CreateComponent<Octree>();
 
-            var points = Point.GenerateRandomPoints(200);
-
-            foreach(Point p in points)
-            {
-                AddPointToScene(p);
-            }
-
             // Light
-            Node light = Scene.CreateChild(name: "light");
-            light.SetDirection(new Vector3(0.4f, -0.5f, 0.3f));
-            light.CreateComponent<Light>();
-
+            
+            Node zoneNode = Scene.CreateChild(name: "zone");
+            Zone zone = zoneNode.CreateComponent<Zone>();
+            zone.SetBoundingBox(new BoundingBox(-10000.0f, 10000.0f));
+            zone.AmbientColor = new Urho.Color(0.5f, 0.5f, 0.5f);
             // Camera
             CameraNode = Scene.CreateChild(name: "camera");
+            CameraNode.Position = new Vector3(1.2f, 0f, -5f);
             Camera camera = CameraNode.CreateComponent<Camera>();
+            
 
             // Viewport
             Renderer.SetViewport(0, new Viewport(Scene, camera, null));
 
             movementsEnabled = true;
         }
-
-        protected void AddPointToScene(Point point)
+        protected async void AddTestDataFromDB()
         {
+            
+            var list = await _dataStore.ListMeasurementByCalibrationAsync(Calibration.Id);
+            
+            await Urho.Application.ToMainThreadAsync();
+            StartMeasuringTime = DateTime.Now;
+            foreach (var item in list)
+            {
+                TimeSpan span = DateTime.Now - StartMeasuringTime;
+                var p = new Point
+                {
+                    x = (float)item.Id/10,
+                    y = CalculateDistanceFromTdc(item.Tdc_value),
+                };
+                AddPointToScene(p);
+            }
+                
+
+        }
+
+        protected async void AddPointToScene(Point point)
+        {
+            await Urho.Application.ToMainThreadAsync();
             plotNode = Scene.CreateChild();
-            plotNode.Position = new Vector3(point.x, point.y, point.z + 5);
+            plotNode.Position = new Vector3(point.x, point.y, point.z+0.5f);
             plotNode.SetScale(0.05f);
 
             // Sphere Model
@@ -167,20 +192,13 @@ namespace RETIRODE_APP.ViewModels
                 }
             }
         }
-        float Distance(IntVector2 v1, IntVector2 v2)
+        private float Distance(IntVector2 v1, IntVector2 v2)
         {
             return (float)Math.Sqrt((v1.X - v2.X) * (v1.X - v2.X) + (v1.Y - v2.Y) * (v1.Y - v2.Y));
         }
 
-        async Task<float> CalculateDistanceFromTdc(float tdcValue)
+        private float CalculateDistanceFromTdc(float tdcValue)
         {
-            var calibrationList = await _dataStore.GetEntitiesAsync<CalibrationItem>();
-            var calibration = new List<CalibrationItem>(calibrationList).FindLast(x => x.Id > 0);
-
-            float tdc0Value = calibration.Tdc_0;
-            float tdc62Value = calibration.Tdc_62;
-            float tdc125Value = calibration.Tdc_125;
-
             float tofValue;
 
             if(tdcValue < 0)
@@ -189,15 +207,15 @@ namespace RETIRODE_APP.ViewModels
             }
             else if(tdcValue < 62.5f)
             {
-                tofValue = 0f + (62.5f * ((tdcValue - tdc0Value) / (tdc62Value - tdc0Value)));
+                tofValue = 0f + (62.5f * ((tdcValue - Tdc0Value) / (Tdc62Value - Tdc0Value)));
             }
             else if (tdcValue < 125f)
             {
-                tofValue = 62.5f + (62.5f * ((tdcValue - tdc62Value) / (tdc125Value - tdc62Value)));
+                tofValue = 62.5f + (62.5f * ((tdcValue - Tdc62Value) / (Tdc125Value - Tdc62Value)));
             }
             else
             {
-                tofValue = 125f + (62.5f * ((tdcValue - tdc125Value) / (tdc125Value - tdc62Value)));
+                tofValue = 125f + (62.5f * ((tdcValue - Tdc125Value) / (Tdc125Value - Tdc62Value)));
             }
 
             float distance = 0.15f * tofValue;
@@ -211,6 +229,17 @@ namespace RETIRODE_APP.ViewModels
             float Pz = distance * (float)Math.Cos(angle_1);
 
             return (new Point { x = Px, y = Py, z = Pz });
+        }
+
+        private async void SetCalibration()
+        {
+            var calibrationList = await _dataStore.GetEntitiesAsync<CalibrationItem>();
+            var calibration = new List<CalibrationItem>(calibrationList).FindLast(x => x.Id > 0);
+
+            Tdc0Value = calibration.Tdc_0;
+            Tdc62Value = calibration.Tdc_62;
+            Tdc125Value = calibration.Tdc_125;
+            Calibration = calibration;
         }
     }
 }
