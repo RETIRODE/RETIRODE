@@ -420,6 +420,7 @@ namespace RETIRODE_APP.Services
             _RMTTimeOfFlightDataCharacteristic.ValueUpdated -= MeasurementDataHandler;
             _RMTInfoCharacteristic.ValueUpdated -= DataSizeHandler;
             _receiveQueryCharacteristic.ValueUpdated -= QueryResponseHandler;
+            _semaphoreSlim.Dispose();
             _connectedDevice.Dispose();
         }
     }
