@@ -128,19 +128,7 @@ static void RMTS_MsgHandler(ke_msg_id_t const msg_id, void const *param,
                         /* Last data notification was transferred. */
                         if (RMTS_env.transfer.packets_pending == 0)
                         {
-                            /* Determine next state of RMTS. */
-                            switch (RMTS_env.att.cp.capture_mode)
-                            {
-                              case RMTS_CONTROL_POINT_OPCODE_START_REQ:
-                                    RMTS_env.transfer.state = RMTS_STATE_START_REQUEST;
-                                    break;
-
-                                default:
-                                    //INVARIANT(false);
-                                    break;
-                            }
-
-
+                        	  RMTS_env.transfer.state = RMTS_STATE_START_REQUEST;
                         }
                     }
                 }
@@ -381,7 +369,6 @@ int32_t RMTS_Initialize(RMTS_ControlHandler control_event_handler)
 
     RMTS_env.att.attidx_offset = 0;
     RMTS_env.att.cp.callback = control_event_handler;
-    RMTS_env.att.cp.capture_mode = 0;
     RMTS_env.att.info.ccc[0] = 0x00;
     RMTS_env.att.info.ccc[1] = 0x00;
     RMTS_env.att.TOFD.ccc[0] = 0x00;
@@ -465,7 +452,7 @@ int32_t RMTS_Abort_TOFD_Transfer(RMTS_InfoErrorCode_t errcode)
         GATTC_SendEvtCmd(0, GATTC_NOTIFY, attidx, att_handle, 2, data);
 
         RMTS_env.transfer.state = RMTS_STATE_CONNECTED;
-        RMTS_env.att.cp.capture_mode = 0;
+     //   RMTS_env.att.cp.capture_mode = 0;
     }
     else
     {

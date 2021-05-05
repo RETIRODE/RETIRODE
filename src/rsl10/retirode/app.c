@@ -19,7 +19,7 @@
 
 
 
-
+#define MEASURE_SIZE   50
 static APP_Environemnt_t app_env = { 0 };
 
 /** Cache for storing of image data before it gets transmitted over BLE. */
@@ -87,7 +87,10 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
        /* Connected peer device requested continuous image capture.*/
         case RMTS_OP_START_REQ:
         {
+        	CIRCBUF_Initialize(app_data_cache_storage, APP_DATA_CACHE_SIZE,
+        	        	                    &app_env.data_cache);
 
+        	RETIRODE_RMP_MeasureCommand(MEASURE_SIZE);
         	//MARTIN ZACNI MERAT
         	//KED BUDES RDY VOLAJ RMTS_Start_TOFD_Transfer(uint32_t TOFD_size)
             break;
@@ -106,15 +109,9 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
 
         case RMTS_OP_DATA_TRANSFER_REQ:
         {
-
-        	CIRCBUF_Initialize(app_data_cache_storage, APP_DATA_CACHE_SIZE,
-        	        	                    &app_env.data_cache);
-
             app_env.isp_read_in_progress = 0;
-
             APP_PushData();
-
-
+            RETIRODE_RMP_MeasureCommand(MEASURE_SIZE);
             break;
         }
 
@@ -161,6 +158,42 @@ void APP_ESTS_Push_Query_Data(const RETIRODE_RMP_Query_response_t *p_param)
 
 	ESTS_NOTIFY_QUERY_RESPONSE(response);
 }
+
+void APP_ESTS_Push_Calibration_Data(const RETIRODE_RMP_CalibrationDataReady_response_t *p_param)
+{
+	uint16_t response[3];
+	switch (p_param->cal)
+	{
+		case RETIRODE_RMP_CALIBRATION_0ns:
+		{
+			response[0] = ESTS_OP_CALIBRATE;
+			response[1] = ESTS_OP_CALIBRATE_FIRST;
+			response[2] = p_param->value;
+			break;
+		}
+		case RETIRODE_RMP_CALIBRATION_62p5ns:
+		{
+			response[0] = ESTS_OP_CALIBRATE;
+			response[1] = ESTS_OP_CALIBRATE_SECOND;
+			response[2] = p_param->value;
+			break;
+		}
+		case RETIRODE_RMP_CALIBRATION_125ns:
+		{
+			response[0] = ESTS_OP_CALIBRATE;
+			response[1] = ESTS_OP_CALIBRATE_THIRD;
+			response[2] = p_param->value;
+			break;
+		}
+		case RETIRODE_RMP_CALIBRATION_DONE:
+		{
+			break;
+		}
+	}
+
+	ESTS_NOTIFY_QUERY_RESPONSE(response);
+}
+
 /**
  * Event handler for the External Sensors Trigger BLE service.
 **/
@@ -218,8 +251,31 @@ void APP_ESTS_EventHandler(ESTS_RF_SETTING_ID_t sidx,
 			if(params->is_query == true)
 			{
 				//SEND UART QUERY REQUEST
-			}else{
-				//SEND UART COMMAND
+			}else
+			{
+				switch(params->type)
+				{
+					case ESTS_OP_CALIBRATE_FIRST:
+					{
+						RETIRODE_RMP_CalibrateCommand(RETIRODE_RMP_CALIBRATION_0ns);
+						break;
+					}
+					case ESTS_OP_CALIBRATE_SECOND:
+					{
+						RETIRODE_RMP_CalibrateCommand(RETIRODE_RMP_CALIBRATION_62p5ns);
+						break;
+					}
+					case ESTS_OP_CALIBRATE_THIRD:
+					{
+						RETIRODE_RMP_CalibrateCommand(RETIRODE_RMP_CALIBRATION_125ns);
+						break;
+					}
+					case ESTS_OP_CALIBRATE_DONE:
+					{
+						RETIRODE_RMP_CalibrateCommand(RETIRODE_RMP_CALIBRATION_DONE);
+						break;
+					}
+				}
 			}
 			break;
 		}
@@ -250,13 +306,21 @@ void RETIRODE_RMP_Handler(RETIRODE_RMP_Event_t event,
 	{
 		case RETIRODE_RMP_EVENT_MEASUREMENT_DATA_READY:
 		{
-			int a = 5;
+			const RETIRODE_RMP_Data_t *data = p_param;
+			CIRCBUF_PushBack(data->data, data->size, &app_env.data_cache);
+			RMTS_Start_TOFD_Transfer(data->size);
 			break;
 		}
 		case RETIRODE_RMP_EVENT_QUERY_RESPONSE_READY:
 		{
 			RETIRODE_RMP_Query_response_t *params = p_param;
 			APP_ESTS_Push_Query_Data(params);
+			break;
+		}
+		case RETIRODE_RMP_EVENT_CALIBRATION_DATA_READY:
+		{
+			RETIRODE_RMP_CalibrationDataReady_response_t *params = p_param;
+			APP_ESTS_Push_Calibration_Data(params);
 			break;
 		}
 		case RETIRODE_RMP_EVENT_ERROR:
@@ -281,7 +345,8 @@ int main(void)
 {
     /* Initialize the system */
     Device_Initialize();
-
+    CIRCBUF_Initialize(app_data_cache_storage, APP_DATA_CACHE_SIZE,
+            	        	                    &app_env.data_cache);
 	int i = 0;
 	/* Spin loop */
 	while (true)
