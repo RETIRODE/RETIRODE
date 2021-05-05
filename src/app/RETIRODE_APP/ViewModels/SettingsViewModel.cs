@@ -146,7 +146,7 @@ namespace RETIRODE_APP.ViewModels
 
         private void PoolingRoutine(CancellationToken cancellationToken)
         {
-            Task.Run(async () =>
+            Device.BeginInvokeOnMainThread(async () =>
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
@@ -164,6 +164,7 @@ namespace RETIRODE_APP.ViewModels
                     catch ( Exception ex)
                     {
                         await ShowError("Could not get data");
+                       
                         if (await ShowDialog("Load data again?"))
                         {
                             continue;
@@ -176,6 +177,7 @@ namespace RETIRODE_APP.ViewModels
                     
                 }
             });
+                
         }
 
         private void RangeMeasurementService_QueryResponseEvent(ResponseItem responseItem)
@@ -268,7 +270,13 @@ namespace RETIRODE_APP.ViewModels
 
         private async Task StartDepiction()
         {
-            if(TCDCal0 != 0 && TCDCal62 != 0 && TCDCal125 != 0)
+            if (!App.isConnected)
+            {
+                await Application.Current.MainPage.Navigation.PushAsync(new BluetoothPage());
+            }
+            else
+            {
+                if(TCDCal0 != 0 && TCDCal62 != 0 && TCDCal125 != 0)
             {
                 App.isCalibrated = true;
                 await Application.Current.MainPage.Navigation.PushAsync(new DepictionPage());
@@ -277,6 +285,8 @@ namespace RETIRODE_APP.ViewModels
             {
                 await ShowError("Lidar not calibrated");
             }
+            }
+            
 
         }
     }
