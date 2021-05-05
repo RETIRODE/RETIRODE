@@ -98,7 +98,7 @@ namespace RETIRODE_APP.ViewModels
 
         #endregion
 
-    {        
+            
         public ICommand SoftwareResetCommand { get; set; }
         public ICommand CalibrateCommand { get; set; }
         public ICommand SetTriggerPulseCommand { get; set; }
@@ -154,6 +154,11 @@ namespace RETIRODE_APP.ViewModels
                     {
                         await _rangeMeasurementService.GetSipmBiasPowerVoltage(Voltage.Actual);
                         await _rangeMeasurementService.GetLaserVoltage(Voltage.Actual);
+
+                        if (TriggerPulse == default(int))
+                        {
+                            await _rangeMeasurementService.GetPulseCount();
+                        }                        
                         await Task.Delay(1000);
                     }
                     catch ( Exception ex)
@@ -203,6 +208,10 @@ namespace RETIRODE_APP.ViewModels
 
                 case RangeFinderValues.SipmBiasPowerVoltageActual:
                     SIPMActualV = Convert.ToInt32(responseItem.Value);
+                    break;
+
+                case RangeFinderValues.PulseCount:
+                    TriggerPulse = Convert.ToInt32(responseItem.Value);
                     break;
             }
         }
