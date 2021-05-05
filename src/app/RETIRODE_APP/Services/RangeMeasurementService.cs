@@ -11,7 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RETIRODE_APP.Services
@@ -32,11 +32,12 @@ namespace RETIRODE_APP.Services
         private ICharacteristic _receiveQueryCharacteristic;
 
         private bool _isDataSize = false;
-        private int _dataSize = 0;
+        private SemaphoreSlim _semaphoreSlim;
         private CalibrationState _calibrationState = CalibrationState.NoState;
         public RangeMeasurementService()
         {
             _availableDevices = new List<IDevice>();
+            _semaphoreSlim = new SemaphoreSlim(1);
             _bluetoothService = TinyIoCContainer.Current.Resolve<IBluetoothService>();
             _bluetoothService.DeviceFound = DeviceDiscovered;
         }
@@ -85,16 +86,6 @@ namespace RETIRODE_APP.Services
             {
                 await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StartLidar });
             }
-        }
-
-        private async void DataSizeHandler(object sender, CharacteristicUpdatedEventArgs e)
-        {
-            _isDataSize = true;
-            _dataSize = Convert.ToInt32(e.Characteristic.Value);
-
-            //request any value from offered interval <0, {_dataSize}>
-            var RandomValueInRange = new Random().Next(0, _dataSize);
-            await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StartTransfer, Convert.ToByte(RandomValueInRange) });
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
@@ -186,6 +177,16 @@ namespace RETIRODE_APP.Services
             await WriteToCharacteristic(_sendQueryCharacteristic, message);
         }
 
+        private async void DataSizeHandler(object sender, CharacteristicUpdatedEventArgs e)
+        {
+            _isDataSize = true;
+            var dataSize = Convert.ToInt32(e.Characteristic.Value);
+
+            //request any size from offered interval <0, {_dataSize}>
+            var size = new Random().Next(0, dataSize);
+            await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StartTransfer, Convert.ToByte(size) });
+        }
+
         private async void QueryResponseHandler(object sender, CharacteristicUpdatedEventArgs e)
         {
             if (_calibrationState != CalibrationState.NoState)
@@ -218,6 +219,20 @@ namespace RETIRODE_APP.Services
                 parsedData[i] = Convert.ToInt32(data[i]);
             }
             MeasuredDataResponseEvent.Invoke(parsedData);
+        }
+
+        private async void DeviceDiscovered(object sender, IDevice device)
+        {
+            if (await IsWhiteList(device))
+            {
+                _availableDevices.Add(device);
+                DeviceDiscoveredEvent.Invoke(new BLEDevice()
+                {
+                    Name = device.Name,
+                    Identifier = device.Id,
+                    State = device.State
+                });
+            }
         }
 
         private async Task CalibratingLidar()
@@ -328,8 +343,6 @@ namespace RETIRODE_APP.Services
 
         private async Task InitializeBluetoothConnection()
         {
-            try
-            {
                 _rangeMeasurementTransferService = await _connectedDevice.GetServiceAsync(Constants.RangeMeasurementTransferServiceUUID);
                 _RMTTimeOfFlightDataCharacteristic = await _rangeMeasurementTransferService.GetCharacteristicAsync(Constants.RMTTimeOfFlightDataCharacteristic);
                 _RMTControlPointCharacteristic = await _rangeMeasurementTransferService.GetCharacteristicAsync(Constants.RMTControlPointCharacteristic);
@@ -360,35 +373,22 @@ namespace RETIRODE_APP.Services
                 _RMTTimeOfFlightDataCharacteristic.ValueUpdated -= MeasurementDataHandler;
                 _RMTTimeOfFlightDataCharacteristic.ValueUpdated += MeasurementDataHandler;
                 await _RMTTimeOfFlightDataCharacteristic.StartUpdatesAsync();
-
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-
         }
 
         private async Task WriteToCharacteristic(ICharacteristic characteristic, byte[] command)
         {
-            await Policy
-                    .Handle<NullReferenceException>()
-                    .OrResult<bool>(result => result == false)
-                    .WaitAndRetryAsync(5, time => TimeSpan.FromMilliseconds(100))
-                    .ExecuteAsync(() => _bluetoothService.WriteToCharacteristic(characteristic, command));
-        }
-
-        private async void DeviceDiscovered(object sender, IDevice device)
-        {
-            if (await IsWhiteList(device))
+            try
             {
-                _availableDevices.Add(device);
-                DeviceDiscoveredEvent.Invoke(new BLEDevice()
-                {
-                    Name = device.Name,
-                    Identifier = device.Id,
-                    State = device.State
-                });
+                await _semaphoreSlim.WaitAsync();
+                await Policy
+                   .Handle<NullReferenceException>()
+                   .OrResult<bool>(result => result == false)
+                   .WaitAndRetryAsync(5, time => TimeSpan.FromMilliseconds(100))
+                   .ExecuteAsync(() => _bluetoothService.WriteToCharacteristic(characteristic, command));
+            }
+            finally
+            {
+                _semaphoreSlim.Release();
             }
         }
 
