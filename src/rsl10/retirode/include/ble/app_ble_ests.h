@@ -103,27 +103,34 @@ typedef enum ESTS_RF_SETTING_ID_t
     /**
      * SW RESET
      */
-    ESTS_OP_SW_RESET,
+    ESTS_OP_SW_RESET = 0x00,
 
     /**
      * LASER VOLTAGE
      */
-    ESTS_OP_LASER_VOLTAGE,
+    ESTS_OP_LASER_VOLTAGE = 0x01,
 
 	/**
 	 * SiPM BIAS POWER VOLTAGE
 	 */
-	ESTS_OP_S_BIAS_POWER_VOLTAGE,
+	ESTS_OP_S_BIAS_POWER_VOLTAGE = 0x02,
 
 	/**
 	 * SiPM CALIBRATE
 	 */
-	ESTS_OP_CALIBRATE,
+	ESTS_OP_CALIBRATE = 0x03,
 
 	/**
 	 * PULSE COUNT
 	 */
-	ESTS_OP_PULSE_COUNT,
+	ESTS_OP_PULSE_COUNT = 0x04,
+
+	/**
+	 * Voltages Status
+	 */
+	ESTS_OP_VOLTAGES_STATUS= 0x05,
+
+
 
 	ESTS_RF_SETTING_ID_COUNT
 
@@ -142,6 +149,11 @@ typedef enum ESTS_LASER_VOLTAGE_TYPE_t
 	 */
 	ESTS_OP_LASER_VOLTAGE_ACTUAL = 0x02,
 
+	/**
+	 * Turn on/off
+	 */
+	ESTS_OP_LASER_VOLTAGE_SWITCH = 0x03,
+
 } ESTS_LASER_VOLTAGE_TYPE_t;
 
 typedef enum ESTS_S_BIAS_POWER_VOLTAGE_TYPE_t
@@ -155,6 +167,10 @@ typedef enum ESTS_S_BIAS_POWER_VOLTAGE_TYPE_t
 	 * ACTUAL
 	 */
 	ESTS_OP_S_BIAS_POWER_VOLTAGE_ACTUAL = 0x02,
+	/**
+	 * Turn on/off
+	 */
+	ESTS_OP_S_BIAS_POWER_VOLTAGE_SWITCH = 0x03,
 
 } ESTS_S_BIAS_POWER_VOLTAGE_TYPE_t;
 
@@ -189,9 +205,11 @@ typedef enum ESTS_PULSE_COUNT_TYPE_t
 	/**
 	 * VALUE
 	 */
-	ESTS_OP_PULSE_COUNT_VALUE = 1,
+	ESTS_OP_PULSE_COUNT_VALUE = 0x01,
 
 } ESTS_PULSE_COUNT_TYPE_t;
+
+
 
 typedef struct ESTS_OP_SW_RESET_params_t
 {
@@ -220,6 +238,7 @@ typedef struct ETSS_LASER_VOLTAGE_params_t
      *      *
      * ESTS_OP_LASER_VOLTAGE_ACTUAL = 1
      * ESTS_OP_LASER_VOLTAGE_TARGET = 2
+     * ESTS_OP_LASER_VOLTAGE_SWITCH = 3
      *
      *  */
     uint8_t type;
@@ -238,6 +257,7 @@ typedef struct ETSS_S_BIAS_POWER_VOLTAGE_params_t
      *      *
      * ESTS_OP_S_BIAS_POWER_VOLTAGE_ACTUAL = 1
      * ESTS_OP_S_BIAS_POWER_VOLTAGE_TARGET = 2
+     * ESTS_OP_LASER_VOLTAGE_SWITCH = 3
      *
      *  */
     uint8_t type;
@@ -282,6 +302,18 @@ typedef struct ETSS_PULSE_COUNT_params_t
     uint8_t value;
 
 } ETSS_PULSE_COUNT_params_t;
+
+typedef struct ESTS_OP_VOLTAGES_STATUS_params_t
+{
+    /** Condition if came from query characteristic */
+    bool is_query;
+
+
+
+    /** Query response value or command value*/
+    uint8_t value;
+
+} ESTS_OP_VOLTAGES_STATUS_params_t;
 
 
 typedef void (*ESTS_ControlHandler)(ESTS_RF_SETTING_ID_t sidx,
