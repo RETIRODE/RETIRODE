@@ -109,6 +109,7 @@ namespace RETIRODE_APP.Services
         public async Task StopMeasurement()
         {
             await WriteToCharacteristic(_RMTInfoCharacteristic, new[] { (byte)RSL10Command.StopLidar });
+            _isDataSize = false;
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
@@ -131,6 +132,18 @@ namespace RETIRODE_APP.Services
             await WriteToCharacteristic(_sendCommandCharacteristic, message);
         }
 
+        public async Task SwitchLaserVoltage(Switch s)
+        {
+            var message = BuildProtocolMessage(Registers.LaserVoltage, Convert.ToByte(2), Convert.ToInt32(s));
+            await WriteToCharacteristic(_sendCommandCharacteristic, message);
+        }
+
+        public async Task SwitchSipmBiasVoltage(Switch s)
+        {
+            var message = BuildProtocolMessage(Registers.SipmBiasPowerVoltage, Convert.ToByte(2), Convert.ToInt32(s));
+            await WriteToCharacteristic(_sendQueryCharacteristic, message);
+        }
+
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task CalibrateLidar()
         {
@@ -142,19 +155,17 @@ namespace RETIRODE_APP.Services
             }
             else
             {
-                throw new Exception("Currently calibrating LIDAR");
+                throw new CalibrationLidarException("Currently calibrating LIDAR");
             }
         }
         public async Task SetPulseCount(int pulseCount)
         {
-            //TODO: change 1 to enum
-            var message = BuildProtocolMessage(Registers.PulseCount, 1, pulseCount);
+            var message = BuildProtocolMessage(Registers.PulseCount, Convert.ToByte(1), pulseCount);
             await WriteToCharacteristic(_sendCommandCharacteristic, message);
         }
 
         public async Task GetPulseCount()
         {
-            //TODO: change 1 to enum
             var message = BuildProtocolMessage(Registers.PulseCount, 0, 0);
             await WriteToCharacteristic(_sendQueryCharacteristic, message);
         }

@@ -103,6 +103,21 @@ namespace RETIRODE_APP.Services
         /// <returns></returns>
         Task GetSipmBiasPowerVoltage(Voltage voltage);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="switchCase"></param>
+        /// <returns></returns>
+        Task SwitchLaserVoltage(Switch switchCase);
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="switchCase"></param>
+        /// <returns></returns>
+        Task SwitchSipmBiasVoltage(Switch switchCase;
+
         Task StopScanning();
     }
 }
