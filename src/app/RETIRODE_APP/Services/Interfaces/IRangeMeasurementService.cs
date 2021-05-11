@@ -116,7 +116,7 @@ namespace RETIRODE_APP.Services
         /// </summary>
         /// <param name="switchCase"></param>
         /// <returns></returns>
-        Task SwitchSipmBiasVoltage(Switch switchCase;
+        Task SwitchSipmBiasVoltage(Switch switchCase);
 
         Task StopScanning();
     }
