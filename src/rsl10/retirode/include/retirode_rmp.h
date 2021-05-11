@@ -36,11 +36,12 @@ extern "C"
 #define P_REGISTER                 'P'
 #define p_REGISTER                 'p'
 #define RETIRODE_RMP_PULSE_COUNT_REGISTER		                  'N'
-#define D_REGISTER                 'D'
-#define RETIRODE_RMP_ACTUAL_LASER_VOLTAGE_REGISTER                'L'
-#define RETIRODE_RMP_ACTUAL_BIAS_VOLTAGE_REGISTER                 'B'
+#define RETIRODE_RMP_DCD_CONFIG_REGISTER		                  'D'
+#define RETIRODE_RMP_TARGET_LASER_VOLTAGE_REGISTER                'L'
+#define RETIRODE_RMP_ACTUAL_LASER_VOLTAGE_REGISTER                'l'
+#define RETIRODE_RMP_TARGET_BIAS_VOLTAGE_REGISTER                 'B'
 #define I_REGISTER                 'I'
-#define b_REGISTER                 'b'
+#define RETIRODE_RMP_ACTUAL_BIAS_VOLTAGE_REGISTER                 'b'
 
 #define RETIRODE_RMP_DATA_RECEIVED_BUFFER_SIZE  	200 * 4
 #define RETIRODE_RMP_MAX_DATA_CHUNK_SIZE			64
@@ -53,17 +54,9 @@ typedef enum RETIRODE_RMP_State_t
     /**
      * LIDAR is completely powered off.
      * State transitions:
-     * * SMARTSHOT_ISP_STATE_POWER_UP - After receiving power up command.
+     * * SMARTSHOT_ISP_STATE_IDLE - After receiving Initialize command.
      */
 	RETIRODE_RMP_STATE_SHUTDOWN,
-
-    /**
-     * LIDAR is powering up.
-     * Turning ON both power supplies
-     * State transitions:
-     * * SMARTSHOT_ISP_STATE_IDLE - After successful power-up operation.
-     */
-	RETIRODE_RMP_STATE_POWER_UP,
 
 	/**
 	 * LIDAR is ready and waiting for application commands.
@@ -228,7 +221,7 @@ typedef enum RETIRODE_RMP_ReadyReason_t
      * ISP is ready to capture next image due to completion of power up
      * sequence.
      */
-	RETIRODE_RMP_READY_POWER_UP,
+	RETIRODE_RMP_READY_INITIALIZED,
 
     /**
      * ISP is ready to capture next image after completion of data transfer
@@ -252,16 +245,18 @@ int32_t RETIRODE_RMP_Initialize(ARM_DRIVER_USART *uart, RETIRODE_RMP_EventHandle
 bool RETIRODE_RMP_MainLoop(void);
 
 void RETIRODE_RMP_PowerUpCommand(void);
-
+int32_t RETIRODE_RMP_WriteCommand(char *cmd);
 void RETIRODE_RMP_MeasureCommand(uint32_t measure_size);
-
 void RETIRODE_RMP_QueryCommand(char reg);
 void RETIRODE_RMP_CalibrateCommand(uint8_t calibrate);
 void RETIRODE_RMP_SoftwareResetCommand();
+void RETIRODE_RMP_SetLaserPowerEnabledCommand(bool enabled);
+void RETIRODE_RMP_SetPowerBiasEnabledCommand(bool enabled);
 void RETIRODE_RMP_SetLaserPowerTargetVoltateCommand(float voltage);
 void RETIRODE_RMP_SetPowerBiasTargetVoltateCommand(float voltage);
 void RETIRODE_RMP_SetPulseCountCommand(uint8_t count);
 void RETIRODE_RMP_SettingCommand(char reg, uint8_t value);
+void RETIRODE_RMP_SetTriggerPeriodCommand(float newPeriod);
 
 /* ----------------------------------------------------------------------------
  * Close the 'extern "C"' block

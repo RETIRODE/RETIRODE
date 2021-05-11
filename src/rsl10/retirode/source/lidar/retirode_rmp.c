@@ -6,6 +6,7 @@
  */
 #include <retirode_rmp.h>
 #include <rsl10.h>
+static char hex[] = "0123456789ABCDEF";
 
 #define QUERY_STRING 				"%??\r"
 #define COMMAND_STRING 				"%$1\r"
@@ -14,6 +15,14 @@
 
 static char* ReplaceChar(char* str, char find, char replace);
 static void WriteValueToCommand(char* str,char find, uint8_t val);
+
+const float TRIGGER_GENERATOR_TICK = 64e-6f;    // trigger generator time base in HW
+
+const uint16_t TRIGGER_MIN_PERIOD_NATIVE = 15;
+const float TRIGGER_MIN_PERIOD = TRIGGER_MIN_PERIOD_NATIVE * TRIGGER_GENERATOR_TICK;
+
+const uint16_t TRIGGER_MAX_PERIOD_NATIVE = 65535;
+const float TRIGGER_MAX_PERIOD = TRIGGER_MAX_PERIOD_NATIVE * TRIGGER_GENERATOR_TICK;
 
 // DC-DC controller target voltage limits
 const float LASER_MAX_TARGET_VOLTAGE = 16.0;    // maximum setable LASER power supply target voltage
@@ -43,9 +52,10 @@ const float ADC_FREQUENCY = 16.0;                       // ADC system clock in M
 
 struct RETIRODE_RMP_SettingCommand_t
 {
+	bool low_high;
 	char reg;
-
-	uint8_t value;
+	char reg2;
+	uint16_t value;
 };
 
 /**
@@ -54,6 +64,8 @@ struct RETIRODE_RMP_SettingCommand_t
  */
 struct RETIRODE_RMP_EnvironmentFlags_t
 {
+	bool cmd_software_reset;
+
 	/**Command to start power up of the RMP was received. */
 	bool cmd_power_on;
 
@@ -82,8 +94,6 @@ struct RETIRODE_RMP_CurrentMeasurement_t
 	/* Holds received RAW data from UART */
 	char received_data_buffer[RETIRODE_RMP_DATA_RECEIVED_BUFFER_SIZE];
 
-	uint8_t pulse_count;
-
 	/** Holds already processed data */
 	uint32_t requested_data_buffer[200];
 
@@ -91,6 +101,12 @@ struct RETIRODE_RMP_CurrentMeasurement_t
 	uint32_t requested_data_proccesed;
 
 	uint32_t calibration;
+};
+
+struct RETIRODE_RMP_DCD_CONFIG_REGISTER_t
+{
+   bool laserPowerEnable;
+   bool biasPowerEnable;
 };
 
 /**
@@ -125,6 +141,11 @@ struct RETIRODE_RMP_Eviroment_t
 	struct RETIRODE_RMP_CurrentMeasurement_t current_measurement;
 
 	struct RETIRODE_RMP_SettingCommand_t current_command;
+
+	struct RETIRODE_RMP_DCD_CONFIG_REGISTER_t d_register_state;
+
+	uint8_t pulse_count;
+
 	/** Holds latest query response */
 	char query_response_buffer[4];
 	/**
@@ -138,7 +159,6 @@ struct RETIRODE_RMP_Eviroment_t
 typedef void(*RETIRODE_RMP_StateHandler_t)(void);
 
 static void RETIRODE_RMP_ShutdownStateHandler(void);
-static void RETIRODE_RMP_PowerUpStateHandler(void);
 static void RETIRODE_RMP_IdleStateHandler(void);
 static void RETIRODE_RMP_SettingsStateHandler(void);
 static void RETIRODE_RMP_CalibrateStateHandler(void);
@@ -161,7 +181,6 @@ static struct RETIRODE_RMP_Eviroment_t rmp_env;
 static
 const RETIRODE_RMP_StateHandler_t retirode_lmp_state_handler[RETIRODE_RMP_STATE_MAX] = {
 [RETIRODE_RMP_STATE_SHUTDOWN] = RETIRODE_RMP_ShutdownStateHandler,
-[RETIRODE_RMP_STATE_POWER_UP] = RETIRODE_RMP_PowerUpStateHandler,
 [RETIRODE_RMP_STATE_IDLE] = RETIRODE_RMP_IdleStateHandler,
 [RETIRODE_RMP_STATE_CALIBRATE] = RETIRODE_RMP_CalibrateStateHandler,
 [RETIRODE_RMP_STATE_SETTING] = RETIRODE_RMP_SettingsStateHandler,
@@ -178,10 +197,19 @@ static char* ReplaceChar(char* str, char find, char replace){
     return str;
 }
 
-static void WriteValueToCommand(char* str, char find, uint8_t val)
+void convert_to_hex_str(char* str, uint8_t* val, size_t val_count)
 {
-	str[1] = (val >>  4) & 0xff;  /* next byte, bits 8-15 */
-	str[2] = val & 0xff;
+	for (size_t i = 0; i < val_count; i++)
+	{
+		str[(i * 2) + 0] = hex[((val[i] & 0xF0) >> 4)];
+		str[(i * 2) + 1] = hex[((val[i] & 0x0F) >> 0)];
+	}
+}
+
+
+static void WriteValueToCommand(char * str, char find, uint8_t val)
+{
+	convert_to_hex_str(str + 1, &val, 1);
 }
 
 /**
@@ -290,15 +318,6 @@ static void RETIRODE_RMP_SendQueryResponseReadyEvent(
     }
 }
 
-static void RETIRODE_RMP_SendReadyEvent(
-		RETIRODE_RMP_ReadyReason_t *p_data)
-{
-    if (rmp_env.p_evt_handler != NULL)
-    {
-    	rmp_env.p_evt_handler(RETIRODE_RMP_EVENT_READY, p_data);
-    }
-}
-
 static void RETIRODE_RMP_SendErrorIndication(RETIRODE_RMP_State_t state,
 	RETIRODE_RMP_Err_t error)
 {
@@ -317,46 +336,9 @@ static void RETIRODE_RMP_ShutdownStateHandler(void)
 {
 	if (rmp_env.flag.cmd_power_on)
 	{
-		//TODO: Check if lmp is initialized
 		rmp_env.flag.is_powered = true;
 		rmp_env.flag.cmd_power_on = false;
-
-		RETIRODE_RMP_SetState(RETIRODE_RMP_STATE_POWER_UP);
-	}
-}
-
-static void RETIRODE_RMP_PowerUpStateHandler(void)
-{
-	int32_t status;
-	if (rmp_env.flag.is_powered)
-	{
-		//TODO: Check if lmp is initialized
-
-		uint32_t commandByte = 0;
-
-		//laser power
-		commandByte |= 0x01;
-
-		//bias power enable
-		commandByte |= 0x02;
-
-		char command[4] = COMMAND_STRING;
-		COMMAND(command, D_REGISTER,commandByte);
-		status = RETIRODE_RMP_WriteCommand(command);
-
-		if (status == ARM_DRIVER_OK)
-		{
-			rmp_env.flag.cmd_power_on = false;
-			rmp_env.flag.is_powered = true;
-
-			RETIRODE_RMP_SendReadyEvent(RETIRODE_RMP_READY_POWER_UP);
-
-			RETIRODE_RMP_SetState(RETIRODE_RMP_STATE_IDLE);
-		}
-		else
-		{
-			RETIRODE_RMP_SendErrorIndication(RETIRODE_RMP_STATE_POWER_UP, RETIRODE_RMP_ERR_UART_ERROR);
-		}
+		RETIRODE_RMP_SetState(RETIRODE_RMP_STATE_IDLE);
 	}
 }
 
@@ -372,10 +354,10 @@ static void RETIRODE_RMP_IdleStateHandler(void)
 	{
 		RETIRODE_RMP_SetState(RETIRODE_RMP_STATE_SETTING);
 	}
-	/** Setting command */
+	/** Calibration routine */
 	else if(rmp_env.flag.calibration)
 	{
-		RETIRODE_RMP_SetState(	RETIRODE_RMP_STATE_CALIBRATE);
+		RETIRODE_RMP_SetState(RETIRODE_RMP_STATE_CALIBRATE);
 	}
 	/**Measure data */
 	else if (rmp_env.flag.cmd_measure)
@@ -384,12 +366,12 @@ static void RETIRODE_RMP_IdleStateHandler(void)
 	}
 }
 
-
 static void RETIRODE_RMP_CalibrateStateHandler(void)
 {
 	int32_t status = ARM_DRIVER_OK;
 
 	uint16_t commandByte = 0;
+	char command[4] = COMMAND_STRING;
 	switch(rmp_env.flag.calibration)
 	{
 		case RETIRODE_RMP_CALIBRATION_0ns:
@@ -409,15 +391,11 @@ static void RETIRODE_RMP_CalibrateStateHandler(void)
 		}
 		case RETIRODE_RMP_CALIBRATION_DONE:
 		{
+			commandByte |= 0x10;
 			break;
 		}
 	}
 
-	//Laser pulse enable
-	//TODO: add command to enable/disable laser pulse. Now is enabled by default
-	commandByte |= 0x10;
-
-	char command[4] = COMMAND_STRING;
 	COMMAND(command, RETIRODE_RMP_MAIN_CONFIG_REGISTER, commandByte);
 	status = RETIRODE_RMP_WriteCommand(command);
 
@@ -440,9 +418,25 @@ static void RETIRODE_RMP_SettingsStateHandler(void)
 {
 	int32_t status = ARM_DRIVER_OK;
 
-	char command[4] = COMMAND_STRING;
-	COMMAND(command, rmp_env.current_command.reg, rmp_env.current_command.value);
-	status = RETIRODE_RMP_WriteCommand(command);
+	char reset[4] = { rmp_env.current_command.reg, '0','0','\r'};
+	RETIRODE_RMP_WriteCommand(reset);
+
+	if(rmp_env.current_command.low_high)
+	{
+		char command[4] = COMMAND_STRING;
+		COMMAND(command, rmp_env.current_command.reg, rmp_env.current_command.value >> 8);
+		status = RETIRODE_RMP_WriteCommand(command);
+
+		char command2[4] = COMMAND_STRING;
+		COMMAND(command2, rmp_env.current_command.reg2, rmp_env.current_command.value);
+		status = RETIRODE_RMP_WriteCommand(command2);
+	}
+	else
+	{
+		char command[4] = COMMAND_STRING;
+		COMMAND(command, rmp_env.current_command.reg, rmp_env.current_command.value);
+		status = RETIRODE_RMP_WriteCommand(command);
+	}
 
 	if (status == ARM_DRIVER_OK)
 	{
@@ -461,13 +455,12 @@ static void RETIRODE_RMP_MeasureStateHandler(void)
 	int32_t status = ARM_DRIVER_OK;
 	int32_t receive_status;
 
-	receive_status = RETIRODE_RMP_UARTReceiveMeasurementData(rmp_env.current_measurement.pulse_count);
+	receive_status = RETIRODE_RMP_UARTReceiveMeasurementData(rmp_env.pulse_count);
+	char command[4] = COMMAND_STRING;
+	COMMAND(command, RETIRODE_RMP_PULSE_COUNT_REGISTER, rmp_env.pulse_count);
 
 	RETIRODE_RMP_WriteCommand("N00\r");
-
-	char command[4] = COMMAND_STRING;
-	COMMAND(command, RETIRODE_RMP_PULSE_COUNT_REGISTER, rmp_env.current_measurement.pulse_count);
-	status = RETIRODE_RMP_WriteCommand("N64\r");
+	status = RETIRODE_RMP_WriteCommand(command);
 
 	if (status == ARM_DRIVER_OK && receive_status == ARM_DRIVER_OK)
 	{
@@ -488,7 +481,7 @@ static void RETIRODE_RMP_CalculateMeanFromRawData(void)
 	value += strtol(rmp_env.current_measurement.received_data_buffer, &str_end, 16);
 	str_end++;
 
-	while(count < rmp_env.current_measurement.pulse_count)
+	while(count < rmp_env.pulse_count)
 	{
 		value += strtol(str_end, NULL, 16);
 		str_end += 4;
@@ -579,9 +572,58 @@ static void RETIRODE_RMP_QueryResponseStateHandler(void)
 	if (rmp_env.uart_event == ARM_USART_EVENT_RECEIVE_COMPLETE)
 	{
 		static RETIRODE_RMP_Query_response_t data;
+		data.value = 0;
 
 		data.reg = rmp_env.query_response_buffer[0];
-		data.value = strtol(rmp_env.query_response_buffer + 1, NULL, 16);
+		uint8_t value = strtol(rmp_env.query_response_buffer + 1, NULL, 16);
+
+		switch(data.reg)
+		{
+		 	case (RETIRODE_RMP_DCD_CONFIG_REGISTER):
+			{
+		 		// laser power enabled
+		 		if ((value & 0x01) != 0)
+		 		{
+		 			data.value |= 0x01;
+		 		}
+		 		//laser overload
+		 		if ((value & 0x04) != 0)
+				{
+		 			data.value |= 0x02;
+				}
+		 		//bias power enabled
+		 		if ((value & 0x02) != 0)
+				{
+		 			data.value |= 0x03;
+				}
+		 		//bias  overload
+		 		if ((value & 0x08) != 0)
+				{
+		 			data.value |= 0x04;
+				}
+		 		break;
+			}
+		 	case(RETIRODE_RMP_TARGET_LASER_VOLTAGE_REGISTER):
+			{
+		 		data.value = FromNativeLaserToReal(value);
+				break;
+			}
+			case(RETIRODE_RMP_TARGET_BIAS_VOLTAGE_REGISTER):
+			{
+				data.value = FromNativeBiasToReal(value);
+				break;
+			}
+		 	case(RETIRODE_RMP_ACTUAL_LASER_VOLTAGE_REGISTER):
+			{
+		 		data.value = FromNativeLaserToReal(value);
+		 		break;
+			}
+		 	case(RETIRODE_RMP_ACTUAL_BIAS_VOLTAGE_REGISTER):
+			{
+		 		data.value = FromNativeBiasToReal(value);
+		 		break;
+			}
+		}
 
 		RETIRODE_RMP_SendQueryResponseReadyEvent(&data);
 	 	RETIRODE_RMP_SetState(RETIRODE_RMP_STATE_IDLE);
@@ -592,8 +634,6 @@ static void RETIRODE_RMP_QueryResponseStateHandler(void)
 
 int32_t RETIRODE_RMP_Initialize(ARM_DRIVER_USART *uart, RETIRODE_RMP_EventHandler_t handler)
 {
-	//REQUIRE(uart != NULL);
-	//REQUIRE(handler != NULL);
 
 	if (uart == NULL || handler == NULL)
 	{
@@ -613,6 +653,20 @@ bool RETIRODE_RMP_MainLoop(void)
 
 	RETIRODE_RMP_State_t entry_state = rmp_env.state;
 
+	if(rmp_env.flag.cmd_software_reset == true)
+	{
+		RETIRODE_RMP_WriteCommand("R01\r");
+		RETIRODE_RMP_SetState(RETIRODE_RMP_STATE_SHUTDOWN);
+
+		if(entry_state != RETIRODE_RMP_STATE_SHUTDOWN)
+		{
+			RETIRODE_RMP_PowerUpCommand();
+		}
+
+		rmp_env.flag.cmd_software_reset = false;
+	}
+
+
 	retirode_lmp_state_handler[rmp_env.state]();
 
  	if (rmp_env.state != entry_state)
@@ -625,40 +679,44 @@ bool RETIRODE_RMP_MainLoop(void)
 	}
 }
 
-static void RETIRODE_RMP_CalibrateMeasureCommand()
-{
-	if(rmp_env.current_measurement.pulse_count == 0)
-	{
-		//default value
-		rmp_env.current_measurement.pulse_count = 100;
-	}
-
-	rmp_env.current_measurement.calibration = rmp_env.flag.calibration;
-	rmp_env.flag.cmd_measure = 1;
-}
-
 void RETIRODE_RMP_QueryCommand(char reg)
 {
 	rmp_env.flag.cmd_query = reg;
 }
 
+void RETIRODE_RMP_SettingLowHighCommand(char reg, char reg2, uint16_t value)
+{
+	rmp_env.current_command.low_high = true;
+	rmp_env.current_command.reg = reg;
+	rmp_env.current_command.reg2 = reg2;
+	rmp_env.current_command.value = value;
+}
+
 void RETIRODE_RMP_SettingCommand(char reg, uint8_t value)
 {
+	rmp_env.current_command.low_high = false;
 	rmp_env.current_command.reg = reg;
 	rmp_env.current_command.value = value;
 }
 
 void RETIRODE_RMP_MeasureCommand(uint32_t measure_size)
 {
-	if(rmp_env.current_measurement.pulse_count == 0)
+	if(rmp_env.pulse_count == 0)
 	{
 		//default value
-		rmp_env.current_measurement.pulse_count = 100;
+		rmp_env.pulse_count = 100;
 	}
 
 	rmp_env.flag.cmd_measure = measure_size;
 	rmp_env.current_measurement.calibration = 0;
 }
+
+static void RETIRODE_RMP_CalibrateMeasureCommand()
+{
+	RETIRODE_RMP_MeasureCommand(1);
+	rmp_env.current_measurement.calibration = rmp_env.flag.calibration;
+}
+
 
 void RETIRODE_RMP_PowerUpCommand(void)
 {
@@ -667,12 +725,52 @@ void RETIRODE_RMP_PowerUpCommand(void)
 
 void RETIRODE_RMP_SetPulseCountCommand(uint8_t count)
 {
-	rmp_env.current_measurement.pulse_count = count;
+	rmp_env.pulse_count = count;
 }
 
 void RETIRODE_RMP_SoftwareResetCommand()
 {
-	RETIRODE_RMP_SettingCommand(R_REGISTER, 1);
+	rmp_env.flag.cmd_software_reset = true;
+}
+
+static void RETIRODE_RMP_UpdateDRegister(void)
+{
+	uint commandByte;
+	commandByte = 0;
+
+	if (rmp_env.d_register_state.laserPowerEnable)
+		commandByte |= 0x01;
+
+	if (rmp_env.d_register_state.biasPowerEnable)
+		commandByte |= 0x02;
+
+	RETIRODE_RMP_SettingCommand(RETIRODE_RMP_DCD_CONFIG_REGISTER, commandByte);
+}
+
+void RETIRODE_RMP_SetLaserPowerEnabledCommand(bool enabled)
+{
+	rmp_env.d_register_state.laserPowerEnable = enabled;
+	RETIRODE_RMP_UpdateDRegister();
+}
+
+void RETIRODE_RMP_SetPowerBiasEnabledCommand(bool enabled)
+{
+	rmp_env.d_register_state.biasPowerEnable = enabled;
+	RETIRODE_RMP_UpdateDRegister();
+}
+
+void RETIRODE_RMP_SetTriggerPeriodCommand(float newPeriod)
+{
+	uint16_t newNativePeriod;
+
+	float a = TRIGGER_MIN_PERIOD;
+	float b = TRIGGER_MAX_PERIOD;
+	if (newPeriod >= a && newPeriod <= b)
+	{
+		// there seems to be some settable input
+		newNativePeriod = roundf(newPeriod  / TRIGGER_GENERATOR_TICK);
+		RETIRODE_RMP_SettingLowHighCommand(P_REGISTER, p_REGISTER, newNativePeriod);
+	}
 }
 
 void RETIRODE_RMP_CalibrateCommand(uint8_t calibrate)
@@ -695,7 +793,7 @@ static uint8_t FromRealBiasToNative(float realVoltage)
     if (realVoltage > BIAS_MIN_MEAS_VOLTAGE)
         realVoltage = BIAS_MIN_MEAS_VOLTAGE;
 
-    // calculate ADC comparator voltage from real laser power supply outpu voltage
+    // calculate ADC comparator voltage from real laser power supply output voltage
     compVoltage = ADC_SUPPLY_VOLTAGE - R34_UPPER * (ADC_SUPPLY_VOLTAGE - realVoltage - ADC_LOWEST_COMP_VOLTAGE) / (R32_LOWER + R34_UPPER);
 
     // calculate ADC ramp time from comparator voltage
@@ -803,7 +901,7 @@ void RETIRODE_RMP_SetPowerBiasTargetVoltateCommand(float voltage)
 	// convert real float voltage value to native HW value
 	targetVoltageNative = FromRealBiasToNative(voltage);
 
-	RETIRODE_RMP_SettingCommand(RETIRODE_RMP_ACTUAL_BIAS_VOLTAGE_REGISTER, targetVoltageNative);
+	RETIRODE_RMP_SettingCommand(RETIRODE_RMP_TARGET_BIAS_VOLTAGE_REGISTER, targetVoltageNative);
 }
 
 void RETIRODE_RMP_SetLaserPowerTargetVoltateCommand(float voltage)
@@ -821,6 +919,6 @@ void RETIRODE_RMP_SetLaserPowerTargetVoltateCommand(float voltage)
 	// convert real float voltage value to native HW value
 	targetVoltageNative = FromRealLaserToNative(voltage);
 
-	RETIRODE_RMP_SettingCommand(RETIRODE_RMP_ACTUAL_LASER_VOLTAGE_REGISTER, targetVoltageNative);
+	RETIRODE_RMP_SettingCommand(RETIRODE_RMP_TARGET_LASER_VOLTAGE_REGISTER, targetVoltageNative);
 }
 

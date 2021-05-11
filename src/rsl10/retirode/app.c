@@ -338,15 +338,13 @@ void RETIRODE_RMP_Handler(RETIRODE_RMP_Event_t event,
 	return;
 }
 
-
-
-
 int main(void)
 {
     /* Initialize the system */
     Device_Initialize();
     CIRCBUF_Initialize(app_data_cache_storage, APP_DATA_CACHE_SIZE,
             	        	                    &app_env.data_cache);
+
 	int i = 0;
 	/* Spin loop */
 	while (true)
@@ -357,9 +355,40 @@ int main(void)
 
 		if(i == 20)
 		{
+			RETIRODE_RMP_SoftwareResetCommand();
+		}
+
+		if(i == 200)
+		{
 			RETIRODE_RMP_PowerUpCommand();
 		}
 
+		if(i == 1500)
+		{
+			RETIRODE_RMP_SetLaserPowerTargetVoltateCommand(5);
+		}
+		if(i == 2000)
+		{
+			RETIRODE_RMP_SetLaserPowerEnabledCommand(true);
+			//RETIRODE_RMP_SetPowerBiasEnabledCommand(true);
+		}
+
+		if(i == 2100)
+		{
+			RETIRODE_RMP_SetLaserPowerEnabledCommand(true);
+			RETIRODE_RMP_SetPowerBiasEnabledCommand(true);
+		}
+
+		if(i == 2300)
+		{
+			RETIRODE_RMP_QueryCommand(RETIRODE_RMP_DCD_CONFIG_REGISTER);
+			//RETIRODE_RMP_SetPowerBiasTargetVoltateCommand(-45);
+			//RETIRODE_RMP_SetTriggerPeriodCommand(0.000959999976);
+		}
+		if(i == 2500)
+		{
+		//	RETIRODE_RMP_MeasureCommand(1);
+		}
 		/* Refresh the watchdog timer */
 		Sys_Watchdog_Refresh();
 		Kernel_Schedule();
