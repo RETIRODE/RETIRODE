@@ -9,9 +9,9 @@
         <local:HomeViewModel />
     </ContentPage.BindingContext>
 
-    <ContentPage.ToolbarItems>
-        <!--<ToolbarItem Text="Connected" Icon="icon_bluetooth.png" Command="{Binding ConnectCommand}"/>-->
-    </ContentPage.ToolbarItems>
+    <!--<ContentPage.ToolbarItems>
+        <ToolbarItem Text="Connected" Icon="icon_bluetooth.png" Command="{Binding ConnectCommand}"/>
+    </ContentPage.ToolbarItems>-->
 
     <Grid BackgroundColor="{StaticResource Secondary}">
 

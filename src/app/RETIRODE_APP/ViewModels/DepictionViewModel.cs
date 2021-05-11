@@ -26,9 +26,22 @@ namespace RETIRODE_APP.ViewModels
         private CalibrationItem Calibration { get; set; }
 
 
+        public IRangeMeasurementService rangeMeasurementService;
+
         bool movementsEnabled;
         Node plotNode;
-        public DepictionViewModel(ApplicationOptions options = null) : base(options) { }
+        public DepictionViewModel(ApplicationOptions options = null) : base(options) {
+            rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
+            rangeMeasurementService.MeasuredDataResponseEvent -= RangeMeasurementService_MeasuredDataResponseEvent;
+            rangeMeasurementService.MeasuredDataResponseEvent += RangeMeasurementService_MeasuredDataResponseEvent;
+            rangeMeasurementService.StartMeasurement();
+        }
+
+        private void RangeMeasurementService_MeasuredDataResponseEvent(int[] obj)
+        {
+            
+        }
+
         private static ApplicationOptions SetOptions(ApplicationOptions options)
         {
             options.TouchEmulation = true;

@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Plugin.BLE" Version="2.1.1" />
+    <PackageReference Include="Polly" Version="7.2.2" />
     <PackageReference Include="sqlite-net-pcl" Version="1.7.335" />
     <PackageReference Include="SQLiteNetExtensions" Version="2.1.0" />
     <PackageReference Include="UrhoSharp.Forms" Version="1.9.67" />

@@ -86,6 +86,9 @@ namespace RETIRODE_APP.Services
         /// <returns></returns>
         Task SetPulseCount(int pulseCount);
 
+        
+        Task GetPulseCount();
+
         /// <summary>
         /// Send request for target or actual value of lidar's
         /// laser voltage
@@ -106,5 +109,6 @@ namespace RETIRODE_APP.Services
         /// </summary>
         /// <returns></returns>
         Task GetCalibration(Calibrate calibrate);
+        Task StopScanning();
     }
 }

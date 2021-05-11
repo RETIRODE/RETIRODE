@@ -9,6 +9,9 @@
         NS62_5 = 0x02,
 
         //125.0 ns
-        NS125 = 0x03
+        NS125 = 0x03,
+
+        //End command
+        EndCommand = 0x04
     }
 }

@@ -14,7 +14,17 @@ namespace RETIRODE_APP.Views
     {
         public SettingsPage()
         {
-            InitializeComponent();
+            try
+            {
+                InitializeComponent();
+            }
+            catch (Exception ex)
+            {
+                
+            }
+            
         }
     }
+
+
 }

@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Xamarin.Forms;
 
 namespace RETIRODE_APP.ViewModels
@@ -27,6 +29,26 @@ namespace RETIRODE_APP.ViewModels
             set { SetProperty(ref title, value); }
         }
 
+        protected async Task WithBusy(Func<Task> action)
+        {
+            bool completed = false;
+            try
+            {
+                ShowBusy(() => completed, 5); ;
+                await action();
+                completed = true;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                completed = true;
+            }
+        }
+    
+
         protected bool SetProperty<T>(ref T backingStore, T value,
             [CallerMemberName] string propertyName = "",
             Action onChanged = null)
@@ -39,6 +61,42 @@ namespace RETIRODE_APP.ViewModels
             OnPropertyChanged(propertyName);
             return true;
         }
+
+        protected async Task ShowError(string message)
+        {
+            await Application.Current.MainPage.DisplayAlert("Error", message, "OK");
+        }
+
+        protected void ShowBusy(Func<bool> func, int timeout)
+        {
+
+            var tokenSource = new CancellationTokenSource(timeout * 1000);
+            IsBusy = true;
+            Task.Run(() =>
+            {
+                try
+                {
+                    while (!tokenSource.IsCancellationRequested)
+                    {
+                        if (func())
+                        {
+                            break;
+                        }
+                    }
+                }
+                finally
+                {
+                    IsBusy = false;
+                    tokenSource.Dispose();
+                }
+            }, tokenSource.Token);
+        }
+
+        protected async Task<bool> ShowDialog(string message)
+        {
+            return await Application.Current.MainPage.DisplayAlert("Question?", message, "Yes", "No");
+        }
+
 
         #region INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
