@@ -21,7 +21,7 @@ namespace RETIRODE_APP.Models
                 float y = (float)rand.NextDouble() + rand.Next(-1, 1);
                 float z = (float)rand.NextDouble() + rand.Next(-1, 1);
 
-                points.Add(new Point { x = x, y = y, z = z });
+                points.Add(new Point { x = 0, y = y, z = 0 });
             }
 
             return points;
