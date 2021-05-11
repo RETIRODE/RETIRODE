@@ -103,12 +103,6 @@ namespace RETIRODE_APP.Services
         /// <returns></returns>
         Task GetSipmBiasPowerVoltage(Voltage voltage);
 
-        /// <summary>
-        /// Send request for one of three calibration values
-        /// of lidar
-        /// </summary>
-        /// <returns></returns>
-        Task GetCalibration(Calibrate calibrate);
         Task StopScanning();
     }
 }
