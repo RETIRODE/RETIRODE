@@ -8,6 +8,7 @@ namespace RETIRODE_APP.Models.Enums
         LaserVoltage = 0x01,
         SipmBiasPowerVoltage = 0x02,
         Calibrate = 0x03,
-        PulseCount = 0x04
+        PulseCount = 0x04,
+        VoltageStatus = 0x05
     }
 }

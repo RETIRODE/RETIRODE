@@ -9,6 +9,7 @@
         CalibrateNS0,
         Calibrate62_5,
         Calibrate125,
-        PulseCount
+        PulseCount,
+        VoltageStatus
     }
 }
