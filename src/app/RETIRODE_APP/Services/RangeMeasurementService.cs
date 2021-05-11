@@ -171,16 +171,10 @@ namespace RETIRODE_APP.Services
             await WriteToCharacteristic(_sendQueryCharacteristic, message);
         }
 
-        public async Task GetCalibration(Calibrate calibrate)
-        {
-            var message = BuildProtocolMessage(Registers.Calibrate, (byte)calibrate, 0);
-            await WriteToCharacteristic(_sendQueryCharacteristic, message);
-        }
-
         private async void DataSizeHandler(object sender, CharacteristicUpdatedEventArgs e)
         {
             _isDataSize = true;
-            var dataSize = Convert.ToInt32(e.Characteristic.Value);
+            var dataSize = BitConverter.ToInt32(e.Characteristic.Value, 0);
 
             //request any size from offered interval <0, {_dataSize}>
             var size = new Random().Next(0, dataSize);
@@ -337,8 +331,8 @@ namespace RETIRODE_APP.Services
 
         private static int GetDataFromResponse(byte[] data)
         {
-            var k = BitConverter.ToString(new[] { data[5], data[4] }).Replace("-", "");
-            return Convert.ToInt32(k, 16);
+            var result = BitConverter.ToString(new[] { data[4], data[5] }).Replace("-", "");
+            return Convert.ToInt32(result, 16);
         }
 
         private async Task InitializeBluetoothConnection()
