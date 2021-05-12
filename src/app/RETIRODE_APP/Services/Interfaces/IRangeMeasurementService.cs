@@ -1,6 +1,7 @@
 ﻿using RETIRODE_APP.Models;
 using RETIRODE_APP.Models.Enums;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace RETIRODE_APP.Services
@@ -24,7 +25,7 @@ namespace RETIRODE_APP.Services
         /// Event involves processed measured data from bluetooth
         /// which are interpretated as array of integers
         /// </summary>
-        event Action<int[]> MeasuredDataResponseEvent;
+        event Action<List<float>> MeasuredDataResponseEvent;
 
         /// <summary>
         /// 
