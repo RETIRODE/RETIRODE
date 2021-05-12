@@ -27,25 +27,33 @@ namespace RETIRODE_APP.Views
 
         private void Sipm_Switch_Toggled(object sender, ToggledEventArgs e)
         {
-            if(sipmOknok.Opacity == 0)
+            if(sipmActual.Text.Equals("-"))
             {
-                sipmOknok.Opacity = 100;
+                sipmActual.Text = "0";
+                sipmOknok.BackgroundColor = Color.FromHex("#78D778");
+                sipmOknok.Text = "Ok";
             }
             else
             {
-                sipmOknok.Opacity = 0;
+                sipmActual.Text = "-";
+                sipmOknok.BackgroundColor = Color.FromHex("#737475");
+                sipmOknok.Text = "-";
             }
         }
 
         private void Laser_Switch_Toggled(object sender, ToggledEventArgs e)
         {
-            if (laserOknok.Opacity == 0)
+            if (laserActual.Text.Equals("-"))
             {
-                laserOknok.Opacity = 100;
+                laserActual.Text = "0";
+                laserOknok.BackgroundColor = Color.FromHex("#D6676C");
+                laserOknok.Text = "Not Ok";
             }
             else
             {
-                laserOknok.Opacity = 0;
+                laserActual.Text = "-";
+                laserOknok.BackgroundColor = Color.FromHex("#737475");
+                laserOknok.Text = "-";
             }
         }
     }
