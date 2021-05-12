@@ -148,21 +148,25 @@
                 
                     <!-- Actual[V] -->
                     <Label Text="Actual[V]" Grid.Column="1"/>
-                    <Label Style="{StaticResource TCDValueDisabled}" 
+                    <Label x:Name="sipmActual"
+                           Style="{StaticResource TCDValueDisabled}" 
                            Grid.Column="1" 
                            Grid.Row="1"
                            Text="{Binding SIPMActualV, Mode=TwoWay}"/>
 
                     <!-- ON/OFF -->
-                    <Switch IsToggled="false" 
+                    <Switch x:Name="sipmSwitch"
+                            IsToggled="true"
                             ThumbColor="{StaticResource Orange}"
                             OnColor="{StaticResource Primary}"
                             Grid.Column="0"
                             Grid.Row="2"
-                            HorizontalOptions="Center"/>
+                            HorizontalOptions="Center"
+                            Toggled="Sipm_Switch_Toggled"/>
 
                     <!-- OK/NOT OK -->
-                    <Label Text="OK"
+                    <Label x:Name="sipmOknok"
+                           Text="OK"
                            BackgroundColor="#78D778"
                            Grid.Column="1" 
                            Grid.Row="2"
@@ -186,21 +190,25 @@
                     </Entry>
                     <!-- Actual[V] -->
                     <Label Text="Actual[V]" Grid.Column="3"/>
-                    <Label Style="{StaticResource TCDValueDisabled}"
+                    <Label x:Name="laserActual"
+                           Style="{StaticResource TCDValueDisabled}"
                            Grid.Column="3"
                            Grid.Row="1"
                            Text="{Binding LaserActualV, Mode=TwoWay}"/>
 
                     <!-- ON/OFF -->
-                    <Switch IsToggled="false" 
+                    <Switch x:Name="laserSwitch"
+                            IsToggled="true" 
                             ThumbColor="{StaticResource Orange}"
                             OnColor="{StaticResource Primary}"
                             Grid.Column="2"
                             Grid.Row="2"
-                            HorizontalOptions="Center"/>
+                            HorizontalOptions="Center"
+                            Toggled="Laser_Switch_Toggled"/>
 
                     <!-- OK/NOT OK -->
-                    <Label Text="NOT OK"
+                    <Label x:Name="laserOknok"
+                           Text="NOT OK"
                            BackgroundColor="#D6676C"
                            Grid.Column="3" 
                            Grid.Row="2"
