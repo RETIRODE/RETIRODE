@@ -32,6 +32,8 @@ namespace RETIRODE_APP.Services
         private ICharacteristic _receiveQueryCharacteristic;
 
         private bool _isDataSize = false;
+        private List<byte> _TOFData;
+        private int _dataSize;
         private SemaphoreSlim _semaphoreSlim;
         private CalibrationState _calibrationState = CalibrationState.NoState;
         public RangeMeasurementService()
@@ -49,7 +51,7 @@ namespace RETIRODE_APP.Services
         public event Action<ResponseItem> QueryResponseEvent;
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
-        public event Action<int[]> MeasuredDataResponseEvent;
+        public event Action<List<float>> MeasuredDataResponseEvent;
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task ConnectToRSL10(BLEDevice bleDevice)
@@ -191,11 +193,9 @@ namespace RETIRODE_APP.Services
         private async void DataSizeHandler(object sender, CharacteristicUpdatedEventArgs e)
         {
             _isDataSize = true;
-            var dataSize = BitConverter.ToInt32(e.Characteristic.Value, 0);
+            _dataSize = BitConverter.ToInt32(e.Characteristic.Value, 0);
 
-            //request any size from offered interval <0, {_dataSize}>
-            var size = new Random().Next(0, dataSize);
-            await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StartTransfer, Convert.ToByte(size) });
+            await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StartTransfer });
         }
 
         private async void QueryResponseHandler(object sender, CharacteristicUpdatedEventArgs e)
@@ -222,18 +222,28 @@ namespace RETIRODE_APP.Services
         private void MeasurementDataHandler(object sender, CharacteristicUpdatedEventArgs e)
         {
             var data = e.Characteristic.Value;
-            int[] parsedData = { };
 
             if (data is null)
             {
                 return;
             }
 
-            for (int i = 0; i < data.Length; i++)
+            if (_dataSize >= _TOFData.Count)
             {
-                parsedData[i] = Convert.ToInt32(data[i]);
+                _TOFData.AddRange(data);
             }
-            MeasuredDataResponseEvent.Invoke(parsedData);
+            else
+            {
+                List<float> parsedData = new List<float>();
+                for (int i = 0; i < _TOFData.Count; i++)
+                {
+                    parsedData.Add(Convert.ToInt32(_TOFData.ElementAt(i)));
+                }
+                MeasuredDataResponseEvent.Invoke(parsedData);
+                _dataSize = 0;
+                _isDataSize = false;
+                _TOFData.Clear();
+            }
         }
 
         private async void DeviceDiscovered(object sender, IDevice device)
