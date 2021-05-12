@@ -156,13 +156,19 @@
 
                     <!-- ON/OFF -->
                     <Switch x:Name="sipmSwitch"
-                            IsToggled="true"
+                            IsToggled="{Binding IsSipmBiasPowerVoltageTurnOn}"
                             ThumbColor="{StaticResource Orange}"
                             OnColor="{StaticResource Primary}"
                             Grid.Column="0"
-                            Grid.Row="2"
+                            Grid.Row="2"                               
                             HorizontalOptions="Center"
-                            Toggled="Sipm_Switch_Toggled"/>
+                            Toggled="Sipm_Switch_Toggled">
+                        <Switch.Behaviors>
+                            <toolkit:EventToCommandBehavior 
+                                EventName="Toggled"
+                                Command="{Binding SipmBiasPowerToggleCommand}" />
+                        </Switch.Behaviors>
+                    </Switch>
 
                     <!-- OK/NOT OK -->
                     <Label x:Name="sipmOknok"
@@ -198,13 +204,19 @@
 
                     <!-- ON/OFF -->
                     <Switch x:Name="laserSwitch"
-                            IsToggled="true" 
+                            IsToggled="{Binding IsLaserVoltageTurnOn}" 
                             ThumbColor="{StaticResource Orange}"
                             OnColor="{StaticResource Primary}"
                             Grid.Column="2"
                             Grid.Row="2"
                             HorizontalOptions="Center"
-                            Toggled="Laser_Switch_Toggled"/>
+                            Toggled="Laser_Switch_Toggled">
+                        <Switch.Behaviors>
+                            <toolkit:EventToCommandBehavior 
+                                EventName="Toggled"
+                                Command="{Binding LaserVoltageToggleCommand}" />
+                        </Switch.Behaviors>
+                    </Switch>
 
                     <!-- OK/NOT OK -->
                     <Label x:Name="laserOknok"

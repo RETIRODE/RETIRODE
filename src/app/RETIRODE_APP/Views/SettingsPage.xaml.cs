@@ -27,7 +27,7 @@ namespace RETIRODE_APP.Views
 
         private void Sipm_Switch_Toggled(object sender, ToggledEventArgs e)
         {
-            if(sipmActual.Text.Equals("-"))
+            if(!sipmActual.Text.Equals("-"))
             {
                 sipmActual.Text = "0";
                 sipmOknok.BackgroundColor = Color.FromHex("#78D778");
@@ -43,7 +43,7 @@ namespace RETIRODE_APP.Views
 
         private void Laser_Switch_Toggled(object sender, ToggledEventArgs e)
         {
-            if (laserActual.Text.Equals("-"))
+            if (!laserActual.Text.Equals("-"))
             {
                 laserActual.Text = "0";
                 laserOknok.BackgroundColor = Color.FromHex("#D6676C");

@@ -39,6 +39,7 @@ namespace RETIRODE_APP.Services
         public RangeMeasurementService()
         {
             _availableDevices = new List<IDevice>();
+            _TOFData = new List<byte>();
             _semaphoreSlim = new SemaphoreSlim(1);
             _bluetoothService = TinyIoCContainer.Current.Resolve<IBluetoothService>();
             _bluetoothService.DeviceFound = DeviceDiscovered;
@@ -136,13 +137,13 @@ namespace RETIRODE_APP.Services
             await WriteToCharacteristic(_sendCommandCharacteristic, message);
         }
 
-        public async Task SwitchLaserVoltage(Switch s)
+        public async Task SwitchLaserVoltage(SwitchState s)
         {
             var message = BuildProtocolMessage(Registers.LaserVoltage, (byte)Voltage.Switch, Convert.ToInt32(s));
             await WriteToCharacteristic(_sendCommandCharacteristic, message);
         }
 
-        public async Task SwitchSipmBiasVoltage(Switch s)
+        public async Task SwitchSipmBiasVoltage(SwitchState s)
         {
             var message = BuildProtocolMessage(Registers.SipmBiasPowerVoltage, (byte)Voltage.Switch, Convert.ToInt32(s));
             await WriteToCharacteristic(_sendCommandCharacteristic, message);
@@ -194,10 +195,9 @@ namespace RETIRODE_APP.Services
 
         private async void DataSizeHandler(object sender, CharacteristicUpdatedEventArgs e)
         {
-            _isDataSize = true;
-            _dataSize = BitConverter.ToInt32(e.Characteristic.Value, 0);
-
-            await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StartTransfer });
+                _isDataSize = true;
+                _dataSize = BitConverter.ToInt32(e.Characteristic.Value, 0);
+                await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StartTransfer });
         }
 
         private async void QueryResponseHandler(object sender, CharacteristicUpdatedEventArgs e)
@@ -230,16 +230,16 @@ namespace RETIRODE_APP.Services
                 return;
             }
 
-            if (_dataSize >= _TOFData.Count)
+            if (_dataSize > _TOFData.Count)
             {
                 _TOFData.AddRange(data);
-            }
+            } 
             else
             {
                 List<float> parsedData = new List<float>();
-                for (int i = 0; i < _TOFData.Count; i++)
+                for (int i = 0; i < _TOFData.Count; i+=4)
                 {
-                    parsedData.Add(Convert.ToInt32(_TOFData.ElementAt(i)));
+                    parsedData.Add(BitConverter.ToSingle(_TOFData.ToArray(),i));
                 }
                 MeasuredDataResponseEvent.Invoke(parsedData);
                 _dataSize = 0;

@@ -115,7 +115,7 @@ namespace RETIRODE_APP.Services
         /// </summary>
         /// <param name="switchCase"></param>
         /// <returns></returns>
-        Task SwitchLaserVoltage(Switch switchCase);
+        Task SwitchLaserVoltage(SwitchState switchCase);
 
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace RETIRODE_APP.Services
         /// </summary>
         /// <param name="switchCase"></param>
         /// <returns></returns>
-        Task SwitchSipmBiasVoltage(Switch switchCase);
+        Task SwitchSipmBiasVoltage(SwitchState switchCase);
 
         Task StopScanning();
     }

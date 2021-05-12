@@ -23,8 +23,6 @@ namespace RETIRODE_APP.ViewModels
         Node plotNode;
         public DepictionViewModel(ApplicationOptions options = null) : base(options) {
             rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
-            rangeMeasurementService.MeasuredDataResponseEvent -= RangeMeasurementService_MeasuredDataResponseEvent;
-            rangeMeasurementService.MeasuredDataResponseEvent += RangeMeasurementService_MeasuredDataResponseEvent;
             rangeMeasurementService.StartMeasurement();
         }
 
