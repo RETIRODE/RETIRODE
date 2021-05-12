@@ -4,6 +4,7 @@
              x:Class="RETIRODE_APP.Views.SettingsPage"
              xmlns:toolkit="http://xamarin.com/schemas/2020/toolkit"
              xmlns:local="clr-namespace:RETIRODE_APP.ViewModels"
+             xmlns:converters="clr-namespace:RETIRODE_APP.Converters"
              Title="{Binding Title}"
              BackgroundColor="{StaticResource Secondary}">
 
@@ -12,6 +13,9 @@
     </ContentPage.BindingContext>
 
     <ContentPage.Resources>
+        <converters:OkNotOkTextConverter x:Key="OkNotOkConverter"></converters:OkNotOkTextConverter>
+        <converters:OverloadColorConverter x:Key="OverloadColorConverter"></converters:OverloadColorConverter>
+        
         <ResourceDictionary>
             <Style TargetType="Label">
                 <Setter Property="HorizontalOptions" Value="Center"/>
@@ -161,8 +165,7 @@
                             OnColor="{StaticResource Primary}"
                             Grid.Column="0"
                             Grid.Row="2"                               
-                            HorizontalOptions="Center"
-                            Toggled="Sipm_Switch_Toggled">
+                            HorizontalOptions="Center">
                         <Switch.Behaviors>
                             <toolkit:EventToCommandBehavior 
                                 EventName="Toggled"
@@ -172,8 +175,8 @@
 
                     <!-- OK/NOT OK -->
                     <Label x:Name="sipmOknok"
-                           Text="OK"
-                           BackgroundColor="#78D778"
+                           Text="{Binding BiasVoltageOverload, Converter = {StaticResource OkNotOkConverter}}"
+                          BackgroundColor="{Binding BiasVoltageOverload, Converter = {StaticResource OverloadColorConverter}}"
                            Grid.Column="1" 
                            Grid.Row="2"
                            Style="{StaticResource OkNoTOkLabel}"/>
@@ -209,8 +212,7 @@
                             OnColor="{StaticResource Primary}"
                             Grid.Column="2"
                             Grid.Row="2"
-                            HorizontalOptions="Center"
-                            Toggled="Laser_Switch_Toggled">
+                            HorizontalOptions="Center">
                         <Switch.Behaviors>
                             <toolkit:EventToCommandBehavior 
                                 EventName="Toggled"
@@ -220,8 +222,8 @@
 
                     <!-- OK/NOT OK -->
                     <Label x:Name="laserOknok"
-                           Text="NOT OK"
-                           BackgroundColor="#D6676C"
+                           Text="{Binding LaserVoltageOverload, Converter = {StaticResource OkNotOkConverter}}"
+                           BackgroundColor="{Binding LaserVoltageOverload, Converter = {StaticResource OverloadColorConverter}}"
                            Grid.Column="3" 
                            Grid.Row="2"
                            Style="{StaticResource OkNoTOkLabel}"/>
