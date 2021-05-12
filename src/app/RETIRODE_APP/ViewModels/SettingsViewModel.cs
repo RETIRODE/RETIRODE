@@ -24,6 +24,11 @@ namespace RETIRODE_APP.ViewModels
             {
                 _isSipmBiasPowerVoltageTurnOn = value;
                 OnPropertyChanged(nameof(IsSipmBiasPowerVoltageTurnOn));
+
+                if (value is false)
+                {
+                    BiasVoltageOverload = null;
+                }
             }
         }
         public bool _isLaserVoltageTurnOn;
@@ -34,6 +39,11 @@ namespace RETIRODE_APP.ViewModels
             {
                 _isLaserVoltageTurnOn = value;
                 OnPropertyChanged(nameof(IsLaserVoltageTurnOn));
+
+                if (value is false)
+                {
+                    LaserVoltageOverload = null;
+                }
             }
         }
         private double _tcdcal0;
@@ -114,6 +124,28 @@ namespace RETIRODE_APP.ViewModels
             {
                 _laseractualv = value;
                 OnPropertyChanged(nameof(LaserActualV));
+            }
+        }
+
+        private bool? _laserVolatageOverload;
+        public bool? LaserVoltageOverload
+        {
+            get { return _laserVolatageOverload; }
+            set
+            {
+                _laserVolatageOverload = value;
+                OnPropertyChanged(nameof(LaserVoltageOverload));
+            }
+        }
+
+        private bool? _biasVolatageOverload;
+        public bool? BiasVoltageOverload
+        {
+            get { return _biasVolatageOverload; }
+            set
+            {
+                _biasVolatageOverload = value;
+                OnPropertyChanged(nameof(BiasVoltageOverload));
             }
         }
 
