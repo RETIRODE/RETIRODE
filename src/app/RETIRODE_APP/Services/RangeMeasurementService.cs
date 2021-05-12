@@ -134,14 +134,14 @@ namespace RETIRODE_APP.Services
 
         public async Task SwitchLaserVoltage(Switch s)
         {
-            var message = BuildProtocolMessage(Registers.LaserVoltage, Convert.ToByte(2), Convert.ToInt32(s));
+            var message = BuildProtocolMessage(Registers.LaserVoltage, (byte)Voltage.Switch, Convert.ToInt32(s));
             await WriteToCharacteristic(_sendCommandCharacteristic, message);
         }
 
         public async Task SwitchSipmBiasVoltage(Switch s)
         {
-            var message = BuildProtocolMessage(Registers.SipmBiasPowerVoltage, Convert.ToByte(2), Convert.ToInt32(s));
-            await WriteToCharacteristic(_sendQueryCharacteristic, message);
+            var message = BuildProtocolMessage(Registers.SipmBiasPowerVoltage, (byte)Voltage.Switch, Convert.ToInt32(s));
+            await WriteToCharacteristic(_sendCommandCharacteristic, message);
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
@@ -166,7 +166,7 @@ namespace RETIRODE_APP.Services
 
         public async Task GetPulseCount()
         {
-            var message = BuildProtocolMessage(Registers.PulseCount, 0, 0);
+            var message = BuildProtocolMessage(Registers.PulseCount, Convert.ToByte(0), 0);
             await WriteToCharacteristic(_sendQueryCharacteristic, message);
         }
 
@@ -179,6 +179,12 @@ namespace RETIRODE_APP.Services
         public async Task GetSipmBiasPowerVoltage(Voltage voltage)
         {
             var message = BuildProtocolMessage(Registers.SipmBiasPowerVoltage, (byte)voltage, 0);
+            await WriteToCharacteristic(_sendQueryCharacteristic, message);
+        }
+
+        public async Task GetVoltagesStatus()
+        {
+            var message = BuildProtocolMessage(Registers.VoltageStatus, Convert.ToByte(0), 0);
             await WriteToCharacteristic(_sendQueryCharacteristic, message);
         }
 
@@ -205,8 +211,12 @@ namespace RETIRODE_APP.Services
                 return;
             }
 
-            var responseItem = GetQueryResponseItem(data);
-            QueryResponseEvent.Invoke(responseItem);
+            var responseItems = GetQueryResponseItem(data);
+            foreach (var item in responseItems)
+            {
+                QueryResponseEvent.Invoke(item);
+            }
+           
         }
 
         private void MeasurementDataHandler(object sender, CharacteristicUpdatedEventArgs e)
@@ -261,83 +271,110 @@ namespace RETIRODE_APP.Services
                 _calibrationState = CalibrationState.NoState;
             }
         }
-        private ResponseItem GetQueryResponseItem(byte[] data)
+        private List<ResponseItem> GetQueryResponseItem(byte[] data)
         {
-            
+            var list = new List<ResponseItem>();
             switch ((Registers)data[0])
             {
                 case Registers.LaserVoltage:
 
                     if (data[2] == (byte)Voltage.Actual)
                     {
-                        return new ResponseItem()
+                        list.Add(new ResponseItem()
                         {
                             Identifier = RangeFinderValues.LaserVoltageActual,
                             Value = GetDataFromResponse(data)
-                    };
+                        });
                     }
                     else
                     {
-                        return new ResponseItem()
+                        list.Add(new ResponseItem()
                         {
                             Identifier = RangeFinderValues.LaserVoltageTarget,
                             Value = GetDataFromResponse(data)
-                        };
+                        });
                     }
+                    break;
                 case Registers.SipmBiasPowerVoltage:
 
                     if (data[2] == (byte)Voltage.Actual)
                     {
-                        return new ResponseItem()
+                        list.Add(new ResponseItem()
                         {
                             Identifier = RangeFinderValues.SipmBiasPowerVoltageActual,
                             Value = GetDataFromResponse(data)
-                        };
+                        });
                     }
                     else
                     {
-                        return new ResponseItem()
+                        list.Add(new ResponseItem()
                         {
                             Identifier = RangeFinderValues.SipmBiasPowerVoltageTarget,
                             Value = GetDataFromResponse(data)
-                        };
+                        });
                     }
-
+                    break;
                 case Registers.Calibrate:
                     if (data[2] == (byte)Calibrate.NS0)
                     {
-                        return new ResponseItem()
+                        list.Add(new ResponseItem()
                         {
                             Identifier = RangeFinderValues.CalibrateNS0,
                             Value = GetDataFromResponse(data)
-                        };
+                        });
                     }
                     else if (data[2] == (byte)Calibrate.NS62_5)
                     {
-                        return new ResponseItem()
+                        list.Add(new ResponseItem()
                         {
                             Identifier = RangeFinderValues.Calibrate62_5,
                             Value = GetDataFromResponse(data)
-                        };
+                        });
                     }
                     else
                     {
-                        return new ResponseItem()
+                        list.Add(new ResponseItem()
                         {
                             Identifier = RangeFinderValues.Calibrate125,
                             Value = GetDataFromResponse(data)
-                        };
+                        });
                     }
+                    break;
                 case Registers.PulseCount:
-                    return new ResponseItem()
+                    list.Add(new ResponseItem()
                     {
                         Identifier = RangeFinderValues.PulseCount,
                         Value = GetDataFromResponse(data)
-                    };
+                    });
+                    break;
+
+                case Registers.VoltageStatus:
+                    list.Add(new ResponseItem()
+                    {
+                        Identifier = RangeFinderValues.LaserVoltageStatus,
+                        Value = Convert.ToInt32(data[1])
+                    });
+                    list.Add(new ResponseItem()
+                    {
+                        Identifier = RangeFinderValues.LaserVoltageOverload,
+                        Value = Convert.ToInt32(data[2])
+                    });
+                    list.Add(new ResponseItem()
+                    {
+                        Identifier = RangeFinderValues.SipmBiasPowerVoltageStatus,
+                        Value = Convert.ToInt32(data[3])
+                    });
+                    list.Add(new ResponseItem()
+                    {
+                        Identifier = RangeFinderValues.SipmBiasPowerVoltageOverload,
+                        Value = Convert.ToInt32(data[4])
+                    });
+
+                    break;
                 default:
                     break;
             }
-            return new ResponseItem();
+            return list;
         }
 
         private static int GetDataFromResponse(byte[] data)
