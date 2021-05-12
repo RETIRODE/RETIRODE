@@ -43,149 +43,203 @@
                 <Setter Property="HorizontalTextAlignment" Value="Center"/>
             </Style>
 
+            <Style x:Key="OkNoTOkLabel" TargetType="Label">
+                <Setter Property="Padding" Value="0,5,0,0"/>
+                <Setter Property="FontAttributes" Value="Bold"/>
+                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="WidthRequest" Value="150"/>
+                <Setter Property="HeightRequest" Value="30"/>
+                <Setter Property="HorizontalTextAlignment" Value="Center"/>
+                <Setter Property="VerticalOptions" Value="Center"/>
+            </Style>
+
         </ResourceDictionary>
     </ContentPage.Resources>
 
     <ContentPage.Content>
-        <StackLayout>
+        <ScrollView>
+            <StackLayout>
 
-            <ActivityIndicator Color="Orange" IsRunning="{Binding IsBusy}" />
-            <Grid Margin="20, 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="30"/>
-                    <RowDefinition Height="50"/>
-                </Grid.RowDefinitions>
+                <ActivityIndicator Color="Orange" IsRunning="{Binding IsBusy}" />
+                <Grid Margin="20, 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="50"/>
+                    </Grid.RowDefinitions>
 
-                <!-- TCD Cal 0.0 ns -->
-                <Label Text="0.0 ns:"/>
-                <Label Text="{Binding TCDCal0, Mode=TwoWay}" 
-                       Grid.Row="1"
-                       Style="{StaticResource TCDValueDisabled}"/>
+                    <!-- TCD Cal 0.0 ns -->
+                    <Label Text="0.0 ns:"/>
+                    <Label Text="{Binding TCDCal0, Mode=TwoWay}" 
+                           Grid.Row="1"
+                           Style="{StaticResource TCDValueDisabled}"/>
 
-                <!-- TCD Cal 62.5 ns -->
-                <Label Text="62.5 ns:" Grid.Column="1"/>
-                <Label Text="{Binding TCDCal62, Mode=TwoWay}"  
-                       Grid.Column="1" 
-                       Grid.Row="1"
-                       Style="{StaticResource TCDValueDisabled}"/>
+                    <!-- TCD Cal 62.5 ns -->
+                    <Label Text="62.5 ns:" Grid.Column="1"/>
+                    <Label Text="{Binding TCDCal62, Mode=TwoWay}"  
+                           Grid.Column="1" 
+                           Grid.Row="1"
+                           Style="{StaticResource TCDValueDisabled}"/>
 
-                <!-- TCD Cal 125.0 ns -->
-                <Label Text="125.0 ns:" Grid.Column="2"/>
-                <Label Text="{Binding TCDCal125, Mode=TwoWay}" 
-                       Grid.Column="2" 
-                       Grid.Row="1" 
-                       Style="{StaticResource TCDValueDisabled}"/>
-            </Grid>
-
-
-            <!-- Trigger Pulse -->
-            <Label Text="Trigger Pulse"/>
-            <Entry Text="{Binding TriggerPulse, Mode=TwoWay}"
-                   Style="{StaticResource TCDValue}" Grid.Row="1">
-                <Entry.Behaviors>
-                    <toolkit:EventToCommandBehavior 
-                            EventName="Unfocused"
-                            Command="{Binding SetTriggerPulseCommand}"/>
-                </Entry.Behaviors>
-            </Entry>
+                    <!-- TCD Cal 125.0 ns -->
+                    <Label Text="125.0 ns:" Grid.Column="2"/>
+                    <Label Text="{Binding TCDCal125, Mode=TwoWay}" 
+                           Grid.Column="2" 
+                           Grid.Row="1" 
+                           Style="{StaticResource TCDValueDisabled}"/>
+                </Grid>
 
 
-            <Grid Margin="20,30,20,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="30" />
-                </Grid.RowDefinitions>
-
-                <!-- power labels -->
-                <Label Text="SiPM bias power"/>
-                <Label Text="Laser power" Grid.Column="1"/>
-
-            </Grid>
-
-            <Grid Margin="20,0,20,20">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="30" />
-                    <RowDefinition Height="50" />
-                </Grid.RowDefinitions>
-
-                <!-- SiPM bias power -->
-
-                <!-- Target[V] -->
-                <Label Text="Target[V]"/>
-                <Entry Style="{StaticResource TCDValue}" Grid.Row="1" Text="{Binding SIPMTargetV, Mode=TwoWay}">
+                <!-- Trigger Pulse -->
+                <Label Text="Trigger Pulse"/>
+                <Entry Text="{Binding TriggerPulse, Mode=TwoWay}"
+                       Style="{StaticResource TCDValue}" Grid.Row="1">
                     <Entry.Behaviors>
                         <toolkit:EventToCommandBehavior 
-                            EventName="Unfocused"
-                            Command="{Binding SetTargetSimpBiasPowerVoltageCommand}"/>
+                                EventName="Unfocused"
+                                Command="{Binding SetTriggerPulseCommand}"/>
                     </Entry.Behaviors>
                 </Entry>
+
+
+                <Grid Margin="20,30,20,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                    </Grid.RowDefinitions>
+
+                    <!-- power labels -->
+                    <Label Text="SiPM bias power"/>
+                    <Label Text="Laser power" Grid.Column="1"/>
+
+                </Grid>
+
+                <Grid Margin="20,0,20,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="50" />
+                        <RowDefinition Height="30" />
+                    </Grid.RowDefinitions>
+
+                    <!-- SiPM bias power -->
+
+                    <!-- Target[V] -->
+                    <Label Text="Target[V]"/>
+                    <Entry Style="{StaticResource TCDValue}" Grid.Row="1" Text="{Binding SIPMTargetV, Mode=TwoWay}">
+                        <Entry.Behaviors>
+                            <toolkit:EventToCommandBehavior 
+                                EventName="Unfocused"
+                                Command="{Binding SetTargetSimpBiasPowerVoltageCommand}"/>
+                        </Entry.Behaviors>
+                    </Entry>
                 
-                <!-- Actual[V] -->
-                <Label Text="Actual[V]" Grid.Column="1"/>
-                <Label Style="{StaticResource TCDValueDisabled}" 
-                       Grid.Column="1" 
-                       Grid.Row="1"
-                       Text="{Binding SIPMActualV, Mode=TwoWay}"/>
+                    <!-- Actual[V] -->
+                    <Label Text="Actual[V]" Grid.Column="1"/>
+                    <Label x:Name="sipmActual"
+                           Style="{StaticResource TCDValueDisabled}" 
+                           Grid.Column="1" 
+                           Grid.Row="1"
+                           Text="{Binding SIPMActualV, Mode=TwoWay}"/>
 
-                <!-- Laser power -->
+                    <!-- ON/OFF -->
+                    <Switch x:Name="sipmSwitch"
+                            IsToggled="true"
+                            ThumbColor="{StaticResource Orange}"
+                            OnColor="{StaticResource Primary}"
+                            Grid.Column="0"
+                            Grid.Row="2"
+                            HorizontalOptions="Center"
+                            Toggled="Sipm_Switch_Toggled"/>
 
-                <!-- Target[V] -->
-                <Label Text="Target[V]" Grid.Column="2"/>
-                <Entry Style="{StaticResource TCDValue}" 
-                       Grid.Column="2" 
-                       Grid.Row="1"                               
-                       Text="{Binding LaserTargetV, Mode=TwoWay}">
-                    <Entry.Behaviors>
-                        <toolkit:EventToCommandBehavior 
-                            EventName="Unfocused"
-                            Command="{Binding SetTargetLaserPowerVolateCommand}"/>
-                    </Entry.Behaviors>
-                </Entry>
-                <!-- Actual[V] -->
-                <Label Text="Actual[V]" Grid.Column="3"/>
-                <Label Style="{StaticResource TCDValueDisabled}"
-                       Grid.Column="3"
-                       Grid.Row="1"
-                       Text="{Binding LaserActualV, Mode=TwoWay}"/>
-            </Grid>
+                    <!-- OK/NOT OK -->
+                    <Label x:Name="sipmOknok"
+                           Text="OK"
+                           BackgroundColor="#78D778"
+                           Grid.Column="1" 
+                           Grid.Row="2"
+                           Style="{StaticResource OkNoTOkLabel}"/>
 
-            <Grid Margin="20,10,20,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="50" />
-                </Grid.RowDefinitions>
 
-                <!-- Calibrate button -->
-                <Button Text="Calibrate" Command="{Binding CalibrateCommand}"/>
 
-                <!-- SW Reset button -->
-                <Button Text="SW Reset" Command="{Binding SoftwareResetCommand}" Grid.Column="1"/>
+                    <!-- Laser power -->
 
-            </Grid>
+                    <!-- Target[V] -->
+                    <Label Text="Target[V]" Grid.Column="2"/>
+                    <Entry Style="{StaticResource TCDValue}" 
+                           Grid.Column="2" 
+                           Grid.Row="1"                               
+                           Text="{Binding LaserTargetV, Mode=TwoWay}">
+                        <Entry.Behaviors>
+                            <toolkit:EventToCommandBehavior 
+                                EventName="Unfocused"
+                                Command="{Binding SetTargetLaserPowerVolateCommand}"/>
+                        </Entry.Behaviors>
+                    </Entry>
+                    <!-- Actual[V] -->
+                    <Label Text="Actual[V]" Grid.Column="3"/>
+                    <Label x:Name="laserActual"
+                           Style="{StaticResource TCDValueDisabled}"
+                           Grid.Column="3"
+                           Grid.Row="1"
+                           Text="{Binding LaserActualV, Mode=TwoWay}"/>
 
-            <Button Margin="20,30,20,20" Text="SCAN"
-                        Command="{Binding StartDepictionCommand}"
-                        BackgroundColor="{StaticResource Orange}"
-                        TextColor="White" />
+                    <!-- ON/OFF -->
+                    <Switch x:Name="laserSwitch"
+                            IsToggled="true" 
+                            ThumbColor="{StaticResource Orange}"
+                            OnColor="{StaticResource Primary}"
+                            Grid.Column="2"
+                            Grid.Row="2"
+                            HorizontalOptions="Center"
+                            Toggled="Laser_Switch_Toggled"/>
 
-        </StackLayout>
+                    <!-- OK/NOT OK -->
+                    <Label x:Name="laserOknok"
+                           Text="NOT OK"
+                           BackgroundColor="#D6676C"
+                           Grid.Column="3" 
+                           Grid.Row="2"
+                           Style="{StaticResource OkNoTOkLabel}"/>
+
+                </Grid>
+
+                <Grid Margin="20,10,20,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Calibrate button -->
+                    <Button Text="Calibrate" Command="{Binding CalibrateCommand}"/>
+
+                    <!-- SW Reset button -->
+                    <Button Text="SW Reset" Command="{Binding SoftwareResetCommand}" Grid.Column="1"/>
+
+                </Grid>
+
+                <Button Margin="20,30,20,20" Text="SCAN"
+                            Command="{Binding StartDepictionCommand}"
+                            BackgroundColor="{StaticResource Orange}"
+                            TextColor="White" />
+
+            </StackLayout>
+        </ScrollView>
 
     </ContentPage.Content>
 

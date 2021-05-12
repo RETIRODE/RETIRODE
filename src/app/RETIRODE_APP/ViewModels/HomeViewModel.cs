@@ -11,21 +11,17 @@ namespace RETIRODE_APP.ViewModels
         public HomeViewModel()
         {
             Title = "Home";
+            ckeckConnection();
         }
 
-
-        private string _connected;
-
-        public string Connected {
-            get { if (App.isConnected)
-                    return "Connected";
-                else
-                    return "Disconected";
-            }
-            set
-            {
-                _connected = value;
-            } 
+        public void ckeckConnection()
+        {
+            if (App.isConnected)
+                Connected = "Connected";
+            else
+                Connected = "Disconnected";
         }
+
+        public string Connected { get;set; }
     }
 }

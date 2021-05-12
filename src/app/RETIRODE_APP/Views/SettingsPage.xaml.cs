@@ -24,6 +24,30 @@ namespace RETIRODE_APP.Views
             }
             
         }
+
+        private void Sipm_Switch_Toggled(object sender, ToggledEventArgs e)
+        {
+            if(sipmOknok.Opacity == 0)
+            {
+                sipmOknok.Opacity = 100;
+            }
+            else
+            {
+                sipmOknok.Opacity = 0;
+            }
+        }
+
+        private void Laser_Switch_Toggled(object sender, ToggledEventArgs e)
+        {
+            if (laserOknok.Opacity == 0)
+            {
+                laserOknok.Opacity = 100;
+            }
+            else
+            {
+                laserOknok.Opacity = 0;
+            }
+        }
     }
 
 
