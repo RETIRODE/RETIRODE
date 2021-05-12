@@ -10,6 +10,9 @@
         Calibrate62_5,
         Calibrate125,
         PulseCount,
-        VoltageStatus
+        LaserVoltageStatus,
+        LaserVoltageOverload,
+        SipmBiasPowerVoltageStatus,
+        SipmBiasPowerVoltageOverload
     }
 }
