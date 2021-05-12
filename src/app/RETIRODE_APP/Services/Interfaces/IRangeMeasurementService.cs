@@ -106,6 +106,12 @@ namespace RETIRODE_APP.Services
         /// <summary>
         /// 
         /// </summary>
+        /// <returns></returns>
+        Task GetVoltagesStatus();
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="switchCase"></param>
         /// <returns></returns>
         Task SwitchLaserVoltage(Switch switchCase);
