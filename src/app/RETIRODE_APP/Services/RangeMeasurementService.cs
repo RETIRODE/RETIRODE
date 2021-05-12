@@ -112,6 +112,8 @@ namespace RETIRODE_APP.Services
         {
             await WriteToCharacteristic(_RMTInfoCharacteristic, new[] { (byte)RSL10Command.StopLidar });
             _isDataSize = false;
+            _dataSize = 0;
+            _TOFData.Clear();
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
@@ -469,6 +471,9 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public void Dispose()
         {
+            _dataSize = 0;
+            _isDataSize = false;
+            _TOFData.Clear();
             _RMTTimeOfFlightDataCharacteristic.ValueUpdated -= MeasurementDataHandler;
             _RMTInfoCharacteristic.ValueUpdated -= DataSizeHandler;
             _receiveQueryCharacteristic.ValueUpdated -= QueryResponseHandler;
