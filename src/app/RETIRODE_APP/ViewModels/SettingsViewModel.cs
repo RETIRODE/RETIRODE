@@ -250,8 +250,8 @@ namespace RETIRODE_APP.ViewModels
                 {
                     try
                     {
-                        await _rangeMeasurementService.GetSipmBiasPowerVoltage(Voltage.Actual);
-                        await _rangeMeasurementService.GetLaserVoltage(Voltage.Actual);
+                        //await _rangeMeasurementService.GetSipmBiasPowerVoltage(Voltage.Actual);
+                        //await _rangeMeasurementService.GetLaserVoltage(Voltage.Actual);
                         await _rangeMeasurementService.GetVoltagesStatus();
 
                         if (TriggerPulse == default(int))

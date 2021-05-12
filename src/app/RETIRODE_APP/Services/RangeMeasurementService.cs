@@ -8,6 +8,7 @@ using RETIRODE_APP.Helpers;
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Models.Enums;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -290,7 +291,7 @@ namespace RETIRODE_APP.Services
             {
                 case Registers.LaserVoltage:
 
-                    if (data[2] == (byte)Voltage.Actual)
+                    if (data[4] == (byte)Voltage.Actual)
                     {
                         list.Add(new ResponseItem()
                         {
@@ -309,7 +310,7 @@ namespace RETIRODE_APP.Services
                     break;
                 case Registers.SipmBiasPowerVoltage:
 
-                    if (data[2] == (byte)Voltage.Actual)
+                    if (data[4] == (byte)Voltage.Actual)
                     {
                         list.Add(new ResponseItem()
                         {
@@ -327,7 +328,7 @@ namespace RETIRODE_APP.Services
                     }
                     break;
                 case Registers.Calibrate:
-                    if (data[2] == (byte)Calibrate.NS0)
+                    if (data[4] == (byte)Calibrate.NS0)
                     {
                         list.Add(new ResponseItem()
                         {
@@ -335,7 +336,7 @@ namespace RETIRODE_APP.Services
                             Value = GetDataFromResponse(data)
                         });
                     }
-                    else if (data[2] == (byte)Calibrate.NS62_5)
+                    else if (data[4] == (byte)Calibrate.NS62_5)
                     {
                         list.Add(new ResponseItem()
                         {
@@ -361,25 +362,27 @@ namespace RETIRODE_APP.Services
                     break;
 
                 case Registers.VoltageStatus:
+                    var bits = Convert.ToInt32(data[4]);
+
                     list.Add(new ResponseItem()
                     {
                         Identifier = RangeFinderValues.LaserVoltageStatus,
-                        Value = Convert.ToInt32(data[1])
+                        Value = (bits & (1 << 0)) == 1 << 0
                     });
                     list.Add(new ResponseItem()
                     {
                         Identifier = RangeFinderValues.LaserVoltageOverload,
-                        Value = Convert.ToInt32(data[2])
+                        Value = (bits & (1 << 1)) == 1 << 1
                     });
                     list.Add(new ResponseItem()
                     {
                         Identifier = RangeFinderValues.SipmBiasPowerVoltageStatus,
-                        Value = Convert.ToInt32(data[3])
+                        Value = (bits & (1 << 2)) == 1 << 2
                     });
                     list.Add(new ResponseItem()
                     {
                         Identifier = RangeFinderValues.SipmBiasPowerVoltageOverload,
-                        Value = Convert.ToInt32(data[4])
+                        Value = (bits & (1 << 3)) == 1 << 3
                     });
 
                     break;
@@ -389,10 +392,10 @@ namespace RETIRODE_APP.Services
             return list;
         }
 
-        private static int GetDataFromResponse(byte[] data)
+        private static float GetDataFromResponse(byte[] data)
         {
-            var result = BitConverter.ToString(new[] { data[4], data[5] }).Replace("-", "");
-            return Convert.ToInt32(result, 16);
+            var result = BitConverter.ToSingle(new[] { data[8], data[9], data[10], data[11] }, 0);
+            return result;
         }
 
         private async Task InitializeBluetoothConnection()
