@@ -395,7 +395,7 @@ namespace RETIRODE_APP.Services
         private static float GetDataFromResponse(byte[] data)
         {
             var result = BitConverter.ToSingle(new[] { data[8], data[9], data[10], data[11] }, 0);
-            return result;
+            return (float)Math.Round(result,2);
         }
 
         private async Task InitializeBluetoothConnection()
