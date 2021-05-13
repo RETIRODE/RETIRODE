@@ -27,6 +27,10 @@ namespace RETIRODE_APP.Services
         /// </summary>
         event Action<List<float>> MeasuredDataResponseEvent;
 
+        event Action<object> DeviceLostConnectionEvent;
+
+        event Action<object> DeviceDisconnectedEvent;
+
         /// <summary>
         /// 
         /// </summary>

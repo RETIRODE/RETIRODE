@@ -15,10 +15,16 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IBluetoothService"/>
         public Action<object, IDevice> DeviceFound { get; set; }
 
+        public Action<object> DeviceLostConnection { get; set; }
+
+        public Action<object> DeviceDisconnected { get; set; }
+
         public BluetoothService()
         {
             _bluetoothAdapter = CrossBluetoothLE.Current.Adapter;
             _bluetoothAdapter.DeviceDiscovered += (obj, device) => DeviceFound.Invoke(obj, device.Device);
+            _bluetoothAdapter.DeviceConnectionLost += (obj, e) => DeviceLostConnection.Invoke(obj);
+            _bluetoothAdapter.DeviceDisconnected += (obj, e) => DeviceDisconnected.Invoke(obj);
         }
 
         /// <inheritdoc cref="IBluetoothService"/>
@@ -51,5 +57,6 @@ namespace RETIRODE_APP.Services
         {
             return await characteristic.WriteAsync(message);
         }
+
     }
 }

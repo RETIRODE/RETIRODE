@@ -180,6 +180,13 @@ namespace RETIRODE_APP.ViewModels
             _rangeMeasurementService.QueryResponseEvent -= RangeMeasurementService_QueryResponseEvent;
             _rangeMeasurementService.QueryResponseEvent += RangeMeasurementService_QueryResponseEvent;
 
+            _rangeMeasurementService.DeviceDisconnectedEvent -= _rangeMeasurementService_DeviceDisconnectedEvent;
+            _rangeMeasurementService.DeviceDisconnectedEvent += _rangeMeasurementService_DeviceDisconnectedEvent;
+
+            _rangeMeasurementService.DeviceLostConnectionEvent -= _rangeMeasurementService_DeviceLostConnectionEvent;
+            _rangeMeasurementService.DeviceLostConnectionEvent += _rangeMeasurementService_DeviceLostConnectionEvent;
+           
+
             SoftwareResetCommand = new AsyncCommand(async () => await ResetLidar());
             CalibrateCommand = new AsyncCommand(async () => await CalibrateLidar());
             SetTriggerPulseCommand = new AsyncCommand(async () => await SetTriggerPulse());
@@ -189,6 +196,20 @@ namespace RETIRODE_APP.ViewModels
             SipmBiasPowerToggleCommand = new AsyncCommand(async () => await SipmBiasPowerToggle());
             LaserVoltageToggleCommand = new AsyncCommand(async () => await LaserVoltageToggle());
             StartPoolingRoutine();
+        }
+
+        private async void _rangeMeasurementService_DeviceLostConnectionEvent(object obj)
+        {
+            SetSettingParamsToDefault();
+            await ShowError("Device connection lost");
+            await Application.Current.MainPage.Navigation.PushAsync(new BluetoothPage());
+        }
+
+        private async void _rangeMeasurementService_DeviceDisconnectedEvent(object obj)
+        {
+            SetSettingParamsToDefault();
+            await ShowError("Device has been disconnected");
+            await Application.Current.MainPage.Navigation.PushAsync(new BluetoothPage());
         }
 
         private async Task LaserVoltageToggle()
@@ -389,6 +410,8 @@ namespace RETIRODE_APP.ViewModels
             try
             {
                 await WithBusy(() => _rangeMeasurementService.SwReset());
+                SetSettingParamsToDefault();
+
             }
             catch (Exception ex)
             {
@@ -479,6 +502,20 @@ namespace RETIRODE_APP.ViewModels
                 _switchedBySystemSipmBias = true;
                 IsSipmBiasPowerVoltageTurnOn = value;
             }
+        }
+
+        private void SetSettingParamsToDefault()
+        {
+            TCDCal0 = 0;
+            TCDCal62 = 0;
+            TCDCal125 = 0;
+            SIPMActualV = 0;
+            SIPMTargetV = 0;
+            LaserActualV = 0;
+            LaserTargetV = 0;
+            TriggerPulse = 0;
+            ChangeLaserVoltagePoweredOn(false);
+            ChangeSipmBiasVoltagePoweredOn(false);
         }
 
     }

@@ -34,6 +34,10 @@ namespace RETIRODE_APP.Services
         /// event fired when some device nearby is found
         /// </summary>
         Action<object, IDevice> DeviceFound { get; set; }
+
+        Action<object> DeviceLostConnection { get; set; }
+
+        Action<object> DeviceDisconnected { get; set; }
         bool IsScanning { get; }
     }
 }
