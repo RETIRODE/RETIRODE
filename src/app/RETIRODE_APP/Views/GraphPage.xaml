@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+             xmlns:dxc="http://schemas.devexpress.com/xamarin/2014/forms/charts" xmlns:viewmodels="clr-namespace:RETIRODE_APP.ViewModels" x:DataType="viewmodels:GraphViewModel"
+             x:Class="RETIRODE_APP.Views.GraphPage">
+    <ContentPage.Content>
+        <StackLayout>
+            
+            
+        </StackLayout>
+    </ContentPage.Content>
+    <dxc:ChartView
+        SelectionMode="None"
+        AxisXNavigationMode="ScrollingAndZooming"
+        ScrollIndicatorsEnabled="True">
+        <dxc:ChartView.Series>
+            <dxc:PointSeries>
+                <dxc:PointSeries.Data>
+                    <dxc:SeriesDataAdapter DataSource="{Binding MeasuredDataItems, Mode=TwoWay}"
+                                                   ArgumentDataMember="Time" >
+                        <dxc:ValueDataMember Type="Value" Member="Distance"/>
+                    </dxc:SeriesDataAdapter>
+                </dxc:PointSeries.Data>
+            </dxc:PointSeries>
+        </dxc:ChartView.Series>
+        <dxc:ChartView.AxisX>
+            <dxc:NumericAxisX>
+                <dxc:NumericAxisX.Title>
+                    <dxc:AxisTitle Text="Time [ms]" >
+                        <dxc:AxisTitle.Style>
+                            <dxc:TitleStyle>
+                                <dxc:TitleStyle.TextStyle>
+                                    <dxc:TextStyle Size="20" />
+                                </dxc:TitleStyle.TextStyle>
+                            </dxc:TitleStyle>
+                        </dxc:AxisTitle.Style>
+                    </dxc:AxisTitle>
+                </dxc:NumericAxisX.Title>
+            </dxc:NumericAxisX>
+        </dxc:ChartView.AxisX>
+        <dxc:ChartView.AxisY>
+            <dxc:NumericAxisY>
+                <dxc:NumericAxisY.Title>
+                    <dxc:AxisTitle Text="Distance [m]">
+                        <dxc:AxisTitle.Style>
+                            <dxc:TitleStyle>
+                                <dxc:TitleStyle.TextStyle>
+                                    <dxc:TextStyle Size="20" />
+                                </dxc:TitleStyle.TextStyle>
+                            </dxc:TitleStyle>
+                        </dxc:AxisTitle.Style>
+                    </dxc:AxisTitle>
+                </dxc:NumericAxisY.Title>
+            </dxc:NumericAxisY>
+        </dxc:ChartView.AxisY>
+    </dxc:ChartView>
+
+</ContentPage>
