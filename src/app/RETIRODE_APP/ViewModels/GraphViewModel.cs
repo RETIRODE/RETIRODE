@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using Xamarin.CommunityToolkit.ObjectModel;
 
 namespace RETIRODE_APP.ViewModels
 {
@@ -16,16 +18,30 @@ namespace RETIRODE_APP.ViewModels
         private DateTime StartMeasuringTime { get; set; }
         private CalibrationItem Calibration { get; set; }
         public ObservableCollection<MeasuredDataItem> MeasuredDataItems { get; set; }
+        public ICommand StopCommand { get; set; }
+        public ICommand GraphResetCommand { get; set; }
 
         public GraphViewModel()
         {
             StartMeasuringTime = DateTime.Now;
             MeasuredDataItems = new ObservableCollection<MeasuredDataItem>();
+            StopCommand = new AsyncCommand(async () => await StopMeasurement());
+            GraphResetCommand = new AsyncCommand(async () => await GraphReset());
             _rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
             _dataStore = TinyIoCContainer.Current.Resolve<IDataStore>();
             _rangeMeasurementService.MeasuredDataResponseEvent -= _rangeMeasurementService_MeasuredDataResponseEvent;
             _rangeMeasurementService.MeasuredDataResponseEvent += _rangeMeasurementService_MeasuredDataResponseEvent;
             _rangeMeasurementService.StartMeasurement();
+        }
+
+        private async Task GraphReset()
+        {
+            MeasuredDataItems.Clear();
+        }
+
+        private async Task StopMeasurement()
+        {
+            await _rangeMeasurementService.StopMeasurement();
         }
 
         private async void _rangeMeasurementService_MeasuredDataResponseEvent(List<float> obj)
