@@ -75,14 +75,6 @@ extern "C"
 /** Structure holding all data managed on application level. */
 typedef struct APP_Environemnt_t
 {
-    /**
-     * Flag to indicate if SPI transfer for reading of image data is in
-     * progress.
-     *
-     * Makes sure the data are read only in single chunks to not overwhelm
-     * limited buffer storage.
-     */
-    bool isp_read_in_progress;
 
     /**
      * Circular buffer for temporary storage of image data before it is
@@ -90,28 +82,10 @@ typedef struct APP_Environemnt_t
      */
     CIRCBUF_t data_cache;
 
-    /**
-     * Timestamp of when application received image capture request from peer
-     * device.
-     *
-     * Used to calculate ISP power up time.
-     */
-    uint32_t time_capture_req;
 
-    /**
-     * Used to calculate time it took ISP to capture image.
-     *
-     * The capture may be variable due to auto exposure settings of ISP.
-     */
-    uint32_t time_capture_start;
+    bool measurement_in_progress;
 
-    /**
-     * Used to calculate time of transmission of image data over BLE.
-     *
-     * Time from receiving of data transfer request to last data packet
-     * transmission.
-     */
-    uint32_t time_transfer_start;
+    bool stop_measurement_command;
 
     /** Store captured image size on application level.
      *

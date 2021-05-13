@@ -129,6 +129,9 @@ static void RMTS_MsgHandler(ke_msg_id_t const msg_id, void const *param,
                         if (RMTS_env.transfer.packets_pending == 0)
                         {
                         	  RMTS_env.transfer.state = RMTS_STATE_START_REQUEST;
+                        	  RMTS_env.att.cp.callback(RMTS_OP_DATA_TRANSFER_COMPLETED,
+                        	                                  NULL);
+
                         }
                     }
                 }

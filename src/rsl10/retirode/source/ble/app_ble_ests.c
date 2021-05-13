@@ -96,7 +96,7 @@ const struct att_db_desc ESTS_att_db[ATT_ESTS_COUNT] =
             NULL),                                 /* callback */
 };
 
-int32_t ESTS_NOTIFY_QUERY_RESPONSE(const uint16_t *p_param)
+int32_t ESTS_NOTIFY_QUERY_RESPONSE(const uint32_t *p_param)
 {
     int32_t status = ESTS_OK;
 
@@ -106,16 +106,7 @@ int32_t ESTS_NOTIFY_QUERY_RESPONSE(const uint16_t *p_param)
         {
             uint16_t attidx = ESTS_env.att.attidx_offset + ATT_ESTS_RANGE_FINDER_RECEIVE_QUERY_VAL_0;
             uint16_t att_handle = GATTM_GetHandle(attidx);
-            uint16_t data[3];
-
-            data[0] = p_param[0];
-            data[1] = p_param[1];
-            data[2] = p_param[2];
-
-
-            GATTC_SendEvtCmd(0, GATTC_NOTIFY, attidx, att_handle,
-            		6, data);
-
+            GATTC_SendEvtCmd(0, GATTC_NOTIFY, attidx, att_handle, 4 * 3, p_param);
         }
         else
         {
@@ -221,6 +212,16 @@ static uint8_t ESTS_Send_Command_Handler(uint8_t conidx, uint16_t atsidx,
 		    switch (from[0])
 		    {
 
+				case ESTS_OP_SW_RESET:
+				{
+					ESTS_OP_SW_RESET_params_t params;
+					params.is_query = false;
+					params.type = from[1];
+					params.value = from[2];
+					ESTS_env.att.send_command.callback(ESTS_OP_SW_RESET, (void*)&params);
+					status = 1;
+					break;
+				}
 		        case ESTS_OP_LASER_VOLTAGE:
 				{
 					ETSS_LASER_VOLTAGE_params_t params;
@@ -248,6 +249,16 @@ static uint8_t ESTS_Send_Command_Handler(uint8_t conidx, uint16_t atsidx,
 					params.type = from[1];
 					params.value = from[2];
 					ESTS_env.att.send_command.callback(ESTS_OP_CALIBRATE, (void*)&params);
+					status = 1;
+					break;
+				}
+		        case ESTS_OP_PULSE_COUNT:
+				{
+					ETSS_PULSE_COUNT_params_t params;
+					params.is_query = false;
+					params.type = from[1];
+					params.value = from[2];
+					ESTS_env.att.send_command.callback(ESTS_OP_PULSE_COUNT, (void*)&params);
 					status = 1;
 					break;
 				}
@@ -280,23 +291,13 @@ static uint8_t ESTS_Send_Query_Handler(uint8_t conidx, uint16_t atsidx,
 
 	    switch (from[0])
 	    {
-	        case ESTS_OP_SW_RESET:
-	        {
-	        	ESTS_OP_SW_RESET_params_t params;
-	        	params.is_query = true;
-	        	params.type = from[1];
-	        	params.value = from[2];
-	        	ESTS_env.att.send_command.callback(ESTS_OP_SW_RESET, (void*)&params);
-	            status = 1;
-	            break;
-	        }
 	        case ESTS_OP_LASER_VOLTAGE:
 			{
 				ETSS_LASER_VOLTAGE_params_t params;
 				params.is_query = true;
 				params.type = from[1];
 				params.value = from[2];
-				ESTS_env.att.send_command.callback(ESTS_OP_LASER_VOLTAGE, (void*)&params);
+				ESTS_env.att.send_query.callback(ESTS_OP_LASER_VOLTAGE, (void*)&params);
 				status = 1;
 				break;
 			}
@@ -306,7 +307,7 @@ static uint8_t ESTS_Send_Query_Handler(uint8_t conidx, uint16_t atsidx,
 				params.is_query = true;
 				params.type = from[1];
 				params.value = from[2];
-				ESTS_env.att.send_command.callback(ESTS_OP_S_BIAS_POWER_VOLTAGE, (void*)&params);
+				ESTS_env.att.send_query.callback(ESTS_OP_S_BIAS_POWER_VOLTAGE, (void*)&params);
 				status = 1;
 				break;
 			}
@@ -316,7 +317,7 @@ static uint8_t ESTS_Send_Query_Handler(uint8_t conidx, uint16_t atsidx,
 				params.is_query = true;
 				params.type = from[1];
 				params.value = from[2];
-				ESTS_env.att.send_command.callback(ESTS_OP_CALIBRATE, (void*)&params);
+				ESTS_env.att.send_query.callback(ESTS_OP_CALIBRATE, (void*)&params);
 				status = 1;
 				break;
 			}
@@ -326,7 +327,16 @@ static uint8_t ESTS_Send_Query_Handler(uint8_t conidx, uint16_t atsidx,
 				params.is_query = true;
 				params.type = from[1];
 				params.value = from[2];
-				ESTS_env.att.send_command.callback(ESTS_OP_PULSE_COUNT, (void*)&params);
+				ESTS_env.att.send_query.callback(ESTS_OP_PULSE_COUNT, (void*)&params);
+				status = 1;
+				break;
+			}
+	        case ESTS_OP_VOLTAGES_STATUS:
+			{
+				ESTS_VOLTAGES_STATUS_params_t params;
+				params.is_query = true;
+				params.value = from[2];
+				ESTS_env.att.send_query.callback(ESTS_OP_VOLTAGES_STATUS, (void*)&params);
 				status = 1;
 				break;
 			}

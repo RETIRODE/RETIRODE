@@ -19,7 +19,7 @@
 
 
 
-#define MEASURE_SIZE   50
+#define MEASURE_SIZE   5
 static APP_Environemnt_t app_env = { 0 };
 
 /** Cache for storing of image data before it gets transmitted over BLE. */
@@ -49,15 +49,15 @@ static void APP_PushData(void)
 
         if ((max_data_to_push > 0) && (data_available > 0))
         {
-            uint8_t buf[4*64];
+            uint8_t buf[4 * 64];
             uint32_t status;
             uint32_t buf_to_write =
                     (max_data_to_push > data_available) ? data_available :
                                                           max_data_to_push;
 
-            if (buf_to_write > 4*64)
+            if (buf_to_write > 4 * 64)
             {
-                buf_to_write = 4*64;
+                buf_to_write = 4 * 64;
             }
 
             status = CIRCBUF_PopFront(buf, buf_to_write, &app_env.data_cache);
@@ -87,12 +87,13 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
        /* Connected peer device requested continuous image capture.*/
         case RMTS_OP_START_REQ:
         {
+
         	CIRCBUF_Initialize(app_data_cache_storage, APP_DATA_CACHE_SIZE,
         	        	                    &app_env.data_cache);
 
         	RETIRODE_RMP_MeasureCommand(MEASURE_SIZE);
-        	//MARTIN ZACNI MERAT
-        	//KED BUDES RDY VOLAJ RMTS_Start_TOFD_Transfer(uint32_t TOFD_size)
+        	app_env.measurement_in_progress = true;
+
             break;
         }
 
@@ -100,7 +101,10 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
          * operation.*/
         case RMTS_OP_CANCEL_REQ:
         {
-
+        	if(app_env.measurement_in_progress)
+        	{
+        		app_env.stop_measurement_command = true;
+        	}
             break;
         }
 
@@ -109,11 +113,35 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
 
         case RMTS_OP_DATA_TRANSFER_REQ:
         {
-            app_env.isp_read_in_progress = 0;
+
             APP_PushData();
-            RETIRODE_RMP_MeasureCommand(MEASURE_SIZE);
             break;
         }
+
+        case RMTS_OP_DATA_SPACE_AVAIL_IND:
+		{
+			APP_PushData();
+			break;
+		}
+
+        case RMTS_OP_DATA_TRANSFER_COMPLETED:
+		{
+			if(app_env.measurement_in_progress)
+			{
+				if(app_env.stop_measurement_command == false)
+				{
+					RETIRODE_RMP_MeasureCommand(MEASURE_SIZE);
+				}
+				else
+				{
+					app_env.stop_measurement_command = false;
+					app_env.measurement_in_progress = false;
+				}
+			}
+
+
+			break;
+		}
 
 
         default:
@@ -130,13 +158,20 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
 void APP_ESTS_Push_Query_Data(const RETIRODE_RMP_Query_response_t *p_param)
 {
 
-	uint16_t response[3];
+	uint32_t response[3];
 	switch (p_param->reg)
 	{
 		case RETIRODE_RMP_ACTUAL_LASER_VOLTAGE_REGISTER:
 		{
 			response[0] = ESTS_OP_LASER_VOLTAGE;
 			response[1] = ESTS_OP_LASER_VOLTAGE_ACTUAL;
+			response[2] = p_param->value;
+			break;
+		}
+		case RETIRODE_RMP_TARGET_LASER_VOLTAGE_REGISTER:
+		{
+			response[0] = ESTS_OP_LASER_VOLTAGE;
+			response[1] = ESTS_OP_LASER_VOLTAGE_TARGET;
 			response[2] = p_param->value;
 			break;
 		}
@@ -147,11 +182,25 @@ void APP_ESTS_Push_Query_Data(const RETIRODE_RMP_Query_response_t *p_param)
 			response[2] = p_param->value;
 			break;
 		}
+		case RETIRODE_RMP_TARGET_BIAS_VOLTAGE_REGISTER:
+		{
+			response[0] = ESTS_OP_S_BIAS_POWER_VOLTAGE;
+			response[1] = ESTS_OP_S_BIAS_POWER_VOLTAGE_TARGET;
+			response[2] = p_param->value;
+			break;
+		}
 		case RETIRODE_RMP_PULSE_COUNT_REGISTER:
 		{
 			response[0] = ESTS_OP_PULSE_COUNT;
 			response[1] = ESTS_OP_PULSE_COUNT_VALUE;
 			response[2] = p_param->value;
+			break;
+		}
+		case RETIRODE_RMP_DCD_CONFIG_REGISTER:
+		{
+			response[0] = ESTS_OP_VOLTAGES_STATUS;
+			response[1] = p_param->value;
+			response[2] = 0;
 			break;
 		}
 	}
@@ -161,7 +210,7 @@ void APP_ESTS_Push_Query_Data(const RETIRODE_RMP_Query_response_t *p_param)
 
 void APP_ESTS_Push_Calibration_Data(const RETIRODE_RMP_CalibrationDataReady_response_t *p_param)
 {
-	uint16_t response[3];
+	uint32_t response[3];
 	switch (p_param->cal)
 	{
 		case RETIRODE_RMP_CALIBRATION_0ns:
@@ -207,47 +256,66 @@ void APP_ESTS_EventHandler(ESTS_RF_SETTING_ID_t sidx,
        /** Connected peer device requested server reset. **/
         case ESTS_OP_SW_RESET:
         {
-        	ESTS_OP_SW_RESET_params_t *params = p_param;
-
         	RETIRODE_RMP_SoftwareResetCommand();
             break;
         }
 		case ESTS_OP_LASER_VOLTAGE:
 		{
-			ETSS_LASER_VOLTAGE_params_t *params = p_param;
+			const ETSS_LASER_VOLTAGE_params_t *params = p_param;
 			if(params->is_query == true)
 			{
-				if(params->type & 0x02)
+				if(params->type == 0x01)
+				{
+					RETIRODE_RMP_QueryCommand(RETIRODE_RMP_TARGET_LASER_VOLTAGE_REGISTER);
+				}
+				if(params->type == 0x02)
 				{
 					RETIRODE_RMP_QueryCommand(RETIRODE_RMP_ACTUAL_LASER_VOLTAGE_REGISTER);
 				}
 			}
 			else
 			{
-				RETIRODE_RMP_SetLaserPowerTargetVoltateCommand(params->value);
+				if(params->type == 0x01)
+				{
+					RETIRODE_RMP_SetLaserPowerTargetVoltateCommand(params->value);
+				}
+				if(params->type == 0x03)
+				{
+					RETIRODE_RMP_SetLaserPowerEnabledCommand(params->value);
+				}
 			}
 			break;
 		}
 		case ESTS_OP_S_BIAS_POWER_VOLTAGE:
 		{
-			ETSS_S_BIAS_POWER_VOLTAGE_params_t *params = p_param;
+			const ETSS_S_BIAS_POWER_VOLTAGE_params_t *params = p_param;
 			if(params->is_query == true)
 			{
-				if(params->type & 0x02)
+				if(params->type == 0x01)
+				{
+					RETIRODE_RMP_QueryCommand(RETIRODE_RMP_TARGET_BIAS_VOLTAGE_REGISTER);
+				}
+				if(params->type == 0x02)
 				{
 					RETIRODE_RMP_QueryCommand(RETIRODE_RMP_ACTUAL_BIAS_VOLTAGE_REGISTER);
 				}
 			}
 			else
 			{
-				RETIRODE_RMP_SetPowerBiasTargetVoltateCommand(params->value);
+				if(params->type == 0x01)
+				{
+					RETIRODE_RMP_SetPowerBiasTargetVoltateCommand(params->value);
+				}
+				if(params->type == 0x03)
+				{
+					RETIRODE_RMP_SetPowerBiasEnabledCommand(params->value);
+				}
 			}
 			break;
 		}
 		case ESTS_OP_CALIBRATE:
 		{
-			ETSS_CALIBRATE_params_t *params = p_param;
-
+			const ETSS_CALIBRATE_params_t *params = p_param;
 			if(params->is_query == true)
 			{
 				//SEND UART QUERY REQUEST
@@ -281,7 +349,7 @@ void APP_ESTS_EventHandler(ESTS_RF_SETTING_ID_t sidx,
 		}
 		case ESTS_OP_PULSE_COUNT:
 		{
-			ETSS_PULSE_COUNT_params_t *params = p_param;
+			const ETSS_PULSE_COUNT_params_t *params = p_param;
 			if(params->is_query == true)
 			{
 				RETIRODE_RMP_QueryCommand(RETIRODE_RMP_PULSE_COUNT_REGISTER);
@@ -289,6 +357,15 @@ void APP_ESTS_EventHandler(ESTS_RF_SETTING_ID_t sidx,
 			else
 			{
 				RETIRODE_RMP_SetPulseCountCommand(params->value);
+			}
+			break;
+		}
+		case ESTS_OP_VOLTAGES_STATUS:
+		{
+			const ESTS_VOLTAGES_STATUS_params_t *params = p_param;
+			if(params->is_query == true)
+			{
+				RETIRODE_RMP_QueryCommand(RETIRODE_RMP_DCD_CONFIG_REGISTER);
 			}
 			break;
 		}
@@ -307,30 +384,28 @@ void RETIRODE_RMP_Handler(RETIRODE_RMP_Event_t event,
 		case RETIRODE_RMP_EVENT_MEASUREMENT_DATA_READY:
 		{
 			const RETIRODE_RMP_Data_t *data = p_param;
-			CIRCBUF_PushBack(data->data, data->size, &app_env.data_cache);
-			RMTS_Start_TOFD_Transfer(data->size);
+			CIRCBUF_PushBack(data->data, data->size * 4, &app_env.data_cache);
+			RMTS_Start_TOFD_Transfer(data->size * 4);
 			break;
 		}
 		case RETIRODE_RMP_EVENT_QUERY_RESPONSE_READY:
 		{
-			RETIRODE_RMP_Query_response_t *params = p_param;
+			const RETIRODE_RMP_Query_response_t *params = p_param;
 			APP_ESTS_Push_Query_Data(params);
 			break;
 		}
 		case RETIRODE_RMP_EVENT_CALIBRATION_DATA_READY:
 		{
-			RETIRODE_RMP_CalibrationDataReady_response_t *params = p_param;
+			const RETIRODE_RMP_CalibrationDataReady_response_t *params = p_param;
 			APP_ESTS_Push_Calibration_Data(params);
 			break;
 		}
 		case RETIRODE_RMP_EVENT_ERROR:
 		{
-			int a = 5;
 			break;
 		}
 		case RETIRODE_RMP_EVENT_READY:
 		{
-			int a = 5;
 			break;
 		}
 	}
@@ -361,33 +436,6 @@ int main(void)
 		if(i == 200)
 		{
 			RETIRODE_RMP_PowerUpCommand();
-		}
-
-		if(i == 1500)
-		{
-			RETIRODE_RMP_SetLaserPowerTargetVoltateCommand(5);
-		}
-		if(i == 2000)
-		{
-			RETIRODE_RMP_SetLaserPowerEnabledCommand(true);
-			//RETIRODE_RMP_SetPowerBiasEnabledCommand(true);
-		}
-
-		if(i == 2100)
-		{
-			RETIRODE_RMP_SetLaserPowerEnabledCommand(true);
-			RETIRODE_RMP_SetPowerBiasEnabledCommand(true);
-		}
-
-		if(i == 2300)
-		{
-			RETIRODE_RMP_QueryCommand(RETIRODE_RMP_DCD_CONFIG_REGISTER);
-			//RETIRODE_RMP_SetPowerBiasTargetVoltateCommand(-45);
-			//RETIRODE_RMP_SetTriggerPeriodCommand(0.000959999976);
-		}
-		if(i == 2500)
-		{
-		//	RETIRODE_RMP_MeasureCommand(1);
 		}
 		/* Refresh the watchdog timer */
 		Sys_Watchdog_Refresh();

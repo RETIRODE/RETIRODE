@@ -50,7 +50,7 @@ extern "C"
 
 #define RMTS_INFO_ERR                     (0x00)
 #define RMTS_INFO_ERR_CANCELLED           (0x01)
-#define RMTS_INFO_TOFD_CAPTURED_LENGTH     (5)
+#define RMTS_INFO_TOFD_CAPTURED_LENGTH     (4)
 
 #define RMTS_TOFD_SIZE_OFFSET (0)
 #define RMTS_TOFD_SIZE_LENGTH (4)

@@ -111,6 +111,10 @@ typedef enum RMTS_ControlPointOpCode_t
      * ready to accept more MR_DATA.
      */
    RMTS_OP_DATA_SPACE_AVAIL_IND,
+
+
+   RMTS_OP_DATA_TRANSFER_COMPLETED,
+
 } RMTS_ControlPointOpCode_t;
 
 typedef enum RMTS_InfoErrorCode_t

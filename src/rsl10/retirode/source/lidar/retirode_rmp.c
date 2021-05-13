@@ -95,7 +95,7 @@ struct RETIRODE_RMP_CurrentMeasurement_t
 	char received_data_buffer[RETIRODE_RMP_DATA_RECEIVED_BUFFER_SIZE];
 
 	/** Holds already processed data */
-	uint32_t requested_data_buffer[200];
+	float requested_data_buffer[200];
 
 	/** Hold information about current size of processed data */
 	uint32_t requested_data_proccesed;
@@ -488,7 +488,7 @@ static void RETIRODE_RMP_CalculateMeanFromRawData(void)
 		count++;
 	}
 
-	rmp_env.current_measurement.requested_data_buffer[rmp_env.current_measurement.requested_data_proccesed] = value / count;
+	rmp_env.current_measurement.requested_data_buffer[rmp_env.current_measurement.requested_data_proccesed] = (float)value / count;
 }
 
 static void RETIRODE_RMP_DataProcessingStateHandler(void)
@@ -523,7 +523,7 @@ static void RETIRODE_RMP_MeasurementDataReadyStateHandler(void)
 		static RETIRODE_RMP_CalibrationDataReady_response_t calibration;
 
 		calibration.cal =  rmp_env.current_measurement.calibration;
-		calibration.value = rmp_env.current_measurement.requested_data_buffer[0];
+		memcpy(&calibration.value, rmp_env.current_measurement.requested_data_buffer, sizeof(uint32_t));
 		RETIRODE_RMP_SendCalibrationDataReadyEvent(&calibration);
 		rmp_env.current_measurement.calibration = 0;
 	}
@@ -574,6 +574,9 @@ static void RETIRODE_RMP_QueryResponseStateHandler(void)
 		static RETIRODE_RMP_Query_response_t data;
 		data.value = 0;
 
+		float floatResponse = 0;
+		uint32_t bitResponse = 0;
+
 		data.reg = rmp_env.query_response_buffer[0];
 		uint8_t value = strtol(rmp_env.query_response_buffer + 1, NULL, 16);
 
@@ -581,48 +584,58 @@ static void RETIRODE_RMP_QueryResponseStateHandler(void)
 		{
 		 	case (RETIRODE_RMP_DCD_CONFIG_REGISTER):
 			{
+		 		uint32_t res = 0;
 		 		// laser power enabled
 		 		if ((value & 0x01) != 0)
 		 		{
-		 			data.value |= 0x01;
+		 			bitResponse |=  1 << 1;
 		 		}
 		 		//laser overload
 		 		if ((value & 0x04) != 0)
 				{
-		 			data.value |= 0x02;
+		 			bitResponse |=  1 << 2;
 				}
 		 		//bias power enabled
 		 		if ((value & 0x02) != 0)
 				{
-		 			data.value |= 0x03;
+		 			bitResponse |=  1 << 3;
 				}
 		 		//bias  overload
 		 		if ((value & 0x08) != 0)
 				{
-		 			data.value |= 0x04;
+		 			bitResponse |=  1 << 4;
 				}
 		 		break;
 			}
 		 	case(RETIRODE_RMP_TARGET_LASER_VOLTAGE_REGISTER):
 			{
-		 		data.value = FromNativeLaserToReal(value);
+		 		floatResponse = FromNativeLaserToReal(value);
 				break;
 			}
 			case(RETIRODE_RMP_TARGET_BIAS_VOLTAGE_REGISTER):
 			{
-				data.value = FromNativeBiasToReal(value);
+				floatResponse = FromNativeBiasToReal(value);
 				break;
 			}
 		 	case(RETIRODE_RMP_ACTUAL_LASER_VOLTAGE_REGISTER):
 			{
-		 		data.value = FromNativeLaserToReal(value);
+		 		floatResponse = FromNativeLaserToReal(value);
 		 		break;
 			}
 		 	case(RETIRODE_RMP_ACTUAL_BIAS_VOLTAGE_REGISTER):
 			{
-		 		data.value = FromNativeBiasToReal(value);
+ 		 		floatResponse = FromNativeBiasToReal(value);
 		 		break;
 			}
+		}
+
+		if(bitResponse != 0)
+		{
+			memcpy(&data.value, &bitResponse, sizeof(uint32_t));
+		}
+		else
+		{
+			memcpy(&data.value, &floatResponse, sizeof(uint32_t));
 		}
 
 		RETIRODE_RMP_SendQueryResponseReadyEvent(&data);

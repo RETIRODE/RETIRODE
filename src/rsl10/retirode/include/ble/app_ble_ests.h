@@ -303,17 +303,15 @@ typedef struct ETSS_PULSE_COUNT_params_t
 
 } ETSS_PULSE_COUNT_params_t;
 
-typedef struct ESTS_OP_VOLTAGES_STATUS_params_t
+typedef struct ESTS_VOLTAGES_STATUS_params_t
 {
     /** Condition if came from query characteristic */
     bool is_query;
 
-
-
     /** Query response value or command value*/
     uint8_t value;
 
-} ESTS_OP_VOLTAGES_STATUS_params_t;
+} ESTS_VOLTAGES_STATUS_params_t;
 
 
 typedef void (*ESTS_ControlHandler)(ESTS_RF_SETTING_ID_t sidx,
@@ -325,7 +323,7 @@ typedef void (*ESTS_ControlHandler)(ESTS_RF_SETTING_ID_t sidx,
  * --------------------------------------------------------------------------*/
 
 int32_t ESTS_Initialize(ESTS_ControlHandler control_event_handler);
-int32_t ESTS_NOTIFY_QUERY_RESPONSE(const uint16_t *p_param);
+int32_t ESTS_NOTIFY_QUERY_RESPONSE(const uint32_t *p_param);
 
 
 #ifdef __cplusplus
