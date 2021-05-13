@@ -1,12 +1,9 @@
-﻿using DevExpress.XamarinForms.Charts;
-using Nancy.TinyIoc;
+﻿using Nancy.TinyIoc;
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace RETIRODE_APP.ViewModels
@@ -25,22 +22,42 @@ namespace RETIRODE_APP.ViewModels
 
     class GraphViewModel : BaseViewModel
     {
-        private IDataStore _dataStore => TinyIoCContainer.Current.Resolve<IDataStore>();
+        private IDataStore _dataStore;
+        private IRangeMeasurementService _rangeMeasurementService;
         
         private DateTime StartMeasuringTime { get; set; }
         private float Tdc0Value { get; set; }
         private float Tdc62Value { get; set; }
         private float Tdc125Value { get; set; }
         private CalibrationItem Calibration { get; set; }
-
         public ObservableCollection<MeasuredDataItem> MeasuredDataItems { get; set; }
-        public ChartView Chart { get; set; }
-
 
         public GraphViewModel()
         {
             StartMeasuringTime = DateTime.Now;
             MeasuredDataItems = new ObservableCollection<MeasuredDataItem>();
+            _rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
+            _dataStore = TinyIoCContainer.Current.Resolve<IDataStore>();
+            _rangeMeasurementService.MeasuredDataResponseEvent -= _rangeMeasurementService_MeasuredDataResponseEvent;
+            _rangeMeasurementService.MeasuredDataResponseEvent += _rangeMeasurementService_MeasuredDataResponseEvent;
+            _rangeMeasurementService.StartMeasurement();
+        }
+
+        private async void _rangeMeasurementService_MeasuredDataResponseEvent(List<float> obj)
+        {
+            foreach (var item in obj)
+            {
+                var distance = CalculateDistanceFromTdc(item);
+                TimeSpan span = DateTime.Now - StartMeasuringTime;
+                MeasuredDataItems.Add(new MeasuredDataItem(distance, (float)span.TotalMilliseconds));
+                OnPropertyChanged(nameof(MeasuredDataItems));
+
+                await _dataStore.AddEntityAsync(new MeasurementItem()
+                {
+                    Calibration_id = Calibration.Id,
+                    Tdc_value = item
+                });
+            }
         }
 
         public async void Init()
