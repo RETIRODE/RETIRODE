@@ -46,8 +46,8 @@ namespace RETIRODE_APP.ViewModels
                 }
             }
         }
-        private double _tcdcal0;
-        public double TCDCal0
+        private float _tcdcal0;
+        public float TCDCal0
         {
             get { return _tcdcal0; }
             set
@@ -56,8 +56,8 @@ namespace RETIRODE_APP.ViewModels
                 OnPropertyChanged(nameof(TCDCal0));
             }
         }
-        private double _tcdcal62;
-        public double TCDCal62
+        private float _tcdcal62;
+        public float TCDCal62
         {
             get { return _tcdcal62; }
             set
@@ -66,8 +66,8 @@ namespace RETIRODE_APP.ViewModels
                 OnPropertyChanged(nameof(TCDCal62));
             }
         }
-        private double _tcdcal125;
-        public double TCDCal125
+        private float _tcdcal125;
+        public float TCDCal125
         {
             get { return _tcdcal125; }
             set
@@ -86,8 +86,8 @@ namespace RETIRODE_APP.ViewModels
                 OnPropertyChanged(nameof(TriggerPulse));
             }
         }
-        private int _sipmtargetv;
-        public int SIPMTargetV
+        private float _sipmtargetv;
+        public float SIPMTargetV
         {
             get { return _sipmtargetv; }
             set
@@ -96,8 +96,8 @@ namespace RETIRODE_APP.ViewModels
                 OnPropertyChanged(nameof(SIPMTargetV));
             }
         }
-        private int _sipmactualv;
-        public int SIPMActualV
+        private float _sipmactualv;
+        public float SIPMActualV
         {
             get { return _sipmactualv; }
             set
@@ -106,8 +106,8 @@ namespace RETIRODE_APP.ViewModels
                 OnPropertyChanged(nameof(SIPMActualV));
             }
         }
-        private int _lasertargetv;
-        public int LaserTargetV
+        private float _lasertargetv;
+        public float LaserTargetV
         {
             get { return _lasertargetv; }
             set
@@ -116,8 +116,8 @@ namespace RETIRODE_APP.ViewModels
                 OnPropertyChanged(nameof(LaserTargetV));
             }
         }
-        private int _laseractualv;
-        public int LaserActualV
+        private float _laseractualv;
+        public float LaserActualV
         {
             get { return _laseractualv; }
             set
@@ -220,7 +220,7 @@ namespace RETIRODE_APP.ViewModels
                     await ShowError("Failed to turn on/off laser voltage");
                 }
             }
-             
+
         }
 
         private async Task SipmBiasPowerToggle()
@@ -282,15 +282,19 @@ namespace RETIRODE_APP.ViewModels
                 {
                     try
                     {
-                        //await _rangeMeasurementService.GetSipmBiasPowerVoltage(Voltage.Actual);
-                        //await _rangeMeasurementService.GetLaserVoltage(Voltage.Actual);
+                        await Task.Delay(1000);
+                        await _rangeMeasurementService.GetSipmBiasPowerVoltage(Voltage.Actual);
+                        await _rangeMeasurementService.GetLaserVoltage(Voltage.Actual);
                         await _rangeMeasurementService.GetVoltagesStatus();
 
                         if (TriggerPulse == default(int))
                         {
-                            await _rangeMeasurementService.GetPulseCount();
+                            //await _rangeMeasurementService.GetPulseCount();
                         }
                         await Task.Delay(1000);
+
+                        await _rangeMeasurementService.GetSipmBiasPowerVoltage(Voltage.Target);
+                        await _rangeMeasurementService.GetLaserVoltage(Voltage.Target);
                     }
                     catch (Exception ex)
                     {
@@ -316,41 +320,61 @@ namespace RETIRODE_APP.ViewModels
             switch (responseItem.Identifier)
             {
                 case RangeFinderValues.CalibrateNS0:
-                    TCDCal0 = Convert.ToDouble(responseItem.Value);
+                    TCDCal0 = (float)(responseItem.Value);
                     break;
 
                 case RangeFinderValues.Calibrate62_5:
-                    TCDCal62 = Convert.ToDouble(responseItem.Value);
+                    TCDCal62 = (float)(responseItem.Value);
                     break;
 
                 case RangeFinderValues.Calibrate125:
-                    TCDCal125 = Convert.ToDouble(responseItem.Value);
+                    TCDCal125 = (float)(responseItem.Value);
                     break;
 
                 case RangeFinderValues.LaserVoltageTarget:
-                    LaserTargetV = Convert.ToInt32(responseItem.Value);
+                    LaserTargetV = (float)responseItem.Value;
                     break;
 
                 case RangeFinderValues.LaserVoltageActual:
-                    LaserActualV = Convert.ToInt32(responseItem.Value);
+                    LaserActualV = (float)responseItem.Value;
                     break;
 
                 case RangeFinderValues.SipmBiasPowerVoltageTarget:
-                    SIPMTargetV = Convert.ToInt32(responseItem.Value);
+                    SIPMTargetV = (float)responseItem.Value;
                     break;
 
                 case RangeFinderValues.SipmBiasPowerVoltageActual:
-                    SIPMActualV = Convert.ToInt32(responseItem.Value);
+                    SIPMActualV = (float)responseItem.Value;
                     break;
 
                 case RangeFinderValues.PulseCount:
                     TriggerPulse = Convert.ToInt32(responseItem.Value);
                     break;
                 case RangeFinderValues.SipmBiasPowerVoltageStatus:
-                    IsSipmBiasPowerVoltageTurnOn = Convert.ToBoolean(responseItem.Value);
+                    ChangeSipmBiasVoltagePoweredOn(Convert.ToBoolean(responseItem.Value));
                     break;
                 case RangeFinderValues.LaserVoltageStatus:
                     ChangeLaserVoltagePoweredOn(Convert.ToBoolean(responseItem.Value));
+                    break;
+                case RangeFinderValues.LaserVoltageOverload:
+                    if (IsLaserVoltageTurnOn)
+                    {
+                        LaserVoltageOverload = Convert.ToBoolean(responseItem.Value);
+                    }
+                    else
+                    {
+                        LaserVoltageOverload = null;
+                    }
+                    break;
+                case RangeFinderValues.SipmBiasPowerVoltageOverload:
+                    if (IsSipmBiasPowerVoltageTurnOn)
+                    {
+                        BiasVoltageOverload = Convert.ToBoolean(responseItem.Value);
+                    }
+                    else
+                    {
+                        BiasVoltageOverload = null;
+                    }
                     break;
                 default:
                     break;
@@ -430,14 +454,20 @@ namespace RETIRODE_APP.ViewModels
         }
         private void ChangeLaserVoltagePoweredOn(bool value)
         {
-            _switchedBySystemLaserVolage = true;
-            IsLaserVoltageTurnOn = value;
+            if (IsLaserVoltageTurnOn != value)
+            {
+                _switchedBySystemLaserVolage = true;
+                IsLaserVoltageTurnOn = value;
+            }
         }
 
         private void ChangeSipmBiasVoltagePoweredOn(bool value)
         {
-            _switchedBySystemSipmBias = true;
-            IsSipmBiasPowerVoltageTurnOn = value;
+            if (IsSipmBiasPowerVoltageTurnOn != value)
+            {
+                _switchedBySystemSipmBias = true;
+                IsSipmBiasPowerVoltageTurnOn = value;
+            }
         }
 
     }

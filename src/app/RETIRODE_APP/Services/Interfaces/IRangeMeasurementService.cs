@@ -66,14 +66,14 @@ namespace RETIRODE_APP.Services
         /// </summary>
         /// <param name="laserVoltage"></param>
         /// <returns></returns>
-        Task SetLaserVoltage(int laserVoltage);
+        Task SetLaserVoltage(float laserVoltage);
 
         /// <summary>
         /// set sipm bias voltage power value for lidar
         /// </summary>
         /// <param name="sipmBiasPowerVoltage"></param>
         /// <returns></returns>
-        Task SetSipmBiasPowerVoltage(int sipmBiasPowerVoltage);
+        Task SetSipmBiasPowerVoltage(float sipmBiasPowerVoltage);
 
         /// <summary>
         /// 

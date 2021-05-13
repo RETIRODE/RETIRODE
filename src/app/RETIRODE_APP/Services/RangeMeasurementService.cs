@@ -125,14 +125,14 @@ namespace RETIRODE_APP.Services
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
-        public async Task SetLaserVoltage(int laserVoltage)
+        public async Task SetLaserVoltage(float laserVoltage)
         {
             var message = BuildProtocolMessage(Registers.LaserVoltage, (byte)Voltage.Target, laserVoltage);
             await WriteToCharacteristic(_sendCommandCharacteristic, message);
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
-        public async Task SetSipmBiasPowerVoltage(int simpBiasPowerVoltage)
+        public async Task SetSipmBiasPowerVoltage(float simpBiasPowerVoltage)
         {
             var message = BuildProtocolMessage(Registers.SipmBiasPowerVoltage, (byte)Voltage.Target, simpBiasPowerVoltage);
             await WriteToCharacteristic(_sendCommandCharacteristic, message);
@@ -369,22 +369,22 @@ namespace RETIRODE_APP.Services
                     list.Add(new ResponseItem()
                     {
                         Identifier = RangeFinderValues.LaserVoltageStatus,
-                        Value = (bits & (1 << 0)) == 1 << 0
-                    });
-                    list.Add(new ResponseItem()
-                    {
-                        Identifier = RangeFinderValues.LaserVoltageOverload,
                         Value = (bits & (1 << 1)) == 1 << 1
                     });
                     list.Add(new ResponseItem()
                     {
-                        Identifier = RangeFinderValues.SipmBiasPowerVoltageStatus,
+                        Identifier = RangeFinderValues.LaserVoltageOverload,
                         Value = (bits & (1 << 2)) == 1 << 2
                     });
                     list.Add(new ResponseItem()
                     {
-                        Identifier = RangeFinderValues.SipmBiasPowerVoltageOverload,
+                        Identifier = RangeFinderValues.SipmBiasPowerVoltageStatus,
                         Value = (bits & (1 << 3)) == 1 << 3
+                    });
+                    list.Add(new ResponseItem()
+                    {
+                        Identifier = RangeFinderValues.SipmBiasPowerVoltageOverload,
+                        Value = (bits & (1 << 4)) == 1 << 4
                     });
 
                     break;
@@ -468,7 +468,7 @@ namespace RETIRODE_APP.Services
             return macAddress.Substring(0, Constants.UniqueMacAddressLength).Equals(Constants.RetirodeUniqueMacAddressPart);
         }
 
-        private byte[] BuildProtocolMessage(Registers register, byte subRegister, int value)
+        private byte[] BuildProtocolMessage(Registers register, byte subRegister, float value)
         {
             return new[] { (byte)register, subRegister, Convert.ToByte(value) };
         }
