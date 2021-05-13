@@ -8,27 +8,12 @@ using System.Threading.Tasks;
 
 namespace RETIRODE_APP.ViewModels
 {
-    public class WeatherDataItem
-    {
-        public DateTime Month { get; }
-        public double Temperature { get; }
-
-        public WeatherDataItem(DateTime month, double temperature)
-        {
-            this.Month = month;
-            this.Temperature = temperature;
-        }
-    }
-
     class GraphViewModel : BaseViewModel
     {
         private IDataStore _dataStore;
         private IRangeMeasurementService _rangeMeasurementService;
         
         private DateTime StartMeasuringTime { get; set; }
-        private float Tdc0Value { get; set; }
-        private float Tdc62Value { get; set; }
-        private float Tdc125Value { get; set; }
         private CalibrationItem Calibration { get; set; }
         public ObservableCollection<MeasuredDataItem> MeasuredDataItems { get; set; }
 
@@ -89,15 +74,15 @@ namespace RETIRODE_APP.ViewModels
             }
             else if (tdcValue < 62.5f)
             {
-                tofValue = 0f + (62.5f * ((tdcValue - Tdc0Value) / (Tdc62Value - Tdc0Value)));
+                tofValue = 0f + (62.5f * ((tdcValue - Calibration.Tdc_0) / (Calibration.Tdc_62 - Calibration.Tdc_0)));
             }
             else if (tdcValue < 125f)
             {
-                tofValue = 62.5f + (62.5f * ((tdcValue - Tdc62Value) / (Tdc125Value - Tdc62Value)));
+                tofValue = 62.5f + (62.5f * ((tdcValue - Calibration.Tdc_62) / (Calibration.Tdc_125 - Calibration.Tdc_62)));
             }
             else
             {
-                tofValue = 125f + (62.5f * ((tdcValue - Tdc125Value) / (Tdc125Value - Tdc62Value)));
+                tofValue = 125f + (62.5f * ((tdcValue - Calibration.Tdc_125) / (Calibration.Tdc_125 - Calibration.Tdc_62)));
             }
 
             float distance = 0.15f * tofValue;
@@ -107,10 +92,6 @@ namespace RETIRODE_APP.ViewModels
         {
             var calibrationList = await _dataStore.GetEntitiesAsync<CalibrationItem>();
             var calibration = new List<CalibrationItem>(calibrationList).FindLast(x => x.Id > 0);
-
-            Tdc0Value = calibration.Tdc_0;
-            Tdc62Value = calibration.Tdc_62;
-            Tdc125Value = calibration.Tdc_125;
             Calibration = calibration;
         }
 
