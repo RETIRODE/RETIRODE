@@ -181,10 +181,10 @@ namespace RETIRODE_APP.ViewModels
             _rangeMeasurementService.QueryResponseEvent += RangeMeasurementService_QueryResponseEvent;
 
             _rangeMeasurementService.DeviceDisconnectedEvent -= _rangeMeasurementService_DeviceDisconnectedEvent;
-            _rangeMeasurementService.DeviceDisconnectedEvent += _rangeMeasurementService_DeviceDisconnectedEvent;
+           // _rangeMeasurementService.DeviceDisconnectedEvent += _rangeMeasurementService_DeviceDisconnectedEvent;
 
             _rangeMeasurementService.DeviceLostConnectionEvent -= _rangeMeasurementService_DeviceLostConnectionEvent;
-            _rangeMeasurementService.DeviceLostConnectionEvent += _rangeMeasurementService_DeviceLostConnectionEvent;
+           // _rangeMeasurementService.DeviceLostConnectionEvent += _rangeMeasurementService_DeviceLostConnectionEvent;
            
 
             SoftwareResetCommand = new AsyncCommand(async () => await ResetLidar());
@@ -476,7 +476,7 @@ namespace RETIRODE_APP.ViewModels
                         Tdc_125 = TCDCal125,
                         Pulse_count = TriggerPulse
                     });
-                    await Application.Current.MainPage.Navigation.PushAsync(new DepictionPage());
+                    await Application.Current.MainPage.Navigation.PushAsync(new GraphPage());
                 }
                 else
                 {

@@ -21,8 +21,8 @@ namespace RETIRODE_APP.Views
 
         private void StartDepictionButton_Clicked(object sender, EventArgs e)
         {
-            Navigation.PushAsync(new GraphPage());
-            /*
+            //Navigation.PushAsync(new GraphPage());
+
             if (!App.isConnected)
             {
                 Navigation.PushAsync(new BluetoothPage());
@@ -33,8 +33,8 @@ namespace RETIRODE_APP.Views
             }
             else
             {
-                Navigation.PushAsync(new DepictionPage());
-            }*/
+                Navigation.PushAsync(new GraphPage());
+            }
         }
     }
 }

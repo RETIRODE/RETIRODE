@@ -37,26 +37,6 @@ namespace RETIRODE_APP.Services
         private int _dataSize;
         private SemaphoreSlim _semaphoreSlim;
         private CalibrationState _calibrationState = CalibrationState.NoState;
-        public RangeMeasurementService()
-        {
-            _availableDevices = new List<IDevice>();
-            _TOFData = new List<byte>();
-            _semaphoreSlim = new SemaphoreSlim(1);
-            _bluetoothService = TinyIoCContainer.Current.Resolve<IBluetoothService>();
-            _bluetoothService.DeviceFound = DeviceDiscovered;
-            _bluetoothService.DeviceLostConnection = DeviceLostConnection;
-            _bluetoothService.DeviceDisconnected = DeviceDisconnected;
-        }
-
-        private void DeviceDisconnected(object obj)
-        {
-            DeviceDisconnectedEvent.Invoke(obj);
-        }
-
-        private void DeviceLostConnection(object obj)
-        {
-            DeviceLostConnectionEvent.Invoke(obj);
-        }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public event Action<BLEDevice> DeviceDiscoveredEvent;
@@ -70,6 +50,28 @@ namespace RETIRODE_APP.Services
         public event Action<object> DeviceLostConnectionEvent;
 
         public event Action<object> DeviceDisconnectedEvent;
+        public RangeMeasurementService()
+        {
+            _availableDevices = new List<IDevice>();
+            _TOFData = new List<byte>();
+            _semaphoreSlim = new SemaphoreSlim(1);
+            _bluetoothService = TinyIoCContainer.Current.Resolve<IBluetoothService>();
+            _bluetoothService.DeviceFound = DeviceDiscovered;
+            _bluetoothService.DeviceLostConnection = DeviceLostConnection;
+            _bluetoothService.DeviceDisconnected = DeviceDisconnected;
+        }
+
+        private void DeviceDisconnected(object obj)
+        {
+            //DeviceDisconnectedEvent.Invoke(obj);
+        }
+
+        private void DeviceLostConnection(object obj)
+        {
+          //  DeviceLostConnectionEvent.Invoke(obj);
+        }
+
+
              
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task ConnectToRSL10(BLEDevice bleDevice)
@@ -128,7 +130,7 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task StopMeasurement()
         {
-            await WriteToCharacteristic(_RMTInfoCharacteristic, new[] { (byte)RSL10Command.StopLidar });
+            await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StopLidar });
             _isDataSize = false;
             _dataSize = 0;
             _TOFData.Clear();
@@ -400,7 +402,7 @@ namespace RETIRODE_APP.Services
                     break;
 
                 case Registers.VoltageStatus:
-                    var bits = Convert.ToInt32(data[4]);
+                    var bits = Convert.ToInt32(data[2]);
                     if (data[1] == (byte)ProtocolGenerics.DefaultValueType)
                     {
                         list.Add(new ResponseItem()
