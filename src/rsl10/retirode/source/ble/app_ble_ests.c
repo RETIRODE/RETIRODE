@@ -96,17 +96,17 @@ const struct att_db_desc ESTS_att_db[ATT_ESTS_COUNT] =
             NULL),                                 /* callback */
 };
 
-int32_t ESTS_NOTIFY_QUERY_RESPONSE(const uint32_t *p_param)
+int32_t ESTS_NOTIFY_QUERY_RESPONSE(const uint8_t *p_param)
 {
     int32_t status = ESTS_OK;
 
-    if (1==1)
+    if (ESTS_env.att.receive_query.ccc[0] == ATT_CCC_START_NTF)
     {
         if (ESTS_env.state == ESTS_STATE_CONNECTED)
         {
             uint16_t attidx = ESTS_env.att.attidx_offset + ATT_ESTS_RANGE_FINDER_RECEIVE_QUERY_VAL_0;
             uint16_t att_handle = GATTM_GetHandle(attidx);
-            GATTC_SendEvtCmd(0, GATTC_NOTIFY, attidx, att_handle, 4 * 3, p_param);
+            GATTC_SendEvtCmd(0, GATTC_NOTIFY, attidx, att_handle, 6, p_param);
         }
         else
         {
@@ -128,28 +128,17 @@ static void ESTS_BleMsgHandler(ke_msg_id_t const msg_id, void const *param,
     {
         case GAPC_CONNECTION_REQ_IND:
         {
-
-
             ESTS_env.state = ESTS_STATE_CONNECTED;
-
-
             ESTS_env.att.receive_query.ccc[0] = 0;
             ESTS_env.att.receive_query.ccc[1] = 0;
-
-
-
             break;
         }
 
         case GAPC_DISCONNECT_IND:
         {
-
-
             ESTS_env.state = ESTS_STATE_IDLE;
-
             break;
         }
-
         default:
             break;
     }
@@ -173,7 +162,6 @@ int32_t ESTS_Initialize(ESTS_ControlHandler control_event_handler)
 
     ESTS_env.state = ESTS_STATE_IDLE;
 
-
     /* Add custom attributes into the attribute database. */
     status = APP_BLE_PeripheralServerAddCustomService(ESTS_att_db, ATT_ESTS_COUNT,
             &ESTS_env.att.attidx_offset);
@@ -181,14 +169,10 @@ int32_t ESTS_Initialize(ESTS_ControlHandler control_event_handler)
     {
         return ESTS_ERR_INSUFFICIENT_ATT_DB_SIZE;
     }
-
-
-
-       ESTS_env.state = ESTS_STATE_IDLE;
-
+    ESTS_env.state = ESTS_STATE_IDLE;
        /* Listen for specific BLE kernel messages. */
-       MsgHandler_Add(GAPC_DISCONNECT_IND, ESTS_BleMsgHandler);
-       MsgHandler_Add(GAPC_CONNECTION_REQ_IND, ESTS_BleMsgHandler);
+    MsgHandler_Add(GAPC_DISCONNECT_IND, ESTS_BleMsgHandler);
+    MsgHandler_Add(GAPC_CONNECTION_REQ_IND, ESTS_BleMsgHandler);
 
     return ESTS_OK;
 }
@@ -197,78 +181,122 @@ static uint8_t ESTS_Send_Command_Handler(uint8_t conidx, uint16_t atsidx,
         uint16_t handle, uint8_t *to, const uint8_t *from, uint16_t length,
         uint16_t operation)
 {
-	if (length != ESTS_CHAR_VALUE_SIZE  )
-		    {
-		        return -1;
-		    }
-		if (ESTS_env.state != ESTS_STATE_CONNECTED)
-		    {
+	if (length < ESTS_CHAR_COMMAND_VALUE_MIN_SIZE)
+	{
+	    return -1;
+	}
+	if (ESTS_env.state != ESTS_STATE_CONNECTED)
+	{
+		return -1;
+	}
+
+	uint8_t status = -1;
+
+	switch (from[0])
+	{
+		case ESTS_OP_SW_RESET:
+		{
+			if(from[1] != 0 || from[2] != 0)
+			{
 				return -1;
-		    }
+			}
 
-		    uint8_t status = -1;
+			ESTS_OP_SW_RESET_params_t params;
+			params.is_query = false;
+			params.type = 0;
+			params.value = 0;
+			ESTS_env.att.send_command.callback(ESTS_OP_SW_RESET, (void*)&params);
+			status = 1;
+			break;
+		}
+		case ESTS_OP_LASER_VOLTAGE:
+		{
+			ETSS_LASER_VOLTAGE_params_t params;
+			params.is_query = false;
+			params.type = from[1];
+			if(from[1] == ESTS_OP_LASER_VOLTAGE_TARGET)
+			{
+				memcpy(&params.value, from + 2, sizeof(uint32_t));
+			}
+			else if(from[1] == ESTS_OP_LASER_VOLTAGE_SWITCH)
+			{
+				params.value = from[2];
+			}
+			else
+			{
+				return -1;
+			}
 
+			ESTS_env.att.send_command.callback(ESTS_OP_LASER_VOLTAGE, (void*)&params);
+			status = 1;
+			break;
+		}
+		case ESTS_OP_S_BIAS_POWER_VOLTAGE:
+		{
+			ETSS_S_BIAS_POWER_VOLTAGE_params_t params;
+			params.is_query = false;
+			params.type = from[1];
+			if(from[1] == ESTS_OP_S_BIAS_POWER_VOLTAGE_TARGET)
+			{
+				memcpy(&params.value, from + 2, sizeof(uint32_t));
+			}
+			else if(from[1] == ESTS_OP_S_BIAS_POWER_VOLTAGE_SWITCH)
+			{
+				params.value = from[2];
+			}
+			else
+			{
+				return -1;
+			}
 
-		    switch (from[0])
-		    {
+			ESTS_env.att.send_command.callback(ESTS_OP_S_BIAS_POWER_VOLTAGE, (void*)&params);
+			status = 1;
+			break;
+		}
+		case ESTS_OP_CALIBRATE:
+		{
+			ETSS_CALIBRATE_params_t params;
+			params.is_query = false;
+			if(0 < from[1] && from[1] <= ESTS_OP_CALIBRATE_DONE && from[2] == 0)
+			{
+				params.type = from[1];
+				params.value = 0;
+			}
+			else
+			{
+				return -1;
+			}
 
-				case ESTS_OP_SW_RESET:
-				{
-					ESTS_OP_SW_RESET_params_t params;
-					params.is_query = false;
-					params.type = from[1];
-					params.value = from[2];
-					ESTS_env.att.send_command.callback(ESTS_OP_SW_RESET, (void*)&params);
-					status = 1;
-					break;
-				}
-		        case ESTS_OP_LASER_VOLTAGE:
-				{
-					ETSS_LASER_VOLTAGE_params_t params;
-					params.is_query = false;
-					params.type = from[1];
-					params.value = from[2];
-					ESTS_env.att.send_command.callback(ESTS_OP_LASER_VOLTAGE, (void*)&params);
-					status = 1;
-					break;
-				}
-		        case ESTS_OP_S_BIAS_POWER_VOLTAGE:
-				{
-					ETSS_S_BIAS_POWER_VOLTAGE_params_t params;
-					params.is_query = false;
-					params.type = from[1];
-					params.value = from[2];
-					ESTS_env.att.send_command.callback(ESTS_OP_S_BIAS_POWER_VOLTAGE, (void*)&params);
-					status = 1;
-					break;
-				}
-		        case ESTS_OP_CALIBRATE:
-				{
-					ETSS_CALIBRATE_params_t params;
-					params.is_query = false;
-					params.type = from[1];
-					params.value = from[2];
-					ESTS_env.att.send_command.callback(ESTS_OP_CALIBRATE, (void*)&params);
-					status = 1;
-					break;
-				}
-		        case ESTS_OP_PULSE_COUNT:
-				{
-					ETSS_PULSE_COUNT_params_t params;
-					params.is_query = false;
-					params.type = from[1];
-					params.value = from[2];
-					ESTS_env.att.send_command.callback(ESTS_OP_PULSE_COUNT, (void*)&params);
-					status = 1;
-					break;
-				}
-		        default:
-				{
-					status = -1;
-				}
-		    }
+			ESTS_env.att.send_command.callback(ESTS_OP_CALIBRATE, (void*)&params);
+			status = 1;
+			break;
+		}
+		case ESTS_OP_PULSE_COUNT:
+		{
+			ETSS_PULSE_COUNT_params_t params;
+			params.is_query = false;
 
-		    return status;
+			if(from[1] == ESTS_OP_PULSE_COUNT_VALUE)
+			{
+				params.type = from[1];
+				memcpy(&params.value, from + 2, sizeof(uint8_t));
+			}
+			else
+			{
+				return -1;
+			}
+
+			ESTS_env.att.send_command.callback(ESTS_OP_PULSE_COUNT, (void*)&params);
+			status = 1;
+			break;
+		}
+		default:
+		{
+			status = -1;
+		}
+	}
+
+	return status;
 }
 
 
@@ -277,74 +305,100 @@ static uint8_t ESTS_Send_Query_Handler(uint8_t conidx, uint16_t atsidx,
         uint16_t operation)
 {
 
-	if (length != ESTS_CHAR_VALUE_SIZE  )
-	    {
-	        return -1;
-	    }
+	if (length != ESTS_CHAR_QUERY_VALUE_SIZE)
+	{
+		return -1;
+	}
 	if (ESTS_env.state != ESTS_STATE_CONNECTED)
-	    {
-			return -1;
-	    }
+	{
+		return -1;
+	}
 
-	    uint8_t status = -1;
+	uint8_t status = -1;
 
+	switch (from[0])
+	{
+		case ESTS_OP_LASER_VOLTAGE:
+		{
+			ETSS_LASER_VOLTAGE_params_t params;
+			params.is_query = true;
 
-	    switch (from[0])
-	    {
-	        case ESTS_OP_LASER_VOLTAGE:
+			if(0 < from[1] && from[1] <= ESTS_OP_LASER_VOLTAGE_ACTUAL)
 			{
-				ETSS_LASER_VOLTAGE_params_t params;
-				params.is_query = true;
 				params.type = from[1];
-				params.value = from[2];
-				ESTS_env.att.send_query.callback(ESTS_OP_LASER_VOLTAGE, (void*)&params);
-				status = 1;
-				break;
 			}
-	        case ESTS_OP_S_BIAS_POWER_VOLTAGE:
+			else
 			{
-				ETSS_S_BIAS_POWER_VOLTAGE_params_t params;
-				params.is_query = true;
-				params.type = from[1];
-				params.value = from[2];
-				ESTS_env.att.send_query.callback(ESTS_OP_S_BIAS_POWER_VOLTAGE, (void*)&params);
-				status = 1;
-				break;
+				return -1;
 			}
-	        case ESTS_OP_CALIBRATE:
-			{
-				ETSS_CALIBRATE_params_t params;
-				params.is_query = true;
-				params.type = from[1];
-				params.value = from[2];
-				ESTS_env.att.send_query.callback(ESTS_OP_CALIBRATE, (void*)&params);
-				status = 1;
-				break;
-			}
-	        case ESTS_OP_PULSE_COUNT:
-			{
-				ETSS_PULSE_COUNT_params_t params;
-				params.is_query = true;
-				params.type = from[1];
-				params.value = from[2];
-				ESTS_env.att.send_query.callback(ESTS_OP_PULSE_COUNT, (void*)&params);
-				status = 1;
-				break;
-			}
-	        case ESTS_OP_VOLTAGES_STATUS:
-			{
-				ESTS_VOLTAGES_STATUS_params_t params;
-				params.is_query = true;
-				params.value = from[2];
-				ESTS_env.att.send_query.callback(ESTS_OP_VOLTAGES_STATUS, (void*)&params);
-				status = 1;
-				break;
-			}
-	        default:
-			{
-				status = -1;
-			}
-	    }
 
-	    return status;
+			ESTS_env.att.send_query.callback(ESTS_OP_LASER_VOLTAGE, (void*)&params);
+			status = 1;
+			break;
+		}
+		case ESTS_OP_S_BIAS_POWER_VOLTAGE:
+		{
+			ETSS_S_BIAS_POWER_VOLTAGE_params_t params;
+			params.is_query = true;
+			if(0 < from[1] && from[1] <= ESTS_OP_S_BIAS_POWER_VOLTAGE_ACTUAL)
+			{
+				params.type = from[1];
+			}
+			else
+			{
+				return -1;
+			}
+
+			ESTS_env.att.send_query.callback(ESTS_OP_S_BIAS_POWER_VOLTAGE, (void*)&params);
+			status = 1;
+			break;
+		}
+		case ESTS_OP_CALIBRATE:
+		{
+			//NOT SUPPORTED
+			status = 2;
+			break;
+		}
+		case ESTS_OP_PULSE_COUNT:
+		{
+			ETSS_PULSE_COUNT_params_t params;
+			params.is_query = true;
+			if(from[1] == ESTS_OP_PULSE_COUNT_VALUE)
+			{
+				params.type = from[1];
+			}
+			else
+			{
+				return -1;
+			}
+
+			ESTS_env.att.send_query.callback(ESTS_OP_PULSE_COUNT, (void*)&params);
+			status = 1;
+			break;
+		}
+		case ESTS_OP_VOLTAGES_STATUS:
+		{
+			ESTS_VOLTAGES_STATUS_params_t params;
+			params.is_query = true;
+			if(from[1] == ESTS_OP_VOLTAGES_STATUS_VALUE)
+			{
+				params.type = from[1];
+			}
+			else
+			{
+				return -1;
+			}
+
+			params.value = from[2];
+			ESTS_env.att.send_query.callback(ESTS_OP_VOLTAGES_STATUS, (void*)&params);
+			status = 1;
+			break;
+		}
+		default:
+		{
+			status = -1;
+		}
+	}
+
+	return status;
 }

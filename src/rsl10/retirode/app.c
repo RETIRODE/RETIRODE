@@ -19,7 +19,7 @@
 
 
 
-#define MEASURE_SIZE   5
+#define MEASURE_SIZE   4
 static APP_Environemnt_t app_env = { 0 };
 
 /** Cache for storing of image data before it gets transmitted over BLE. */
@@ -158,49 +158,49 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
 void APP_ESTS_Push_Query_Data(const RETIRODE_RMP_Query_response_t *p_param)
 {
 
-	uint32_t response[3];
+	uint8_t response[6];
 	switch (p_param->reg)
 	{
 		case RETIRODE_RMP_ACTUAL_LASER_VOLTAGE_REGISTER:
 		{
 			response[0] = ESTS_OP_LASER_VOLTAGE;
 			response[1] = ESTS_OP_LASER_VOLTAGE_ACTUAL;
-			response[2] = p_param->value;
+			memcpy(response + 2, &p_param->value, sizeof(uint32_t));
 			break;
 		}
 		case RETIRODE_RMP_TARGET_LASER_VOLTAGE_REGISTER:
 		{
 			response[0] = ESTS_OP_LASER_VOLTAGE;
 			response[1] = ESTS_OP_LASER_VOLTAGE_TARGET;
-			response[2] = p_param->value;
+			memcpy(response + 2, &p_param->value, sizeof(uint32_t));
 			break;
 		}
 		case RETIRODE_RMP_ACTUAL_BIAS_VOLTAGE_REGISTER:
 		{
 			response[0] = ESTS_OP_S_BIAS_POWER_VOLTAGE;
 			response[1] = ESTS_OP_S_BIAS_POWER_VOLTAGE_ACTUAL;
-			response[2] = p_param->value;
+			memcpy(response + 2, &p_param->value, sizeof(uint32_t));
 			break;
 		}
 		case RETIRODE_RMP_TARGET_BIAS_VOLTAGE_REGISTER:
 		{
 			response[0] = ESTS_OP_S_BIAS_POWER_VOLTAGE;
 			response[1] = ESTS_OP_S_BIAS_POWER_VOLTAGE_TARGET;
-			response[2] = p_param->value;
+			memcpy(response + 2, &p_param->value, sizeof(uint32_t));
 			break;
 		}
 		case RETIRODE_RMP_PULSE_COUNT_REGISTER:
 		{
 			response[0] = ESTS_OP_PULSE_COUNT;
 			response[1] = ESTS_OP_PULSE_COUNT_VALUE;
-			response[2] = p_param->value;
+			memcpy(response + 2, &p_param->value, sizeof(uint32_t));
 			break;
 		}
 		case RETIRODE_RMP_DCD_CONFIG_REGISTER:
 		{
 			response[0] = ESTS_OP_VOLTAGES_STATUS;
-			response[1] = p_param->value;
-			response[2] = 0;
+			response[1] = ESTS_OP_VOLTAGES_STATUS_VALUE;
+			memcpy(response + 2, &p_param->value, sizeof(uint32_t));
 			break;
 		}
 	}
@@ -210,28 +210,28 @@ void APP_ESTS_Push_Query_Data(const RETIRODE_RMP_Query_response_t *p_param)
 
 void APP_ESTS_Push_Calibration_Data(const RETIRODE_RMP_CalibrationDataReady_response_t *p_param)
 {
-	uint32_t response[3];
+	uint8_t response[6];
 	switch (p_param->cal)
 	{
 		case RETIRODE_RMP_CALIBRATION_0ns:
 		{
 			response[0] = ESTS_OP_CALIBRATE;
 			response[1] = ESTS_OP_CALIBRATE_FIRST;
-			response[2] = p_param->value;
+			memcpy(response + 2, &p_param->value, sizeof(uint32_t));
 			break;
 		}
 		case RETIRODE_RMP_CALIBRATION_62p5ns:
 		{
 			response[0] = ESTS_OP_CALIBRATE;
 			response[1] = ESTS_OP_CALIBRATE_SECOND;
-			response[2] = p_param->value;
+			memcpy(response + 2, &p_param->value, sizeof(uint32_t));
 			break;
 		}
 		case RETIRODE_RMP_CALIBRATION_125ns:
 		{
 			response[0] = ESTS_OP_CALIBRATE;
 			response[1] = ESTS_OP_CALIBRATE_THIRD;
-			response[2] = p_param->value;
+			memcpy(response + 2, &p_param->value, sizeof(uint32_t));
 			break;
 		}
 		case RETIRODE_RMP_CALIBRATION_DONE:
@@ -264,22 +264,22 @@ void APP_ESTS_EventHandler(ESTS_RF_SETTING_ID_t sidx,
 			const ETSS_LASER_VOLTAGE_params_t *params = p_param;
 			if(params->is_query == true)
 			{
-				if(params->type == 0x01)
+				if(params->type == ESTS_OP_LASER_VOLTAGE_TARGET)
 				{
 					RETIRODE_RMP_QueryCommand(RETIRODE_RMP_TARGET_LASER_VOLTAGE_REGISTER);
 				}
-				if(params->type == 0x02)
+				if(params->type == ESTS_OP_LASER_VOLTAGE_ACTUAL)
 				{
 					RETIRODE_RMP_QueryCommand(RETIRODE_RMP_ACTUAL_LASER_VOLTAGE_REGISTER);
 				}
 			}
 			else
 			{
-				if(params->type == 0x01)
+				if(params->type == ESTS_OP_LASER_VOLTAGE_TARGET)
 				{
 					RETIRODE_RMP_SetLaserPowerTargetVoltateCommand(params->value);
 				}
-				if(params->type == 0x03)
+				if(params->type == ESTS_OP_LASER_VOLTAGE_SWITCH)
 				{
 					RETIRODE_RMP_SetLaserPowerEnabledCommand(params->value);
 				}
@@ -291,22 +291,22 @@ void APP_ESTS_EventHandler(ESTS_RF_SETTING_ID_t sidx,
 			const ETSS_S_BIAS_POWER_VOLTAGE_params_t *params = p_param;
 			if(params->is_query == true)
 			{
-				if(params->type == 0x01)
+				if(params->type == ESTS_OP_S_BIAS_POWER_VOLTAGE_TARGET)
 				{
 					RETIRODE_RMP_QueryCommand(RETIRODE_RMP_TARGET_BIAS_VOLTAGE_REGISTER);
 				}
-				if(params->type == 0x02)
+				if(params->type == ESTS_OP_S_BIAS_POWER_VOLTAGE_ACTUAL)
 				{
 					RETIRODE_RMP_QueryCommand(RETIRODE_RMP_ACTUAL_BIAS_VOLTAGE_REGISTER);
 				}
 			}
 			else
 			{
-				if(params->type == 0x01)
+				if(params->type == ESTS_OP_S_BIAS_POWER_VOLTAGE_TARGET)
 				{
 					RETIRODE_RMP_SetPowerBiasTargetVoltateCommand(params->value);
 				}
-				if(params->type == 0x03)
+				if(params->type == ESTS_OP_S_BIAS_POWER_VOLTAGE_SWITCH)
 				{
 					RETIRODE_RMP_SetPowerBiasEnabledCommand(params->value);
 				}
@@ -318,7 +318,7 @@ void APP_ESTS_EventHandler(ESTS_RF_SETTING_ID_t sidx,
 			const ETSS_CALIBRATE_params_t *params = p_param;
 			if(params->is_query == true)
 			{
-				//SEND UART QUERY REQUEST
+				//NOT SUPPORTED
 			}else
 			{
 				switch(params->type)
@@ -438,7 +438,7 @@ int main(void)
 			RETIRODE_RMP_PowerUpCommand();
 		}
 		/* Refresh the watchdog timer */
-		Sys_Watchdog_Refresh();
+ 		Sys_Watchdog_Refresh();
 		Kernel_Schedule();
 	}
 

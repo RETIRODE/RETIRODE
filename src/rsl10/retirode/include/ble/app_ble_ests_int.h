@@ -26,8 +26,9 @@ extern "C"
 /* ----------------------------------------------------------------------------
  * Defines
  * --------------------------------------------------------------------------*/
-#define ESTS_CHAR_VALUE_SIZE         (3)
-
+#define ESTS_CHAR_COMMAND_VALUE_MAX_SIZE         (6)
+#define ESTS_CHAR_COMMAND_VALUE_MIN_SIZE         (3)
+#define ESTS_CHAR_QUERY_VALUE_SIZE         		 (2)
 
 
 #define ETSS_MIN_TX_OCTETS              (27)
@@ -69,7 +70,7 @@ typedef struct ETSS_RFSC_Characteristic_t
     /** Application Write callback. */
 	ESTS_ControlHandler callback;
 
-    uint8_t value[ESTS_CHAR_VALUE_SIZE];
+    uint8_t value[ESTS_CHAR_COMMAND_VALUE_MAX_SIZE];
 
 
 } ETSS_RFSC_Characteristic_t;
@@ -80,7 +81,7 @@ typedef struct ETSS_RFSQ_Characteristic_t
     /** Application Write callback. */
 	ESTS_ControlHandler callback;
 
-    uint8_t value[ESTS_CHAR_VALUE_SIZE];
+    uint8_t value[ESTS_CHAR_QUERY_VALUE_SIZE];
 
 
 } ETSS_RFSQ_Characteristic_t;
@@ -92,7 +93,7 @@ typedef struct ETSS_RFRQ_Characteristic_t
     /** Client Characteristic Configuration Descriptor Value */
     uint8_t ccc[2];
 
-    uint8_t value[ESTS_CHAR_VALUE_SIZE];
+    uint8_t value[ESTS_CHAR_COMMAND_VALUE_MAX_SIZE];
 } ETSS_RFRQ_Characteristic_t;
 
 

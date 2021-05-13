@@ -899,8 +899,10 @@ static float FromNativeLaserToReal(uint8_t nativeVoltage)
 }
 
 
-void RETIRODE_RMP_SetPowerBiasTargetVoltateCommand(float voltage)
+void RETIRODE_RMP_SetPowerBiasTargetVoltateCommand(uint32_t vol)
 {
+	float voltage = 0;
+	memcpy(&voltage, &vol, sizeof(uint32_t));
 	uint8_t targetVoltageNative;
 
 	if (voltage < BIAS_MAX_TARGET_VOLTAGE)
@@ -917,8 +919,10 @@ void RETIRODE_RMP_SetPowerBiasTargetVoltateCommand(float voltage)
 	RETIRODE_RMP_SettingCommand(RETIRODE_RMP_TARGET_BIAS_VOLTAGE_REGISTER, targetVoltageNative);
 }
 
-void RETIRODE_RMP_SetLaserPowerTargetVoltateCommand(float voltage)
+void RETIRODE_RMP_SetLaserPowerTargetVoltateCommand(uint32_t vol)
 {
+	 float voltage = 0;
+	 memcpy(&voltage, &vol, sizeof(uint32_t));
 	 uint8_t targetVoltageNative;
 
 	if (voltage < LASER_MIN_TARGET_VOLTAGE)
