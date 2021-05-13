@@ -233,6 +233,8 @@ namespace RETIRODE_APP.Services
 
             if (_dataSize > _TOFData.Count)
             {
+                // removing first 4 bytes which are offset
+                data = data.Skip(4).ToArray();
                 _TOFData.AddRange(data);
             } 
             else
