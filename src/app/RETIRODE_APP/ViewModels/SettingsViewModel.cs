@@ -164,15 +164,18 @@ namespace RETIRODE_APP.ViewModels
 
         private CancellationTokenSource _poolingRoutineCancelation;
         public IRangeMeasurementService _rangeMeasurementService;
+        private IDataStore _database;
 
         // false -> switch set by system
         // true -> switch set by user
         private bool _switchedBySystemLaserVolage = false;
         private bool _switchedBySystemSipmBias = false;
+
         public SettingsViewModel()
         {
             Title = "Settings";
             _rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
+            _database = TinyIoCContainer.Current.Resolve<IDataStore>();
 
             _rangeMeasurementService.QueryResponseEvent -= RangeMeasurementService_QueryResponseEvent;
             _rangeMeasurementService.QueryResponseEvent += RangeMeasurementService_QueryResponseEvent;
@@ -442,6 +445,14 @@ namespace RETIRODE_APP.ViewModels
                 if (TCDCal0 != 0 && TCDCal62 != 0 && TCDCal125 != 0)
                 {
                     App.isCalibrated = true;
+                    await _database.AddEntityAsync(new CalibrationItem()
+                    {
+                        DateTime = DateTime.Now,
+                        Tdc_0 = TCDCal0,
+                        Tdc_62 = TCDCal62,
+                        Tdc_125 = TCDCal125,
+                        Pulse_count = TriggerPulse
+                    });
                     await Application.Current.MainPage.Navigation.PushAsync(new DepictionPage());
                 }
                 else
