@@ -69,7 +69,7 @@ namespace RETIRODE_APP.ViewModels
 
         private async Task LoadValues()
         {
-            var list = await _dataStore.ListMeasurementByCalibrationAsync(1);
+            var list = await _dataStore.ListMeasurementByCalibrationAsync(Calibration.Id);
 
             foreach (var item in list)
             {
