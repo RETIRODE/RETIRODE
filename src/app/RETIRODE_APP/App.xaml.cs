@@ -25,8 +25,11 @@ namespace RETIRODE_APP
             MainPage = new AppShell();
         }
 
-        protected override void OnStart()
+        protected override async void OnStart()
         {
+            IDataStore _dataStore = TinyIoCContainer.Current.Resolve<IDataStore>();
+            await _dataStore.CreateTableAsync<CalibrationItem>();
+            await _dataStore.CreateTableAsync<MeasurementItem>();
 
         }
 
