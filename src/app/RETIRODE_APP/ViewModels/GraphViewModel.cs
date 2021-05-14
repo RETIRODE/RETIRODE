@@ -39,7 +39,7 @@ namespace RETIRODE_APP.ViewModels
             MeasuredDataItems.Clear();
         }
 
-        private async Task StopMeasurement()
+        public async Task StopMeasurement()
         {
             await _rangeMeasurementService.StopMeasurement();
         }

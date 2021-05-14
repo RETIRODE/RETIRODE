@@ -47,9 +47,7 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public event Action<List<float>> MeasuredDataResponseEvent;
 
-        public event Action<object> DeviceLostConnectionEvent;
-
-        public event Action<object> DeviceDisconnectedEvent;
+        public event Action<object, DeviceEventArgs> DeviceDisconnectedEvent;
         public RangeMeasurementService()
         {
             _availableDevices = new List<IDevice>();
@@ -64,17 +62,6 @@ namespace RETIRODE_APP.Services
         {
             DeviceDisconnectedEvent.Invoke(obj,e);
         }
-
-        /// <inheritdoc cref="IRangeMeasurementService"/>
-        public event Action<BLEDevice> DeviceDiscoveredEvent;
-
-        /// <inheritdoc cref="IRangeMeasurementService"/>
-        public event Action<ResponseItem> QueryResponseEvent;
-
-        /// <inheritdoc cref="IRangeMeasurementService"/>
-        public event Action<List<float>> MeasuredDataResponseEvent;
-
-        public event Action<object, DeviceEventArgs> DeviceDisconnectedEvent;
              
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task ConnectToRSL10(BLEDevice bleDevice)
