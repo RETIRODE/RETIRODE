@@ -1,4 +1,5 @@
 ﻿using Nancy.TinyIoc;
+using Plugin.BLE.Abstractions.EventArgs;
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Models.Enums;
 using RETIRODE_APP.Services;
@@ -183,10 +184,6 @@ namespace RETIRODE_APP.ViewModels
             _rangeMeasurementService.DeviceDisconnectedEvent -= _rangeMeasurementService_DeviceDisconnectedEvent;
             _rangeMeasurementService.DeviceDisconnectedEvent += _rangeMeasurementService_DeviceDisconnectedEvent;
 
-            _rangeMeasurementService.DeviceLostConnectionEvent -= _rangeMeasurementService_DeviceLostConnectionEvent;
-            _rangeMeasurementService.DeviceLostConnectionEvent += _rangeMeasurementService_DeviceLostConnectionEvent;
-           
-
             SoftwareResetCommand = new AsyncCommand(async () => await ResetLidar());
             CalibrateCommand = new AsyncCommand(async () => await CalibrateLidar());
             SetTriggerPulseCommand = new AsyncCommand(async () => await SetTriggerPulse());
@@ -198,14 +195,7 @@ namespace RETIRODE_APP.ViewModels
             StartPoolingRoutine();
         }
 
-        private async void _rangeMeasurementService_DeviceLostConnectionEvent(object obj)
-        {
-            SetSettingParamsToDefault();
-            await ShowError("Device connection lost");
-            await Application.Current.MainPage.Navigation.PushAsync(new BluetoothPage());
-        }
-
-        private async void _rangeMeasurementService_DeviceDisconnectedEvent(object obj)
+        private async void _rangeMeasurementService_DeviceDisconnectedEvent(object obj, DeviceEventArgs e)
         {
             SetSettingParamsToDefault();
             await ShowError("Device has been disconnected");

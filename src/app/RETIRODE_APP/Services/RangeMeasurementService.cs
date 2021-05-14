@@ -44,18 +44,12 @@ namespace RETIRODE_APP.Services
             _semaphoreSlim = new SemaphoreSlim(1);
             _bluetoothService = TinyIoCContainer.Current.Resolve<IBluetoothService>();
             _bluetoothService.DeviceFound = DeviceDiscovered;
-            _bluetoothService.DeviceLostConnection = DeviceLostConnection;
             _bluetoothService.DeviceDisconnected = DeviceDisconnected;
         }
 
-        private void DeviceDisconnected(object obj)
+        private void DeviceDisconnected(object obj, DeviceEventArgs e)
         {
-            DeviceDisconnectedEvent.Invoke(obj);
-        }
-
-        private void DeviceLostConnection(object obj)
-        {
-            DeviceLostConnectionEvent.Invoke(obj);
+            DeviceDisconnectedEvent.Invoke(obj,e);
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
@@ -67,9 +61,7 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public event Action<List<float>> MeasuredDataResponseEvent;
 
-        public event Action<object> DeviceLostConnectionEvent;
-
-        public event Action<object> DeviceDisconnectedEvent;
+        public event Action<object, DeviceEventArgs> DeviceDisconnectedEvent;
              
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task ConnectToRSL10(BLEDevice bleDevice)

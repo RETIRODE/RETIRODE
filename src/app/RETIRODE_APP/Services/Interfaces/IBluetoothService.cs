@@ -1,4 +1,5 @@
 ﻿using Plugin.BLE.Abstractions.Contracts;
+using Plugin.BLE.Abstractions.EventArgs;
 using System;
 using System.Threading.Tasks;
 
@@ -35,9 +36,7 @@ namespace RETIRODE_APP.Services
         /// </summary>
         Action<object, IDevice> DeviceFound { get; set; }
 
-        Action<object> DeviceLostConnection { get; set; }
-
-        Action<object> DeviceDisconnected { get; set; }
+        Action<object,DeviceEventArgs> DeviceDisconnected { get; set; }
         bool IsScanning { get; }
     }
 }
