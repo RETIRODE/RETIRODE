@@ -37,6 +37,19 @@ namespace RETIRODE_APP.Services
         private int _dataSize;
         private SemaphoreSlim _semaphoreSlim;
         private CalibrationState _calibrationState = CalibrationState.NoState;
+
+        /// <inheritdoc cref="IRangeMeasurementService"/>
+        public event Action<BLEDevice> DeviceDiscoveredEvent;
+
+        /// <inheritdoc cref="IRangeMeasurementService"/>
+        public event Action<ResponseItem> QueryResponseEvent;
+
+        /// <inheritdoc cref="IRangeMeasurementService"/>
+        public event Action<List<float>> MeasuredDataResponseEvent;
+
+        public event Action<object> DeviceLostConnectionEvent;
+
+        public event Action<object> DeviceDisconnectedEvent;
         public RangeMeasurementService()
         {
             _availableDevices = new List<IDevice>();
@@ -120,7 +133,7 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task StopMeasurement()
         {
-            await WriteToCharacteristic(_RMTInfoCharacteristic, new[] { (byte)RSL10Command.StopLidar });
+            await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StopLidar });
             _isDataSize = false;
             _dataSize = 0;
             _TOFData.Clear();
@@ -392,7 +405,7 @@ namespace RETIRODE_APP.Services
                     break;
 
                 case Registers.VoltageStatus:
-                    var bits = Convert.ToInt32(data[4]);
+                    var bits = Convert.ToInt32(data[2]);
                     if (data[1] == (byte)ProtocolGenerics.DefaultValueType)
                     {
                         list.Add(new ResponseItem()
