@@ -1,6 +1,6 @@
 ﻿using Nancy.TinyIoc;
 using RETIRODE_APP.Models;
-using RETIRODE_APP.Services;
+using RETIRODE_APP.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,6 +14,7 @@ namespace RETIRODE_APP.ViewModels
     public class BaseViewModel : INotifyPropertyChanged
     {
         public IMockDataStore<Item> DataStore => TinyIoCContainer.Current.Resolve<IMockDataStore<Item>>();
+        public IExternalServicesProvider externalServiceProvider => TinyIoCContainer.Current.Resolve<IExternalServicesProvider>();
 
         bool isBusy = false;
         public bool IsBusy
@@ -47,7 +48,7 @@ namespace RETIRODE_APP.ViewModels
                 completed = true;
             }
         }
-    
+
 
         protected bool SetProperty<T>(ref T backingStore, T value,
             [CallerMemberName] string propertyName = "",
@@ -94,10 +95,8 @@ namespace RETIRODE_APP.ViewModels
 
         protected async Task<bool> ShowDialog(string message)
         {
-            return await Application.Current.MainPage.DisplayAlert("Question?", message, "Yes", "No");
+            return await Application.Current.MainPage.DisplayAlert("Question", message, "Yes", "No");
         }
-
-
         #region INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = "")

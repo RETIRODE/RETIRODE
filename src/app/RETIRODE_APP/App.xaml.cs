@@ -1,10 +1,10 @@
 ﻿using RETIRODE_APP.Models;
 using Nancy.TinyIoc;
 using RETIRODE_APP.Services;
-using RETIRODE_APP.Views;
 using SQLite;
 using System;
 using Xamarin.Forms;
+using RETIRODE_APP.Services.Interfaces;
 
 namespace RETIRODE_APP
 {
@@ -22,6 +22,7 @@ namespace RETIRODE_APP
             TinyIoCContainer.Current.Register<IDataStore,SqliteDataStore>();
             TinyIoCContainer.Current.Register<IRangeMeasurementService, RangeMeasurementService>();
             TinyIoCContainer.Current.Register<IBluetoothService, BluetoothService>();
+            TinyIoCContainer.Current.Register<IExternalServicesProvider, ExternalServicesProvider>();
             MainPage = new AppShell();
         }
 
@@ -40,5 +41,6 @@ namespace RETIRODE_APP
         protected override void OnResume()
         {
         }
+  
     }
 }
