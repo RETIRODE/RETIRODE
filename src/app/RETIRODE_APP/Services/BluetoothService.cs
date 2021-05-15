@@ -2,6 +2,7 @@
 using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Abstractions.EventArgs;
+using RETIRODE_APP.Services.Interfaces;
 using System;
 using System.Threading.Tasks;
 

@@ -3,7 +3,7 @@ using Plugin.BLE.Abstractions.EventArgs;
 using System;
 using System.Threading.Tasks;
 
-namespace RETIRODE_APP.Services
+namespace RETIRODE_APP.Services.Interfaces
 {
     public interface IBluetoothService
     {
