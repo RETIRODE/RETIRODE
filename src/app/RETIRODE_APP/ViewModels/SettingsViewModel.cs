@@ -2,7 +2,7 @@
 using Plugin.BLE.Abstractions.EventArgs;
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Models.Enums;
-using RETIRODE_APP.Services;
+using RETIRODE_APP.Services.Interfaces;
 using RETIRODE_APP.Views;
 using System;
 using System.Threading;
@@ -421,7 +421,6 @@ namespace RETIRODE_APP.ViewModels
             }
         }
 
-
         public async Task SetTargetSimpBiasPowerVoltage()
         {
             try
@@ -445,7 +444,6 @@ namespace RETIRODE_APP.ViewModels
                 await ShowError("Setting laser voltage failed");
             }
         }
-
 
         private async Task StartDepiction()
         {
@@ -504,6 +502,8 @@ namespace RETIRODE_APP.ViewModels
             LaserActualV = 0;
             LaserTargetV = 0;
             TriggerPulse = 0;
+            _laserVolatageOverload = null;
+            _biasVolatageOverload = null;
             ChangeLaserVoltagePoweredOn(false);
             ChangeSipmBiasVoltagePoweredOn(false);
         }
