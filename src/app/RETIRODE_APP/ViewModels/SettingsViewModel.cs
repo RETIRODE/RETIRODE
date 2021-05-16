@@ -1,7 +1,6 @@
 ﻿using Nancy.TinyIoc;
 using Plugin.BLE.Abstractions.EventArgs;
 using RETIRODE_APP.Models;
-using RETIRODE_APP.Models.Enums;
 using RETIRODE_APP.Services.Interfaces;
 using RETIRODE_APP.Views;
 using System;
@@ -10,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.CommunityToolkit.ObjectModel;
 using Xamarin.Forms;
+using static RETIRODE_APP.Models.Enums.ApplicationEnums;
 
 namespace RETIRODE_APP.ViewModels
 {
