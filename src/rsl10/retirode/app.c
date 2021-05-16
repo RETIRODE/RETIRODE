@@ -1,40 +1,12 @@
-/* ----------------------------------------------------------------------------
- * Copyright (c) 2019 Semiconductor Components Industries, LLC (d/b/a
- * ON Semiconductor), All Rights Reserved
- *
- * This code is the property of ON Semiconductor and may not be redistributed
- * in any form without prior written permission from ON Semiconductor.
- * The terms of use and warranty for this code are covered by contractual
- * agreements between ON Semiconductor and the licensee.
- *
- * This is Reusable Code.
- *
- * ----------------------------------------------------------------------------
- * app.c
- *  - Simple example on how to use RSL10 UART CMSIS-Driver
- * ------------------------------------------------------------------------- */
-
 #include "app.h"
 #include <printf.h>
 
-
-
-#define MEASURE_SIZE   4
 static APP_Environemnt_t app_env = { 0 };
 
 /** Cache for storing of image data before it gets transmitted over BLE. */
 static uint8_t app_data_cache_storage[APP_DATA_CACHE_SIZE];
 
-/* ----------------------------------------------------------------------------
- * Function      : void Button_EventCallback(void)
- * ----------------------------------------------------------------------------
- * Description   : This function is a callback registered by the function
- *                 Initialize. Based on event argument different actions are
- *                 executed.
- * Inputs        : None
- * Outputs       : None
- * Assumptions   : None
- * ------------------------------------------------------------------------- */
+
 void Usart_EventCallBack(uint32_t event)
 {
 	RETIRODE_RMP_UARTEventHandler(event);
@@ -87,7 +59,6 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
        /* Connected peer device requested continuous image capture.*/
         case RMTS_OP_START_REQ:
         {
-
         	CIRCBUF_Initialize(app_data_cache_storage, APP_DATA_CACHE_SIZE,
         	        	                    &app_env.data_cache);
 
@@ -96,7 +67,6 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
 
             break;
         }
-
         /* Connected peer device requested to abort any ongoing capture
          * operation.*/
         case RMTS_OP_CANCEL_REQ:
@@ -107,13 +77,10 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
         	}
             break;
         }
-
         /* Connected peer device indicates that it received image info and is
          * ready to accept image data.*/
-
         case RMTS_OP_DATA_TRANSFER_REQ:
         {
-
             APP_PushData();
             break;
         }
@@ -246,8 +213,6 @@ void APP_ESTS_Push_Calibration_Data(const RETIRODE_RMP_CalibrationDataReady_resp
 /**
  * Event handler for the External Sensors Trigger BLE service.
 **/
-
-
 void APP_ESTS_EventHandler(ESTS_RF_SETTING_ID_t sidx,
         const void *p_param)
 {
@@ -413,30 +378,48 @@ void RETIRODE_RMP_Handler(RETIRODE_RMP_Event_t event,
 	return;
 }
 
+
+void RMP_Initialize(void)
+{
+	int i = 0;
+	while (true)
+	{
+		i++;
+		RETIRODE_RMP_MainLoop();
+
+		if(i == 5)
+		{
+			RETIRODE_RMP_SoftwareResetCommand();
+		}
+
+		if(i == 50)
+		{
+			RETIRODE_RMP_PowerUpCommand();
+		}
+
+		/* Refresh the watchdog timer */
+		Sys_Watchdog_Refresh();
+		Kernel_Schedule();
+
+		if(i == 100)
+		{
+			break;
+		}
+	}
+}
+
 int main(void)
 {
     /* Initialize the system */
     Device_Initialize();
     CIRCBUF_Initialize(app_data_cache_storage, APP_DATA_CACHE_SIZE,
             	        	                    &app_env.data_cache);
-
-	int i = 0;
+    RMP_Initialize();
 	/* Spin loop */
 	while (true)
 	{
-		i++;
-
 		RETIRODE_RMP_MainLoop();
 
-		if(i == 20)
-		{
-			RETIRODE_RMP_SoftwareResetCommand();
-		}
-
-		if(i == 200)
-		{
-			RETIRODE_RMP_PowerUpCommand();
-		}
 		/* Refresh the watchdog timer */
  		Sys_Watchdog_Refresh();
 		Kernel_Schedule();

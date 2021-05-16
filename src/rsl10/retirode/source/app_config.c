@@ -18,7 +18,6 @@
 
 extern  ARM_DRIVER_USART Driver_USART0;
 
-
 static void Device_SetPowerSupplies(void)
 {
     uint8_t trim_status;
@@ -143,21 +142,6 @@ void Device_Initialize(void)
 
     Device_ResetDioPads();
 
-    /* Disable pad retention in case of deep sleep wake-up from flash.
-     *
-     * Peripherals (i.e. DIO, I2C) are not guaranteed to report correct DIO pad
-     *  status before this point in certain deep sleep use cases.
-     */
-
-
-    /* Start the XTAL32K crystal oscillator.
-     * Required for RTC and deep sleep operation.
-     */
-
-
-    /* Start RTC counter. */
-
-
     /* Seed the random number generator.
      * Required dependency for BLE stack.
      */
@@ -175,14 +159,9 @@ void Device_Initialize(void)
         NVIC_SetPriority(i, 1);
     }
 
-
-
-
     /* APP INITIALIZE  */
 
     /* Initialize the kernel and Bluetooth stack */
-
-
     {
 		APP_BLE_PeripheralServerInitialize(ATT_RMTS_COUNT + ATT_ESTS_COUNT);
 
@@ -191,11 +170,6 @@ void Device_Initialize(void)
 		ESTS_Initialize(APP_ESTS_EventHandler);
 
     }
-
-
-
-    /* Initialize usart driver structure */
-
 
 	 /* Initialize usart, register callback function */
     Driver_USART0.Initialize(Usart_EventCallBack);
@@ -211,34 +185,10 @@ void Device_Initialize(void)
     Driver_USART0.Control(ARM_USART_CONTROL_TX,1);
     Driver_USART0.Control(ARM_USART_CONTROL_RX,1);
 
+    /* Initialize range measurement processor */
 	RETIRODE_RMP_Initialize(&Driver_USART0, RETIRODE_RMP_Handler);
 
     /* Stop masking interrupts */
     __set_PRIMASK(PRIMASK_ENABLE_INTERRUPTS);
     __set_FAULTMASK(FAULTMASK_ENABLE_INTERRUPTS);
-
-
 }
-
-/**
- * Restore hardware state after wake-up from deep sleep mode with RAM retention.
- *
- * - Restores system clock dividers
- * - Restores DIO pad configuration before disabling PAD retention feature.
- * - Wait for BLE stack to fully wake up.
- */
-
-
-/* ----------------------------------------------------------------------------
- * Function      : Device_Param_Prepare(struct app_device_param * param)
- * ----------------------------------------------------------------------------
- * Description   : This function allows the application to overwrite a few BLE
- *                 parameters (BD address and keys) without having to write
- *                 data into RSL10 flash (NVR3). This function is called by the
- *                 stack and it's useful for debugging and testing purposes.
- * Inputs        : - param    - pointer to the parameters to be configured
- * Outputs       : None
- * Assumptions   : None
- * ------------------------------------------------------------------------- */
-
-

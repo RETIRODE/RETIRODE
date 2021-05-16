@@ -11,7 +11,7 @@
  * @addtogroup RETIRODE_RMP
  * @{
  *
- * @addtogroup RETIRODE_RMP Range finder measurement library
+ * @addtogroup RETIRODE_RMP Range finder measurement processor library
  * @{
  *
  * @brief

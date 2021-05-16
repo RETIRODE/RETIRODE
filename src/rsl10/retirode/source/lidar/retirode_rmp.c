@@ -60,14 +60,6 @@ const float ADC_OFFSET_BIAS = (float) 31.4;     // calculation offset correction
 const float ADC_LOWEST_COMP_VOLTAGE = (float) 0.55;     // compensating value for calculation of BIAS voltage values
 const float ADC_FREQUENCY = 16.0;                       // ADC system clock in MHz
 
-struct RETIRODE_RMP_SettingCommand_t
-{
-	bool low_high;
-	char reg;
-	char reg2;
-	uint16_t value;
-};
-
 /**
  *Array of internal flags about the state of library and which application
  *issued commands are pending.
@@ -114,6 +106,16 @@ struct RETIRODE_RMP_CurrentMeasurement_t
 	uint32_t calibration;
 };
 
+/** Hold information about current setting command */
+struct RETIRODE_RMP_SettingCommand_t
+{
+	bool low_high;
+	char reg;
+	char reg2;
+	uint16_t value;
+};
+
+/** Hold information about current C register state */
 struct RETIRODE_RMP_DCD_CONFIG_REGISTER_t
 {
    bool laserPowerEnable;
@@ -401,6 +403,8 @@ static void RETIRODE_RMP_CalibrateStateHandler(void)
 		}
 		case RETIRODE_RMP_CALIBRATION_DONE:
 		{
+			//TODO: Add command for enabling, now enabled by default
+			//enable laser pulse
 			commandByte |= 0x10;
 			break;
 		}
