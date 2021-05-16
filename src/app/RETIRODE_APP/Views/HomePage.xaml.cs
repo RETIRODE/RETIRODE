@@ -1,4 +1,5 @@
-﻿using Plugin.BLE;
+﻿using Android.Content;
+using Plugin.BLE;
 using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
 using System;
@@ -17,24 +18,7 @@ namespace RETIRODE_APP.Views
         public HomePage()
         {
             InitializeComponent();
-        }
 
-        private void StartDepictionButton_Clicked(object sender, EventArgs e)
-        {
-            Navigation.PushAsync(new GraphPage());
-            /*
-            if (!App.isConnected)
-            {
-                Navigation.PushAsync(new BluetoothPage());
-            }
-            else if (!App.isCalibrated)
-            {
-                Navigation.PushAsync(new SettingsPage());
-            }
-            else
-            {
-                Navigation.PushAsync(new DepictionPage());
-            }*/
         }
     }
 }

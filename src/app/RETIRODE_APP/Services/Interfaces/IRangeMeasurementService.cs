@@ -1,10 +1,11 @@
-﻿using RETIRODE_APP.Models;
+﻿using Plugin.BLE.Abstractions.EventArgs;
+using RETIRODE_APP.Models;
 using RETIRODE_APP.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace RETIRODE_APP.Services
+namespace RETIRODE_APP.Services.Interfaces
 {
     public interface IRangeMeasurementService : IDisposable
     {
@@ -27,9 +28,7 @@ namespace RETIRODE_APP.Services
         /// </summary>
         event Action<List<float>> MeasuredDataResponseEvent;
 
-        event Action<object> DeviceLostConnectionEvent;
-
-        event Action<object> DeviceDisconnectedEvent;
+        event Action<object,DeviceEventArgs> DeviceDisconnectedEvent;
 
         /// <summary>
         /// 

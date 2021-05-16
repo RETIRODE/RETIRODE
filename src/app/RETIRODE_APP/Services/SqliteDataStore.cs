@@ -1,13 +1,9 @@
 ﻿using SQLite;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms;
-using System.Linq;
 using RETIRODE_APP.Models;
+using RETIRODE_APP.Services.Interfaces;
 
 namespace RETIRODE_APP.Services
 {

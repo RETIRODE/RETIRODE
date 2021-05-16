@@ -4,9 +4,10 @@ using System.Text;
 
 namespace RETIRODE_APP.Models.Enums
 {
-    public enum SwitchState : byte
+    public enum InfoCharacteristicResponseType : byte
     {
-        TurnOff = 0x00,
-        TurnOn = 0x01
+        Error = 0x00,
+        DataSize = 0x01
+        
     }
 }

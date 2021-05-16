@@ -1,6 +1,6 @@
 ﻿using Nancy.TinyIoc;
 using RETIRODE_APP.Models;
-using RETIRODE_APP.Services;
+using RETIRODE_APP.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -32,7 +32,7 @@ namespace RETIRODE_APP.ViewModels
         Node plotNode;
         public DepictionViewModel(ApplicationOptions options = null) : base(options) {
             rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
-            rangeMeasurementService.StartMeasurement();
+          //  rangeMeasurementService.StartMeasurement();
         }
 
         private void RangeMeasurementService_MeasuredDataResponseEvent(int[] obj)

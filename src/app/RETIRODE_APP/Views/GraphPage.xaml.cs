@@ -1,12 +1,4 @@
-﻿using DevExpress.XamarinForms.Charts;
-using RETIRODE_APP.Helpers;
-using RETIRODE_APP.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using RETIRODE_APP.ViewModels;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -30,5 +22,10 @@ namespace RETIRODE_APP.Views
             graphVM.Init();
         }
 
+        protected override async void OnDisappearing()
+        {
+            base.OnDisappearing();
+            await graphVM.StopMeasurement();
+        }
     }
 }

@@ -1,11 +1,9 @@
 ﻿using Nancy.TinyIoc;
 using RETIRODE_APP.Models;
-using RETIRODE_APP.Services;
-using SQLite;
+using RETIRODE_APP.Services.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Windows.Input;
+
 using Xamarin.Forms;
 
 namespace RETIRODE_APP.ViewModels

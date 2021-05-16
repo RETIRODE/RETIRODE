@@ -1,7 +1,8 @@
 ﻿using Nancy.TinyIoc;
+using Plugin.BLE.Abstractions.EventArgs;
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Models.Enums;
-using RETIRODE_APP.Services;
+using RETIRODE_APP.Services.Interfaces;
 using RETIRODE_APP.Views;
 using System;
 using System.Threading;
@@ -181,11 +182,7 @@ namespace RETIRODE_APP.ViewModels
             _rangeMeasurementService.QueryResponseEvent += RangeMeasurementService_QueryResponseEvent;
 
             _rangeMeasurementService.DeviceDisconnectedEvent -= _rangeMeasurementService_DeviceDisconnectedEvent;
-            _rangeMeasurementService.DeviceDisconnectedEvent += _rangeMeasurementService_DeviceDisconnectedEvent;
-
-            _rangeMeasurementService.DeviceLostConnectionEvent -= _rangeMeasurementService_DeviceLostConnectionEvent;
-            _rangeMeasurementService.DeviceLostConnectionEvent += _rangeMeasurementService_DeviceLostConnectionEvent;
-           
+           // _rangeMeasurementService.DeviceDisconnectedEvent += _rangeMeasurementService_DeviceDisconnectedEvent;
 
             SoftwareResetCommand = new AsyncCommand(async () => await ResetLidar());
             CalibrateCommand = new AsyncCommand(async () => await CalibrateLidar());
@@ -198,14 +195,7 @@ namespace RETIRODE_APP.ViewModels
             StartPoolingRoutine();
         }
 
-        private async void _rangeMeasurementService_DeviceLostConnectionEvent(object obj)
-        {
-            SetSettingParamsToDefault();
-            await ShowError("Device connection lost");
-            await Application.Current.MainPage.Navigation.PushAsync(new BluetoothPage());
-        }
-
-        private async void _rangeMeasurementService_DeviceDisconnectedEvent(object obj)
+        private async void _rangeMeasurementService_DeviceDisconnectedEvent(object obj, DeviceEventArgs e)
         {
             SetSettingParamsToDefault();
             await ShowError("Device has been disconnected");
@@ -431,7 +421,6 @@ namespace RETIRODE_APP.ViewModels
             }
         }
 
-
         public async Task SetTargetSimpBiasPowerVoltage()
         {
             try
@@ -456,7 +445,6 @@ namespace RETIRODE_APP.ViewModels
             }
         }
 
-
         private async Task StartDepiction()
         {
             if (!App.isConnected)
@@ -476,7 +464,7 @@ namespace RETIRODE_APP.ViewModels
                         Tdc_125 = TCDCal125,
                         Pulse_count = TriggerPulse
                     });
-                    await Application.Current.MainPage.Navigation.PushAsync(new DepictionPage());
+                    await Application.Current.MainPage.Navigation.PushAsync(new GraphPage());
                 }
                 else
                 {
@@ -514,6 +502,8 @@ namespace RETIRODE_APP.ViewModels
             LaserActualV = 0;
             LaserTargetV = 0;
             TriggerPulse = 0;
+            _laserVolatageOverload = null;
+            _biasVolatageOverload = null;
             ChangeLaserVoltagePoweredOn(false);
             ChangeSipmBiasVoltagePoweredOn(false);
         }

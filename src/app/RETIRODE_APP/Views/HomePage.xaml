@@ -29,7 +29,7 @@
             <StackLayout VerticalOptions="End"
                          BackgroundColor="{StaticResource Primary}">
                 <Button Margin="40,20,40,20" Text="SCAN"
-                        Clicked="StartDepictionButton_Clicked"
+                        Command="{Binding StartDepictionCommand}"
                         BackgroundColor="{StaticResource Orange}"
                         TextColor="White" />
             </StackLayout>

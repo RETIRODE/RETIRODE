@@ -1,6 +1,6 @@
 ﻿using Nancy.TinyIoc;
 using RETIRODE_APP.Models;
-using RETIRODE_APP.Services;
+using RETIRODE_APP.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -39,18 +39,20 @@ namespace RETIRODE_APP.ViewModels
             MeasuredDataItems.Clear();
         }
 
-        private async Task StopMeasurement()
+        public async Task StopMeasurement()
         {
             await _rangeMeasurementService.StopMeasurement();
         }
 
         private async void _rangeMeasurementService_MeasuredDataResponseEvent(List<float> obj)
         {
+            int i = 0;
             foreach (var item in obj)
             {
+                i++;
                 var distance = CalculateDistanceFromTdc(item);
-                TimeSpan span = DateTime.Now - StartMeasuringTime;
-                MeasuredDataItems.Add(new MeasuredDataItem(distance, (float)span.TotalMilliseconds));
+                TimeSpan span = (DateTime.Now - StartMeasuringTime);
+                MeasuredDataItems.Add(new MeasuredDataItem(distance, (float)span.TotalMilliseconds + TimeSpan.FromMilliseconds(100 * i).Milliseconds));
                 OnPropertyChanged(nameof(MeasuredDataItems));
 
                 await _dataStore.AddEntityAsync(new MeasurementItem()
@@ -64,7 +66,7 @@ namespace RETIRODE_APP.ViewModels
         public async void Init()
         {
             await SetCalibration();
-            await LoadValues();
+          //  await LoadValues();
         }
 
         private async Task LoadValues()
