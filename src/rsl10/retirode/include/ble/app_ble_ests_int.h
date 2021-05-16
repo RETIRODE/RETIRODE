@@ -2,7 +2,7 @@
  * app_ble_ETSS_int.h
  *
  *  Created on: Mar 31, 2021
- *      Author: patos
+ *      Author: Patrik Smolar
  */
 
 #ifndef APP_BLE_ETSS_INT_H
@@ -49,9 +49,12 @@ extern "C"
  */
 typedef enum ETSS_AttErr_t
 {
-	ETSS_ATT_ERR_NTF_DISABLED              = 0x80
+	ETSS_ATT_ERR_NTF_DISABLED = 0x80
 } ETSS_AttErr_t;
 
+
+/** List of service states
+ */
 typedef enum ETSS_ServiceState_t
 {
 	/** Module was not initialized yet. */
@@ -98,7 +101,7 @@ typedef struct ETSS_RFRQ_Characteristic_t
 
 
 /**
- * Collects all attribute database related variables of Picture Transfer
+ * Collects all attribute database related variables of ESTS
  * Service.
  */
 typedef struct ETSS_AttDb_t
@@ -131,8 +134,8 @@ typedef struct ESTS_Environment_t
     ETSS_ServiceState_t state;
 
     /**
-         * Message ID of the first registered message type in kernel.
-         */
+	 * Message ID of the first registered message type in kernel.
+	 */
      uint16_t msg_id_offset;
 
 } ESTS_Environment_t;

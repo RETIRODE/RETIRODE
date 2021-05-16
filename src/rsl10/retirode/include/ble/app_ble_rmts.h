@@ -2,7 +2,7 @@
  * app_ble_RMTS.h
  *
  *  Created on: Mar 31, 2021
- *      Author: patos
+ *      Author: Patrik Smolar
  */
 
 #ifndef APP_BLE_RMTS_H
@@ -24,6 +24,7 @@ extern "C"
  * Defines
  * --------------------------------------------------------------------------*/
 
+/* 128-bit UUID for the Range Measurement Transfer Service  */
 #define RMTS_SVC_UUID \
     { 0x03, 0x00, 0x13, 0xAC, 0x42, 0x02, \
       0xCD, 0x8D, \
@@ -31,6 +32,7 @@ extern "C"
       0xE6, 0x8C, \
       0x0A, 0xDB, 0x77, 0x51 }
 
+/* 128-bit UUID for the Range Measurement Transfer Service - Control Point Characteristic  */
 #define RMTS_CHAR_CONTROL_POINT_UUID \
     { 0x03, 0x00, 0x13, 0xAC, 0x42, 0x02, \
       0xCD, 0x8D, \
@@ -38,6 +40,7 @@ extern "C"
       0xE6, 0x8C, \
       0x8E, 0xDE, 0x77, 0x51 }
 
+/* 128-bit UUID for the Range Measurement Transfer Service - Time Of Flight Data Characteristic  */
 #define RMTS_CHAR_TOFD_UUID \
     { 0x03, 0x00, 0x13, 0xAC, 0x42, 0x02, \
       0xCD, 0x8D, \
@@ -45,6 +48,7 @@ extern "C"
       0xE6, 0x8C, \
       0x8A, 0xDD, 0x77, 0x51 }
 
+/* 128-bit UUID for the Range Measurement Transfer Service - Info Characteristic  */
 #define RMTS_CHAR_INFO_UUID \
 	{ 0x03, 0x00, 0x13, 0xAC, 0x42, 0x02, \
 		 0xCD, 0x8D, \
@@ -62,6 +66,10 @@ typedef enum RMTS_ApiError_t
 	RMTS_ERR_INSUFFICIENT_ATT_DB_SIZE = -3,
 } RMTS_ApiError_t;
 
+
+/* ----------------------------------------------------------------------------
+ * Attributes Table
+ * --------------------------------------------------------------------------*/
 typedef enum RMTS_AttIdx_t
 {
     /* Range Finder Service 0 */
@@ -88,32 +96,38 @@ typedef enum RMTS_AttIdx_t
     ATT_RMTS_COUNT,
 } RMTS_AttIdx_t;
 
+
+/* ----------------------------------------------------------------------------
+ * Attributes Table
+ * --------------------------------------------------------------------------*/
 typedef enum RMTS_ControlPointOpCode_t
 {
+	/**
+     * Start Command - Range Finder Start measurement and inform app when ready
+     */
+    RMTS_OP_START_REQ = 0x01,
 
     /**
-     * Generated when an start command is received over BLE.
+     * Stop Command - Data transfer canceled by connected peer
      */
-    RMTS_OP_START_REQ = 1,
+    RMTS_OP_CANCEL_REQ = 0x02,
 
-    /**
-     * Generated when cancel command is received over BLE from peer
-     * device.
-     */
-    RMTS_OP_CANCEL_REQ,
+	/**
+	 * Data Transfer Command - Connected peer received data size and start data transfer
+	 */
+	RMTS_OP_DATA_TRANSFER_REQ = 0x03,
 
-
-	RMTS_OP_DATA_TRANSFER_REQ,
-
-
-    /**
-     * Generated during MR_DATA transfer to inform application that RMTS is
-     * ready to accept more MR_DATA.
-     */
-   RMTS_OP_DATA_SPACE_AVAIL_IND,
+	/**
+	 * Generated during data transfer to inform application that ESTS is
+	 * ready to accept more data.
+	 */
+   RMTS_OP_DATA_SPACE_AVAIL_IND = 0x04,
 
 
-   RMTS_OP_DATA_TRANSFER_COMPLETED,
+   /**
+	* Generated when all data were successfully transferred.
+	*/
+   RMTS_OP_DATA_TRANSFER_COMPLETED = 0x05,
 
 } RMTS_ControlPointOpCode_t;
 
@@ -131,14 +145,72 @@ typedef void (*RMTS_ControlHandler)(RMTS_ControlPointOpCode_t opcode,
  * Function prototype definitions
  * --------------------------------------------------------------------------*/
 
+
+/**
+ *
+ * @pre
+ * BLE stack was initialized using @ref APP_BLE_PeripheralServerInitialize
+ * with att_db size of at least ATT_RMTS_COUNT
+ *
+ * @param control_event_handler
+ * Application callback function that informs application of any RMTS related
+ * events.
+ *
+ * @return
+ */
 int32_t RMTS_Initialize(RMTS_ControlHandler control_event_handler);
 
+/**
+ *
+ * @pre
+ * ESTS was initialized and there is active connection.
+ *
+ * @param tofd_size
+ * Total size of data in bytes.
+ */
 int32_t RMTS_Start_TOFD_Transfer(uint32_t tofd_size);
 
+/**
+ * Inform client that range measurement or transfer operation was aborted with given
+ * error code.
+ *
+ * @param errcode
+ * Reason for aborting of the operation.
+ *
+ * @return
+ * RMTS_OK - Abort notification was transmitted. <br>
+ * RMTS_ERR_NOT_PERMITTED - There is either no connection established
+ */
 int32_t RMTS_Abort_TOFD_Transfer(RMTS_InfoErrorCode_t errcode);
 
+/** @return
+ * Max size to push
+ */
 int32_t RMTS_GetMax_TOFD_PushSize(void);
 
+
+/**
+ * Queue data for transmission over BLE.
+ *
+ * The service automatically merges data to as little packets as possible
+ * depending on the currently negotiated MTU for the active connection.
+ *
+ * @pre
+ * Data info was provided using @ref RMTS_Start_TOFD_Transfer before
+ * This is necessary in order to determine whether all data were
+ * transmitted or not to send last shorter data packet.
+ *
+ * @param p_tofd
+ * Time of flight data
+ *
+ * @param data_len
+ * Number of bytes to queue for transmission.
+ *
+ * @return
+ * Actual number of bytes queued for transmission or 0 if unable to queue any
+ * additional bytes.
+ * Negative error code on error.
+ */
 int32_t RMTS_TOFD_Push(const uint8_t* p_tofd, const int32_t data_len);
 
 

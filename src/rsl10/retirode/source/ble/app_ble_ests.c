@@ -31,14 +31,12 @@ static ESTS_Environment_t ESTS_env = { 0 };
 const struct att_db_desc ESTS_att_db[ATT_ESTS_COUNT] =
 {
     /* External Sensor Transfer Service 0 */
-
     CS_SERVICE_UUID_128(
-            ATT_ESTS_SERVICE_0, /* atsidx */
-            ESTS_SVC_UUID),     /* uuid */
+            ATT_ESTS_SERVICE_0, 									/* atsidx */
+            ESTS_SVC_UUID),     									/* uuid */
 
 
     /* External Sensor Trigger Service - Range Finder Send Command */
-
     CS_CHAR_UUID_128(
     		ATT_ESTS_RANGE_FINDER_SEND_COMMAND_CHAR_0,              /* atsidx_char */
 			ATT_ESTS_RANGE_FINDER_SEND_COMMAND_VAL_0,               /* atsidx_val */
@@ -46,54 +44,52 @@ const struct att_db_desc ESTS_att_db[ATT_ESTS_COUNT] =
             PERM(WRITE_REQ, ENABLE) | PERM(WRITE_COMMAND, ENABLE),  /* perm */
             sizeof(ESTS_env.att.send_command.value),                /* length */
             ESTS_env.att.send_command.value,                        /* data */
-			ESTS_Send_Command_Handler),                         /* callback */
+			ESTS_Send_Command_Handler),                         	/* callback */
 
     CS_CHAR_USER_DESC(
     		ATT_ESTS_RANGE_FINDER_SEND_COMMAND_DESC_0,              /* atsidx */
-            (sizeof(ETSS_RFSC_USER_DESC) - 1), /* length */
-			ETSS_RFSC_USER_DESC,               /* data */
-            NULL),                                      /* callback */
+            (sizeof(ETSS_RFSC_USER_DESC) - 1), 						/* length */
+			ETSS_RFSC_USER_DESC,               						/* data */
+            NULL),                                      			/* callback */
 
 
-		/* External Sensor Trigger Service - Range Finder Send Command */
-
+	/* External Sensor Trigger Service - Range Finder Send Command */
 	CS_CHAR_UUID_128(
-			ATT_ESTS_RANGE_FINDER_SEND_QUERY_CHAR_0,              /* atsidx_char */
-			ATT_ESTS_RANGE_FINDER_SEND_QUERY_VAL_0,               /* atsidx_val */
+			ATT_ESTS_RANGE_FINDER_SEND_QUERY_CHAR_0,              	/* atsidx_char */
+			ATT_ESTS_RANGE_FINDER_SEND_QUERY_VAL_0,               	/* atsidx_val */
 			ESTS_RFSQ_UUID,                          				/* uuid */
 			PERM(WRITE_REQ, ENABLE) | PERM(WRITE_COMMAND, ENABLE),  /* perm */
-			sizeof(ESTS_env.att.send_query.value),                /* length */
-			ESTS_env.att.send_query.value,                        /* data */
-			ESTS_Send_Query_Handler),                         /* callback */
+			sizeof(ESTS_env.att.send_query.value),                	/* length */
+			ESTS_env.att.send_query.value,                        	/* data */
+			ESTS_Send_Query_Handler),                        		/* callback */
 
 	CS_CHAR_USER_DESC(
-			ATT_ESTS_RANGE_FINDER_SEND_QUERY_DESC_0,              /* atsidx */
-			(sizeof(ETSS_RFSQ_USER_DESC) - 1), /* length */
-			ETSS_RFSQ_USER_DESC,               /* data */
-			NULL),                                      /* callback */
+			ATT_ESTS_RANGE_FINDER_SEND_QUERY_DESC_0,              	/* atsidx */
+			(sizeof(ETSS_RFSQ_USER_DESC) - 1), 						/* length */
+			ETSS_RFSQ_USER_DESC,               						/* data */
+			NULL),                                      			/* callback */
 
 
     /* External Sensor Trigger Service - Range Finder Receive Query */
-
     CS_CHAR_UUID_128(
-    		ATT_ESTS_RANGE_FINDER_RECEIVE_QUERY_CHAR_0, /* atsidx_char */
-			ATT_ESTS_RANGE_FINDER_RECEIVE_QUERY_VAL_0,           /* atsidx_val */
-			ESTS_RFRQ_UUID,            /* uuid */
-            PERM(NTF, ENABLE),                   /* perm */
-            0,                                   /* length */
-            NULL,                                /* data */
-            NULL),                               /* callback */
+    		ATT_ESTS_RANGE_FINDER_RECEIVE_QUERY_CHAR_0, 			/* atsidx_char */
+			ATT_ESTS_RANGE_FINDER_RECEIVE_QUERY_VAL_0,           	/* atsidx_val */
+			ESTS_RFRQ_UUID,            								/* uuid */
+            PERM(NTF, ENABLE),                   					/* perm */
+            0,                                   					/* length */
+            NULL,                                					/* data */
+            NULL),                               					/* callback */
 
     CS_CHAR_CCC(
-    		ATT_ESTS_RANGE_FINDER_RECEIVE_QUERY_CCC_0,       /* atsidx */
-            ESTS_env.att.receive_query.ccc,       /* data */
-            NULL),                           /* callback */
+    		ATT_ESTS_RANGE_FINDER_RECEIVE_QUERY_CCC_0,       		/* atsidx */
+            ESTS_env.att.receive_query.ccc,       					/* data */
+            NULL),                           						/* callback */
 
     CS_CHAR_USER_DESC(
-    		ATT_ESTS_RANGE_FINDER_RECEIVE_QUERY_DESC_0,            /* atsidx */
-            (sizeof(ETSS_RFRQ_USER_DESC) - 1), /* length*/
-			ETSS_RFRQ_USER_DESC,               /* data */
-            NULL),                                 /* callback */
+    		ATT_ESTS_RANGE_FINDER_RECEIVE_QUERY_DESC_0,            	/* atsidx */
+            (sizeof(ETSS_RFRQ_USER_DESC) - 1), 					   	/* length*/
+			ETSS_RFRQ_USER_DESC,               						/* data */
+            NULL),                                 					/* callback */
 };
 
 int32_t ESTS_NOTIFY_QUERY_RESPONSE(const uint8_t *p_param)
@@ -144,6 +140,8 @@ static void ESTS_BleMsgHandler(ke_msg_id_t const msg_id, void const *param,
     }
 }
 
+
+
 int32_t ESTS_Initialize(ESTS_ControlHandler control_event_handler)
 {
     int32_t status;
@@ -176,6 +174,7 @@ int32_t ESTS_Initialize(ESTS_ControlHandler control_event_handler)
 
     return ESTS_OK;
 }
+
 
 static uint8_t ESTS_Send_Command_Handler(uint8_t conidx, uint16_t atsidx,
         uint16_t handle, uint8_t *to, const uint8_t *from, uint16_t length,
