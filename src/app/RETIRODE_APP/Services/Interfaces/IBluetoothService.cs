@@ -30,6 +30,8 @@ namespace RETIRODE_APP.Services.Interfaces
         /// <returns></returns>
         Task<bool> WriteToCharacteristic(ICharacteristic characteristic, byte[] message);
         Task StopScanning();
+        Task<bool> IsBluetoothEnabled();
+        Task EnableBluetooth();
 
         /// <summary>
         /// event fired when some device nearby is found

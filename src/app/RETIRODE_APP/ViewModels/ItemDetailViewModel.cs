@@ -1,4 +1,6 @@
-﻿using RETIRODE_APP.Models;
+﻿using Nancy.TinyIoc;
+using RETIRODE_APP.Models;
+using RETIRODE_APP.Services.Interfaces;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -13,6 +15,7 @@ namespace RETIRODE_APP.ViewModels
         private string text;
         private string description;
         public string Id { get; set; }
+        private IMockDataStore<Item> _dataStore = TinyIoCContainer.Current.Resolve<IMockDataStore<Item>>();
 
         public string Text
         {
@@ -43,7 +46,7 @@ namespace RETIRODE_APP.ViewModels
         {
             try
             {
-                var item = await DataStore.GetItemAsync(itemId);
+                var item = await _dataStore.GetItemAsync(itemId);
                 Id = item.Id;
                 Text = item.Text;
                 Description = item.Description;

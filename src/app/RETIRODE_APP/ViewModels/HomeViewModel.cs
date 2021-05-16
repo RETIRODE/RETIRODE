@@ -1,77 +1,73 @@
 ﻿using Nancy.TinyIoc;
-using RETIRODE_APP.Models.Enums;
+using Plugin.Permissions;
+using Plugin.Permissions.Abstractions;
 using RETIRODE_APP.Services.Interfaces;
+using RETIRODE_APP.Views;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Xamarin.Essentials;
+using Xamarin.CommunityToolkit.ObjectModel;
 using Xamarin.Forms;
 
 namespace RETIRODE_APP.ViewModels
 {
     public class HomeViewModel : BaseViewModel
     {
-        private IExternalServicesProvider _externalServiceProvider;
+        private IApplicationStateProvider _applicationStateProvider;
+
+        public ICommand StartDepictionCommand { get; set; }
         public HomeViewModel()
         {
-            _externalServiceProvider = TinyIoCContainer.Current.Resolve<IExternalServicesProvider>();
+            _applicationStateProvider = TinyIoCContainer.Current.Resolve<IApplicationStateProvider>();
+            StartDepictionCommand = new AsyncCommand(async () => await StartDepiction());
             Title = "Home";
-            ckeckConnection();
-            CheckLocation();
-            CheckBluetooth();
         }
 
-        public void ckeckConnection()
+        private async Task StartDepiction()
         {
-            if (App.isConnected)
-                Connected = "Connected";
-            else
-                Connected = "Disconnected";
-        }
 
-        private async void CheckLocation()
-        {
- 
-            if (!await _externalServiceProvider.IsLocationPermissionGranted())
+            var locationPermissionStatus = await RequestLocationPermissionIfNeeded();
+            if (locationPermissionStatus != PermissionStatus.Granted)
             {
-                if(await ShowDialog("Enable location permission?"))
-                {
-                    await Permissions.RequestAsync<Permissions.LocationAlways>();
-                }
-                else
-                {
-                    Environment.Exit(0);
-                }
+                await ShowError("Application will not work properly without location permission");
+                Environment.Exit(0);
+            }
+            await EnsureLocationEnabled();
+            await EnsureBluetoothEnabled();
+            //Navigation.PushAsync(new GraphPage());
 
-                if (!_externalServiceProvider.IsLocationEnabled())
-                {
-                    if(await ShowDialog("Enable location?"))
-                    {
-                        _externalServiceProvider.OpenSettingsToEnableLocation();
-                    }
-                    else
-                    {
-                        Environment.Exit(0);
-                    }
-                }
+            if (!App.isConnected)
+            {
+                var bluetoothPage = TinyIoCContainer.Current.Resolve<BluetoothPage>();
+                await Application.Current.MainPage.Navigation.PushAsync(bluetoothPage);
+            }
+            else if (!App.isCalibrated)
+            {
+                var settingsPage = TinyIoCContainer.Current.Resolve<SettingsPage>();
+                await Application.Current.MainPage.Navigation.PushAsync(settingsPage);
             }
             else
             {
-                if (!_externalServiceProvider.IsLocationEnabled())
-                {
-                    _externalServiceProvider.OpenSettingsToEnableLocation();
-                }
+                var graphPage = TinyIoCContainer.Current.Resolve<GraphPage>();
+                await Application.Current.MainPage.Navigation.PushAsync(graphPage);
+
             }
         }
 
-        private void CheckBluetooth()
+        private async Task<PermissionStatus> RequestLocationPermissionIfNeeded()
         {
-            if(!_externalServiceProvider.IsBluetoothEnabled())
+            var locationStatus = PermissionStatus.Unknown;
+            try
             {
-                externalServiceProvider.EnableBluetooth();
+                locationStatus = await _applicationStateProvider.GetLocationStatus();
             }
+            catch
+            {
+                await ShowError("Location Status problem");
+            }
+            return locationStatus;
         }
 
-        public string Connected { get;set; }
+        public string Connected { get; set; }
     }
 }

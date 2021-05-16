@@ -5,6 +5,7 @@ using SQLite;
 using System;
 using Xamarin.Forms;
 using RETIRODE_APP.Services.Interfaces;
+using RETIRODE_APP.Views;
 
 namespace RETIRODE_APP
 {
@@ -22,7 +23,10 @@ namespace RETIRODE_APP
             TinyIoCContainer.Current.Register<IDataStore,SqliteDataStore>();
             TinyIoCContainer.Current.Register<IRangeMeasurementService, RangeMeasurementService>();
             TinyIoCContainer.Current.Register<IBluetoothService, BluetoothService>();
-            TinyIoCContainer.Current.Register<IExternalServicesProvider, ExternalServicesProvider>();
+            TinyIoCContainer.Current.Register<IApplicationStateProvider, AnroidStateProvider>();
+            TinyIoCContainer.Current.Register<BluetoothPage>();
+            TinyIoCContainer.Current.Register<SettingsPage>();
+            TinyIoCContainer.Current.Register<GraphPage>();
             MainPage = new AppShell();
         }
 
