@@ -23,7 +23,6 @@ namespace RETIRODE_APP
             TinyIoCContainer.Current.Register<IDataStore,SqliteDataStore>();
             TinyIoCContainer.Current.Register<IRangeMeasurementService, RangeMeasurementService>();
             TinyIoCContainer.Current.Register<IBluetoothService, BluetoothService>();
-            TinyIoCContainer.Current.Register<IApplicationStateProvider, AnroidStateProvider>();
             TinyIoCContainer.Current.Register<BluetoothPage>();
             TinyIoCContainer.Current.Register<SettingsPage>();
             TinyIoCContainer.Current.Register<GraphPage>();

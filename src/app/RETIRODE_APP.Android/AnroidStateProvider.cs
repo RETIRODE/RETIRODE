@@ -1,4 +1,5 @@
-﻿using Android.Content;
+﻿using Android.Bluetooth;
+using Android.Content;
 using Android.Locations;
 using Nancy.TinyIoc;
 using Plugin.Permissions;
@@ -17,9 +18,11 @@ namespace RETIRODE_APP.Services
         {
             _bluetoothService = TinyIoCContainer.Current.Resolve<IBluetoothService>();
         }
-        public async Task<bool> IsBluetoothEnabled()
+        public Task<bool> IsBluetoothEnabled()
         {
-           return await _bluetoothService.IsBluetoothEnabled();
+            BluetoothManager bluetoothManager = (BluetoothManager)Android.App.Application.Context.GetSystemService(Context.BluetoothService);
+            var res = bluetoothManager.Adapter.State == State.On;
+            return Task.FromResult(res);
         }
 
         public bool IsLocationEnabled()
@@ -48,9 +51,11 @@ namespace RETIRODE_APP.Services
             
         }
 
-        public async Task EnableBluetooth()
+        public Task EnableBluetooth()
         {
-            await _bluetoothService.EnableBluetooth();
+            BluetoothManager bluetoothManager = (BluetoothManager)Android.App.Application.Context.GetSystemService(Context.BluetoothService);
+            bluetoothManager.Adapter.Enable();
+            return Task.CompletedTask;
         }
     
         public void OpenSettingsToEnableLocation()

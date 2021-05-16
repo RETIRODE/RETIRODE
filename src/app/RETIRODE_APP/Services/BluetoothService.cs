@@ -1,6 +1,4 @@
-﻿using Android.Bluetooth;
-using Android.Content;
-using Plugin.BLE;
+﻿using Plugin.BLE;
 using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Abstractions.EventArgs;
@@ -54,21 +52,9 @@ namespace RETIRODE_APP.Services
         }
 
         /// <inheritdoc cref="IBluetoothService"/>
-        public async Task<bool> WriteToCharacteristic(ICharacteristic characteristic, byte[] message)
+        public Task<bool> WriteToCharacteristic(ICharacteristic characteristic, byte[] message)
         {
-            return await characteristic.WriteAsync(message);
-        }
-
-        public Task<bool> IsBluetoothEnabled()
-        {
-            return Task.FromResult(CrossBluetoothLE.Current.IsOn);
-        }
-
-        public Task EnableBluetooth()
-        {
-            BluetoothManager bluetoothManager = (BluetoothManager)Android.App.Application.Context.GetSystemService(Context.BluetoothService);
-            bluetoothManager.Adapter.Enable();
-            return Task.CompletedTask;
+            return characteristic.WriteAsync(message);
         }
 
         public Task<bool> IsDeviceConnected()
