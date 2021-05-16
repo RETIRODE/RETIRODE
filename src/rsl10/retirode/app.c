@@ -367,6 +367,7 @@ void RETIRODE_RMP_Handler(RETIRODE_RMP_Event_t event,
 		}
 		case RETIRODE_RMP_EVENT_ERROR:
 		{
+			RMTS_Abort_TOFD_Transfer(RMTS_INFO_ERR_ABORTED_BY_SERVER);
 			break;
 		}
 		case RETIRODE_RMP_EVENT_READY:
