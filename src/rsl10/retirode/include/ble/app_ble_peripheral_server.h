@@ -28,6 +28,7 @@
 #include <ble_gap.h>
 #include <ble_gatt.h>
 #include <msg_handler.h>
+#include <rwip_config.h>
 
 
 
@@ -58,7 +59,7 @@ extern "C" {
 
 /* The number of standard profiles and custom services added in this application */
 #define APP_NUM_STD_PRF                 0
-#define APP_NUM_CUSTOM_SVC              1
+#define APP_NUM_CUSTOM_SVC              2
 
 /* RF output power in dBm */
 #define OUTPUT_POWER_DBM                0

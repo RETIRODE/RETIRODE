@@ -3,8 +3,6 @@
 
 
 
-
-
 static uint8_t RMTS_ControlPointWriteHandler(uint8_t conidx, uint16_t attidx,
         uint16_t handle, uint8_t *to, const uint8_t *from, uint16_t length,
         uint16_t operation);
@@ -109,8 +107,6 @@ static void RMTS_MsgHandler(ke_msg_id_t const msg_id, void const *param,
                  * attribute reduce number of pending packets. */
                 if (p->seq_num == attidx)
                 {
-                    //ENSURE(RMTS_env.transfer.packets_pending > 0);
-
                     RMTS_env.transfer.packets_pending -= 1;
 
                     if (RMTS_env.transfer.bytes_queued
@@ -204,17 +200,20 @@ static void RMTS_MsgHandler(ke_msg_id_t const msg_id, void const *param,
                  */
                 GAPC_DisconnectAll(0x16);
             }
-
-           // ENSURE(RMTS_env.max_tx_octets <= 251);
             break;
         }
 
         default:
-            //INVARIANT(false);
             break;
     }
 }
 
+
+/**
+ * Function is called by Control point Handler when Start Command arrives,
+ * then ensures that peer is connected and have enabled NTF.
+ * Forward request to application handler
+ */
 static uint8_t RMTS_Start_Data_Measurement_Process()
 {
     uint8_t err = -1;
@@ -224,11 +223,7 @@ static uint8_t RMTS_Start_Data_Measurement_Process()
         if (RMTS_env.att.info.ccc[0] == ATT_CCC_START_NTF)
         {
             RMTS_env.transfer.state = RMTS_STATE_START_REQUEST;
-
-
             RMTS_env.att.cp.callback(RMTS_OP_START_REQ, NULL);
-
-
         }
         else
         {
@@ -243,14 +238,18 @@ static uint8_t RMTS_Start_Data_Measurement_Process()
     return err;
 }
 
+/**
+ * Function is called by Control point Handler when Start Transfer Command arrives,
+ * then ensures that data info was provided
+ * Forward request to application handler
+ */
 static uint8_t RMTS_Start_Measured_Data_Transfer(uint8_t packet_count)
 {
-    uint8_t err = ATT_ERR_NO_ERROR;
+    uint8_t err = 0;
 
     if (RMTS_env.transfer.state >= RMTS_STATE_TOFD_INFO_PROVIDED)
     {
     	RMTS_env.transfer.state = RMTS_STATE_TOFD_TRANSMISSION;
-
         RMTS_env.att.cp.callback(RMTS_OP_DATA_TRANSFER_REQ, NULL);
     }
     else
@@ -261,9 +260,15 @@ static uint8_t RMTS_Start_Measured_Data_Transfer(uint8_t packet_count)
     return err;
 }
 
+/**
+ * Function is called by Control point Handler when Stop Command arrives,
+ * then ensures that transfer has been started
+ * Forward request to handler in application
+ *
+ */
 static uint8_t RMTS_Abort_Data_Measurement_Process(void)
 {
-    uint8_t status = ATT_ERR_NO_ERROR;
+    uint8_t status = 0;
 
     /* Cancel if operation is really ongoing.
      *
@@ -344,12 +349,7 @@ static uint8_t RMTS_ControlPointWriteHandler(uint8_t conidx, uint16_t attidx,
 
 static void RMTS_TransmitMRDataNotification(void)
 {
-    /* There should not be any attempt to transmit notification while no data
-     * are queued.
-     */
-    //REQUIRE(RMTS_env.att.TOFD.value_length > RMTS_INFO_OFFSET_LENGTH);
-
-    uint16_t attidx = RMTS_env.att.attidx_offset + ATT_RMTS_TOFD_VAL_0;
+	uint16_t attidx = RMTS_env.att.attidx_offset + ATT_RMTS_TOFD_VAL_0;
     uint16_t att_handle = GATTM_GetHandle(attidx);
 
     GATTC_SendEvtCmd(0, GATTC_NOTIFY, attidx, att_handle,
@@ -455,7 +455,6 @@ int32_t RMTS_Abort_TOFD_Transfer(RMTS_InfoErrorCode_t errcode)
         GATTC_SendEvtCmd(0, GATTC_NOTIFY, attidx, att_handle, 2, data);
 
         RMTS_env.transfer.state = RMTS_STATE_CONNECTED;
-     //   RMTS_env.att.cp.capture_mode = 0;
     }
     else
     {
@@ -535,9 +534,6 @@ int32_t RMTS_TOFD_Push(const uint8_t* p_TOFD, const int32_t data_len)
         const uint32_t avail_space = max_data_octets
                                      - RMTS_env.att.TOFD.value_length;
 
-        //ENSURE(avail_space > 0);
-       //ENSURE(avail_space < RMTS_env.max_tx_octets);
-
         if (avail_space >= bytes_left)
         {
             /* All pending data can be fit into single packet. */
@@ -552,8 +548,6 @@ int32_t RMTS_TOFD_Push(const uint8_t* p_TOFD, const int32_t data_len)
             /* Transmit packet if (avail_space == data_len) */
             if (RMTS_env.att.TOFD.value_length >= max_data_octets)
             {
-                //ENSURE(RMTS_env.att.TOFD.value_length == max_data_octets);
-
                 RMTS_TransmitMRDataNotification();
             }
         }
@@ -577,8 +571,6 @@ int32_t RMTS_TOFD_Push(const uint8_t* p_TOFD, const int32_t data_len)
         /* Check if EOF was reached. */
         if (RMTS_env.transfer.bytes_queued >= RMTS_env.transfer.bytes_total)
         {
-            //ENSURE(RMTS_env.transfer.bytes_queued == RMTS_env.transfer.bytes_total);
-
             /* Transmit any remaining image data. */
             if (RMTS_env.att.TOFD.value_length > RMTS_INFO_OFFSET_LENGTH)
             {
@@ -589,7 +581,3 @@ int32_t RMTS_TOFD_Push(const uint8_t* p_TOFD, const int32_t data_len)
 
     return RMTS_OK;
 }
-
-
-
-

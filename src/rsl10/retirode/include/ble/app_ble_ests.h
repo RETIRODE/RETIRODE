@@ -2,7 +2,7 @@
  * app_ble_ESTS.h
  *
  *  Created on: Mar 31, 2021
- *      Author: patos
+ *      Author: Patrik Smolar
  */
 
 #ifndef APP_BLE_ESTS_H
@@ -21,9 +21,10 @@ extern "C"
 #include <gattc_task.h>
 
 /* ----------------------------------------------------------------------------
- * Defines
+ * UUID Defines
  * --------------------------------------------------------------------------*/
 
+/* 128-bit UUID for the External Sensor Trigger Service  */
 #define ESTS_SVC_UUID \
     { 0x03, 0x00, 0x13, 0xac, 0x42, 0x02, \
       0xb3, 0xa8, \
@@ -31,7 +32,7 @@ extern "C"
       0x7b, 0x9d, \
       0xf8, 0x3f, 0x5c, 0x0b }
 
-/** 128-bit UUID for the External Sensor Trigger Service - Range finder send command */
+/* 128-bit UUID for the External Sensor Trigger Service - Range finder send command Characteristic */
 #define ESTS_RFSC_UUID \
     { 0x03, 0x00, 0x13, 0xac, 0x42, 0x02, \
       0xb3, 0xa8, \
@@ -39,7 +40,7 @@ extern "C"
       0x7b, 0x9d, \
       0x78, 0x42, 0x5c, 0x0b }
 
-/** 128-bit UUID for the External Sensor Trigger Service - Range finder send query */
+/* 128-bit UUID for the External Sensor Trigger Service - Range finder send query Characteristic*/
 #define ESTS_RFSQ_UUID \
     { 0x03, 0x00, 0x13, 0xac, 0x42, 0x02, \
       0xb3, 0xa8, \
@@ -47,7 +48,7 @@ extern "C"
       0x7b, 0x9d, \
       0x72, 0x43, 0x5c, 0x0b }
 
-/** 128-bit UUID for the External Sensor Trigger Service - Range finder recieve query */
+/* 128-bit UUID for the External Sensor Trigger Service - Range finder recieve query Characteristic*/
 #define ESTS_RFRQ_UUID \
     { 0x03, 0x00, 0x13, 0xac, 0x42, 0x02, \
       0xb3, 0xa8, \
@@ -56,7 +57,9 @@ extern "C"
       0x44, 0x44, 0x5c, 0x0b }
 
 
-
+/* ----------------------------------------------------------------------------
+ * Error codes
+ * --------------------------------------------------------------------------*/
 typedef enum ESTS_InfoErrorCode_t
 {
     ESTS_INFO_ERR_ABORTED_BY_SERVER = 0x00,
@@ -71,6 +74,10 @@ typedef enum ESTS_ApiError_t
 	ESTS_ERR_INSUFFICIENT_ATT_DB_SIZE = -3,
 } ESTS_ApiError_t;
 
+
+/* ----------------------------------------------------------------------------
+ * Attributes Table
+ * --------------------------------------------------------------------------*/
 typedef enum ESTS_AttIdx_t
 {
     /* External Sensor Trigger Service 0 */
@@ -81,7 +88,7 @@ typedef enum ESTS_AttIdx_t
 	ATT_ESTS_RANGE_FINDER_SEND_COMMAND_VAL_0,
 	ATT_ESTS_RANGE_FINDER_SEND_COMMAND_DESC_0,
 
- /* External Sensor Trigger Service - Range Finder Send Query */
+	/* External Sensor Trigger Service - Range Finder Send Query */
 	ATT_ESTS_RANGE_FINDER_SEND_QUERY_CHAR_0,
 	ATT_ESTS_RANGE_FINDER_SEND_QUERY_VAL_0,
 	ATT_ESTS_RANGE_FINDER_SEND_QUERY_DESC_0,
@@ -97,9 +104,11 @@ typedef enum ESTS_AttIdx_t
 } ESTS_AttIdx_t;
 
 
+/* ----------------------------------------------------------------------------
+ * Main Settings Enum
+ * --------------------------------------------------------------------------*/
 typedef enum ESTS_RF_SETTING_ID_t
 {
-
     /**
      * SW RESET
      */
@@ -131,12 +140,14 @@ typedef enum ESTS_RF_SETTING_ID_t
 	ESTS_OP_VOLTAGES_STATUS= 0x05,
 
 
-
 	ESTS_RF_SETTING_ID_COUNT
 
 } ESTS_RF_SETTING_ID_t;
 
 
+/* ----------------------------------------------------------------------------
+ * Laser Voltage Types Enum
+ * --------------------------------------------------------------------------*/
 typedef enum ESTS_LASER_VOLTAGE_TYPE_t
 {
 	/**
@@ -156,17 +167,22 @@ typedef enum ESTS_LASER_VOLTAGE_TYPE_t
 
 } ESTS_LASER_VOLTAGE_TYPE_t;
 
+
+/* ----------------------------------------------------------------------------
+ * SiPM Bias Power Voltage Types Enum
+ * --------------------------------------------------------------------------*/
 typedef enum ESTS_S_BIAS_POWER_VOLTAGE_TYPE_t
 {
-
 	/**
 	 * TARGET
 	 */
 	ESTS_OP_S_BIAS_POWER_VOLTAGE_TARGET = 0x01,
+
 	/**
 	 * ACTUAL
 	 */
 	ESTS_OP_S_BIAS_POWER_VOLTAGE_ACTUAL = 0x02,
+
 	/**
 	 * Turn on/off
 	 */
@@ -174,6 +190,10 @@ typedef enum ESTS_S_BIAS_POWER_VOLTAGE_TYPE_t
 
 } ESTS_S_BIAS_POWER_VOLTAGE_TYPE_t;
 
+
+/* ----------------------------------------------------------------------------
+ * Calibration Types Enum
+ * --------------------------------------------------------------------------*/
 typedef enum ESTS_CALIBRATE_TYPE_t
 {
 	/**
@@ -196,10 +216,12 @@ typedef enum ESTS_CALIBRATE_TYPE_t
 	*/
 	ESTS_OP_CALIBRATE_DONE = 0x04
 
-
-
 } ESTS_CALIBRATE_TYPE_t;
 
+
+/* ----------------------------------------------------------------------------
+ * Pulse Count Types Enum
+ * --------------------------------------------------------------------------*/
 typedef enum ESTS_PULSE_COUNT_TYPE_t
 {
 	/**
@@ -210,6 +232,9 @@ typedef enum ESTS_PULSE_COUNT_TYPE_t
 } ESTS_PULSE_COUNT_TYPE_t;
 
 
+/* ----------------------------------------------------------------------------
+ * Voltages Status Types Enum
+ * --------------------------------------------------------------------------*/
 typedef enum ESTS_OP_VOLTAGES_STATUS_TYPE_t
 {
 	/**
@@ -220,6 +245,9 @@ typedef enum ESTS_OP_VOLTAGES_STATUS_TYPE_t
 } ESTS_OP_VOLTAGES_STATUS_TYPE_t;
 
 
+/* ----------------------------------------------------------------------------
+ * SW Reset request/response structure
+ * --------------------------------------------------------------------------*/
 typedef struct ESTS_OP_SW_RESET_params_t
 {
     /** Condition if came from query characteristic */
@@ -227,17 +255,24 @@ typedef struct ESTS_OP_SW_RESET_params_t
 
     /** Type of SW RESET
      *      *
-     * Only 0 is allowed
+     * Only 0x00 is allowed
      *
      *  */
     uint8_t type;
 
-    /** Query response value or command value*/
+    /** Query response value or command value
+     *
+     * Only 0x00 is allowed
+     *
+     * */
     uint32_t value;
 
 } ESTS_OP_SW_RESET_params_t;
 
 
+/* ----------------------------------------------------------------------------
+ * Laser Voltage request/response structure
+ * --------------------------------------------------------------------------*/
 typedef struct ETSS_LASER_VOLTAGE_params_t
 {
     /** Condition if came from query characteristic */
@@ -245,9 +280,9 @@ typedef struct ETSS_LASER_VOLTAGE_params_t
 
     /** Type of LASER VOLTAGE
      *      *
-     * ESTS_OP_LASER_VOLTAGE_ACTUAL = 1
-     * ESTS_OP_LASER_VOLTAGE_TARGET = 2
-     * ESTS_OP_LASER_VOLTAGE_SWITCH = 3
+     * ESTS_OP_LASER_VOLTAGE_ACTUAL = 0x01
+     * ESTS_OP_LASER_VOLTAGE_TARGET = 0x02
+     * ESTS_OP_LASER_VOLTAGE_SWITCH = 0x03
      *
      *  */
     uint8_t type;
@@ -257,6 +292,10 @@ typedef struct ETSS_LASER_VOLTAGE_params_t
 
 } ETSS_LASER_VOLTAGE_params_t;
 
+
+/* ----------------------------------------------------------------------------
+ * SiPM Bias Power Voltage request/response structure
+ * --------------------------------------------------------------------------*/
 typedef struct ETSS_S_BIAS_POWER_VOLTAGE_params_t
 {
     /** Condition if came from query characteristic */
@@ -264,9 +303,9 @@ typedef struct ETSS_S_BIAS_POWER_VOLTAGE_params_t
 
     /** Type of S_BIAS_POWER_VOLTAGE
      *      *
-     * ESTS_OP_S_BIAS_POWER_VOLTAGE_ACTUAL = 1
-     * ESTS_OP_S_BIAS_POWER_VOLTAGE_TARGET = 2
-     * ESTS_OP_LASER_VOLTAGE_SWITCH = 3
+     * ESTS_OP_S_BIAS_POWER_VOLTAGE_ACTUAL = 0x01
+     * ESTS_OP_S_BIAS_POWER_VOLTAGE_TARGET = 0x02
+     * ESTS_OP_LASER_VOLTAGE_SWITCH = 0x03
      *
      *  */
     uint8_t type;
@@ -276,6 +315,10 @@ typedef struct ETSS_S_BIAS_POWER_VOLTAGE_params_t
 
 } ETSS_S_BIAS_POWER_VOLTAGE_params_t;
 
+
+/* ----------------------------------------------------------------------------
+ * Calibration request/response structure
+ * --------------------------------------------------------------------------*/
 typedef struct ETSS_CALIBRATE_params_t
 {
     /** Condition if came from query characteristic */
@@ -283,9 +326,10 @@ typedef struct ETSS_CALIBRATE_params_t
 
     /** Type of CALIBRATE
      *      *
-     * ESTS_OP_CALIBRATE_FIRST = 1
-     * ESTS_OP_CALIBRATE_SECOND = 2
-     * ESTS_OP_CALIBRATE_THIRD = 3
+     * ESTS_OP_CALIBRATE_FIRST = 0x01
+     * ESTS_OP_CALIBRATE_SECOND = 0x02
+     * ESTS_OP_CALIBRATE_THIRD = 0x03
+     * ESTS_OP_CALIBRATE_DONE = 0x04
      *
      *  */
     uint8_t type;
@@ -295,6 +339,10 @@ typedef struct ETSS_CALIBRATE_params_t
 
 } ETSS_CALIBRATE_params_t;
 
+
+/* ----------------------------------------------------------------------------
+ * Pulse Count request/response structure
+ * --------------------------------------------------------------------------*/
 typedef struct ETSS_PULSE_COUNT_params_t
 {
     /** Condition if came from query characteristic */
@@ -302,7 +350,7 @@ typedef struct ETSS_PULSE_COUNT_params_t
 
     /** Type of PULSE_COUNT
      *      *
-     * STS_OP_PULSE_COUNT_VALUE = 1
+     * ESTS_OP_PULSE_COUNT_VALUE = 0x01
      *
      *  */
     uint8_t type;
@@ -312,17 +360,28 @@ typedef struct ETSS_PULSE_COUNT_params_t
 
 } ETSS_PULSE_COUNT_params_t;
 
+
+/* ----------------------------------------------------------------------------
+ * Voltages Status request/response structure
+ * --------------------------------------------------------------------------*/
 typedef struct ESTS_VOLTAGES_STATUS_params_t
 {
     /** Condition if came from query characteristic */
     bool is_query;
 
+    /** Type of PULSE_COUNT
+	 *
+	 * ESTS_OP_VOLTAGES_STATUS_VALUE = 0x01
+	 *
+	 *  */
     uint8_t type;
 
     /** Query response value or command value*/
     uint32_t value;
 
 } ESTS_VOLTAGES_STATUS_params_t;
+
+
 
 
 typedef void (*ESTS_ControlHandler)(ESTS_RF_SETTING_ID_t sidx,
@@ -333,7 +392,46 @@ typedef void (*ESTS_ControlHandler)(ESTS_RF_SETTING_ID_t sidx,
  * Function prototype definitions
  * --------------------------------------------------------------------------*/
 
+/**
+ * Initialize the External Sensor Trigger Service.
+ *
+ * Sets initial values of all service related characteristics and descriptors.
+ * All service related attributes are then added to attribute database.
+ *
+ * @pre
+ * The Peripheral Server library was initialized with sufficient attribute
+ * database size using APP_BLE_PeripheralServerInitialize .
+ *
+ * @param control_event_handler
+ * Application provided callback that will be called for any request on
+ * Send Command Char. or Send Query Char.
+ *
+ * @return
+ * 0  - On success.
+ * -1 - Attribute database does not have enough free space to fit all ESTSS
+ *      attributes.
+ */
 int32_t ESTS_Initialize(ESTS_ControlHandler control_event_handler);
+
+
+/**
+ * Notify connected peer with response
+ *
+ * Peer create request on Send Query Characteristic and via this can
+ * receive response on Receive Query Characteristic
+ *
+ * @pre
+ * Peer created request on Send Query Char -> ESTS handler in application forwarded
+ * request to Range Finder -> Range finder created response -> Application created p_param *
+ *
+ * @param p_param
+ * Response Query message
+ * <1byte ESTS_RF_SETTING_ID_t>, <1byte ESTS_..._TYPE_t>, <1byte/4byte value>
+ *
+ * @return
+ * 0 If OK
+ * -1 If Error
+ */
 int32_t ESTS_NOTIFY_QUERY_RESPONSE(const uint8_t *p_param);
 
 

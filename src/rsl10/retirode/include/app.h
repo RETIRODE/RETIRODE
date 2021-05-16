@@ -25,6 +25,7 @@ extern "C"
 #include <ble_gap.h>
 #include <ble_gatt.h>
 #include <retirode_rmp.h>
+#include <rwble_hl_error.h>
 
 /* ----------------------------------------------------------------------------
  * Defines

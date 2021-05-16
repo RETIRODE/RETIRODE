@@ -2,7 +2,7 @@
  * app_ble_RMTS_int.h
  *
  *  Created on: Mar 31, 2021
- *      Author: patos
+ *      Author: Patrik Smolar
  */
 
 #ifndef APP_BLE_RMTS_INT_H
