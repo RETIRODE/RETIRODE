@@ -84,7 +84,7 @@ namespace RETIRODE_APP.ViewModels
             }
         }
 
-        private async Task GraphReset()
+        private Task GraphReset()
 
         {
             MeasuredDataItems.Clear();
@@ -104,12 +104,6 @@ namespace RETIRODE_APP.ViewModels
                 Measurement = true;
             }
             
-        }
-
-        public async Task StartMeasurement()
-        {
-            Measurement = true;
-            await _rangeMeasurementService.StartMeasurement();
         }
 
         private async void _rangeMeasurementService_MeasuredDataResponseEvent(List<float> obj)
@@ -164,7 +158,6 @@ namespace RETIRODE_APP.ViewModels
             }
             if (await _applicationStateProvider.GetStoragePermissionStatus() == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
             {
-                
                 await Export();
             }
         }
