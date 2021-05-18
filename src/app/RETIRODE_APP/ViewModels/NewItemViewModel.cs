@@ -25,8 +25,7 @@ namespace RETIRODE_APP.ViewModels
 
         private bool ValidateSave()
         {
-            return !String.IsNullOrWhiteSpace(text)
-                && !String.IsNullOrWhiteSpace(description);
+            return true;
         }
 
         public string Text
