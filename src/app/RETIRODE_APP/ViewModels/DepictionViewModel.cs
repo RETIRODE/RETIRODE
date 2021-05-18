@@ -1,4 +1,6 @@
-﻿using RETIRODE_APP.Models;
+﻿using Nancy.TinyIoc;
+using RETIRODE_APP.Models;
+using RETIRODE_APP.Services;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -15,9 +17,22 @@ namespace RETIRODE_APP.ViewModels
         protected bool TouchEnabled { get; set; }
         protected Node CameraNode { get; set; }
 
+        public IRangeMeasurementService rangeMeasurementService;
+
         bool movementsEnabled;
         Node plotNode;
-        public DepictionViewModel(ApplicationOptions options = null) : base(options) { }
+        public DepictionViewModel(ApplicationOptions options = null) : base(options) {
+            rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
+            rangeMeasurementService.MeasuredDataResponseEvent -= RangeMeasurementService_MeasuredDataResponseEvent;
+            rangeMeasurementService.MeasuredDataResponseEvent += RangeMeasurementService_MeasuredDataResponseEvent;
+            rangeMeasurementService.StartMeasurement();
+        }
+
+        private void RangeMeasurementService_MeasuredDataResponseEvent(int[] obj)
+        {
+            
+        }
+
         private static ApplicationOptions SetOptions(ApplicationOptions options)
         {
             options.TouchEmulation = true;

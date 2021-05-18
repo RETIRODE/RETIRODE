@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RETIRODE_APP.Models
+﻿namespace RETIRODE_APP.Models
 {
     public class Item
     {
