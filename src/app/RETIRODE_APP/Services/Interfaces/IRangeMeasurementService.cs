@@ -1,9 +1,9 @@
 ﻿using Plugin.BLE.Abstractions.EventArgs;
 using RETIRODE_APP.Models;
-using RETIRODE_APP.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using static RETIRODE_APP.Models.Enums.ApplicationEnums;
 
 namespace RETIRODE_APP.Services.Interfaces
 {
@@ -29,6 +29,8 @@ namespace RETIRODE_APP.Services.Interfaces
         event Action<List<float>> MeasuredDataResponseEvent;
 
         event Action<object,DeviceEventArgs> DeviceDisconnectedEvent;
+
+        event Action MeasurementErrorEvent;
 
         /// <summary>
         /// 

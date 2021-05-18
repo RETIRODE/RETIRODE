@@ -1,4 +1,4 @@
-﻿using RETIRODE_APP.Models.Enums;
+﻿using static RETIRODE_APP.Models.Enums.ApplicationEnums;
 
 namespace RETIRODE_APP.Models
 {

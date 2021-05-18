@@ -1,8 +1,11 @@
 ﻿using Nancy.TinyIoc;
+
 using Plugin.Permissions;
 using Plugin.Permissions.Abstractions;
+using Plugin.BLE.Abstractions.EventArgs;
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Services.Interfaces;
+using RETIRODE_APP.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -49,14 +52,40 @@ namespace RETIRODE_APP.ViewModels
             ExportCommand = new AsyncCommand(async () => await ExportToFile());
             _rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
             _dataStore = TinyIoCContainer.Current.Resolve<IDataStore>();
+
             _applicationStateProvider = TinyIoCContainer.Current.Resolve<IApplicationStateProvider>();
+            Measurement = true;
+
             _rangeMeasurementService.MeasuredDataResponseEvent -= _rangeMeasurementService_MeasuredDataResponseEvent;
             _rangeMeasurementService.MeasuredDataResponseEvent += _rangeMeasurementService_MeasuredDataResponseEvent;
-            Measurement = true;
+
+            _rangeMeasurementService.DeviceDisconnectedEvent -= _rangeMeasurementService_DeviceDisconnectedEvent;
+            _rangeMeasurementService.DeviceDisconnectedEvent += _rangeMeasurementService_DeviceDisconnectedEvent;
+
+            _rangeMeasurementService.MeasurementErrorEvent -= _rangeMeasurementService_MeasurementErrorEvent;
+            _rangeMeasurementService.MeasurementErrorEvent += _rangeMeasurementService_MeasurementErrorEvent;
             _rangeMeasurementService.StartMeasurement();
         }
 
-        private Task GraphReset()
+        private async void _rangeMeasurementService_DeviceDisconnectedEvent(object arg1, DeviceEventArgs arg2)
+        {
+            var deviceName = arg2.Device.Name;
+            await ShowError(String.Format($"Device {deviceName} has been disconnected"));
+        }
+
+        private async void _rangeMeasurementService_MeasurementErrorEvent()
+        {
+            await ShowError("Something went wrong with LIDAR. You need to Software Reset on LIDAR, otherwise application will not work correctly");
+            if(await ShowDialog("Do you want to Software reset?"))
+            {
+                var settingPage = TinyIoCContainer.Current.Resolve<SettingsPage>();
+                await _rangeMeasurementService.SwReset();
+                await Application.Current.MainPage.Navigation.PushAsync(settingPage);
+            }
+        }
+
+        private async Task GraphReset()
+
         {
             MeasuredDataItems.Clear();
             return Task.CompletedTask;
@@ -129,7 +158,7 @@ namespace RETIRODE_APP.ViewModels
             {
                 if (await CrossPermissions.Current.ShouldShowRequestPermissionRationaleAsync(Permission.Storage))
                 {
-                    await ShowDialog("You must allow permission for storage to export file.");
+                    await ShowError("You must allow permission for storage to export file.");
                 }
 
             }
@@ -161,7 +190,7 @@ namespace RETIRODE_APP.ViewModels
             }
             catch (FeatureNotSupportedException fbsEx)
             {
-                await ShowDialog("Email is not supported on this device");
+                await ShowError("Email is not supported on this device");
             }
             catch (Exception ex)
             {
@@ -209,10 +238,5 @@ namespace RETIRODE_APP.ViewModels
             var calibration = new List<CalibrationItem>(calibrationList).FindLast(x => x.Id > 0);
             Calibration = calibration;
         }
-        protected async Task ShowDialog(string message)
-        {
-            await Application.Current.MainPage.DisplayAlert("Question", message, "OK");
-        }
-
     }
 }

@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace RETIRODE_APP.Services
 {
-    public class AnroidStateProvider : IApplicationStateProvider
+    public class ApplicationStateProvider : IApplicationStateProvider
     {
         private IBluetoothService _bluetoothService;
         
-        public AnroidStateProvider()
+        public ApplicationStateProvider()
         {
             _bluetoothService = TinyIoCContainer.Current.Resolve<IBluetoothService>();
         }

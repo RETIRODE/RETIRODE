@@ -22,7 +22,7 @@ namespace RETIRODE_APP.Droid
             ToolbarResource = Resource.Layout.Toolbar;
 
             base.OnCreate(savedInstanceState);
-            TinyIoCContainer.Current.Register<IApplicationStateProvider, AnroidStateProvider>();
+            TinyIoCContainer.Current.Register<IApplicationStateProvider, ApplicationStateProvider>();
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
             LoadApplication(new App());
