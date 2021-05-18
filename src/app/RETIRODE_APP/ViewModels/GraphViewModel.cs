@@ -1,12 +1,15 @@
 ﻿using Nancy.TinyIoc;
+using Plugin.BLE.Abstractions.EventArgs;
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Services.Interfaces;
+using RETIRODE_APP.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.CommunityToolkit.ObjectModel;
+using Xamarin.Forms;
 
 namespace RETIRODE_APP.ViewModels
 {
@@ -29,9 +32,33 @@ namespace RETIRODE_APP.ViewModels
             GraphResetCommand = new AsyncCommand(async () => await GraphReset());
             _rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
             _dataStore = TinyIoCContainer.Current.Resolve<IDataStore>();
+
             _rangeMeasurementService.MeasuredDataResponseEvent -= _rangeMeasurementService_MeasuredDataResponseEvent;
             _rangeMeasurementService.MeasuredDataResponseEvent += _rangeMeasurementService_MeasuredDataResponseEvent;
+
+            _rangeMeasurementService.DeviceDisconnectedEvent -= _rangeMeasurementService_DeviceDisconnectedEvent;
+            _rangeMeasurementService.DeviceDisconnectedEvent += _rangeMeasurementService_DeviceDisconnectedEvent;
+
+            _rangeMeasurementService.MeasurementErrorEvent -= _rangeMeasurementService_MeasurementErrorEvent;
+            _rangeMeasurementService.MeasurementErrorEvent += _rangeMeasurementService_MeasurementErrorEvent;
             _rangeMeasurementService.StartMeasurement();
+        }
+
+        private async void _rangeMeasurementService_DeviceDisconnectedEvent(object arg1, DeviceEventArgs arg2)
+        {
+            var deviceName = arg2.Device.Name;
+            await ShowError(String.Format($"Device {deviceName} has been disconnected"));
+        }
+
+        private async void _rangeMeasurementService_MeasurementErrorEvent()
+        {
+            await ShowError("Something went wrong with LIDAR. You need to Software Reset on LIDAR, otherwise application will not work correctly");
+            if(await ShowDialog("Do you want to Software reset?"))
+            {
+                var settingPage = TinyIoCContainer.Current.Resolve<SettingsPage>();
+                await _rangeMeasurementService.SwReset();
+                await Application.Current.MainPage.Navigation.PushAsync(settingPage);
+            }
         }
 
         private async Task GraphReset()

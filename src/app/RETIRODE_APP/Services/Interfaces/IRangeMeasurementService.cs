@@ -30,6 +30,8 @@ namespace RETIRODE_APP.Services.Interfaces
 
         event Action<object,DeviceEventArgs> DeviceDisconnectedEvent;
 
+        event Action MeasurementErrorEvent;
+
         /// <summary>
         /// 
         /// </summary>

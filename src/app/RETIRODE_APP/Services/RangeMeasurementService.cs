@@ -49,6 +49,8 @@ namespace RETIRODE_APP.Services
         public event Action<List<float>> MeasuredDataResponseEvent;
 
         public event Action<object, DeviceEventArgs> DeviceDisconnectedEvent;
+
+        public event Action MeasurementErrorEvent;
         public RangeMeasurementService()
         {
             _availableDevices = new List<IDevice>();
@@ -209,10 +211,7 @@ namespace RETIRODE_APP.Services
             var data = e.Characteristic.Value;
             if(data is null || data.Length != 5)
             {
-                return;
-                //todo vyhodit pop up komunikacia zlyhala .. znova zacat
-                //ak ano poslat na control point start .. ak nie tak skoncit meranie
-                
+                MeasurementErrorEvent.Invoke();
             }
             if(data[0] == (byte)InfoCharacteristicResponseType.DataSize)
             {
@@ -222,8 +221,7 @@ namespace RETIRODE_APP.Services
             }
             else if(data[0] == (byte)InfoCharacteristicResponseType.Error)
             {
-                //todo vyhodit pop up komunikacia zlyhala .. znova zacat
-                //ak ano poslat na control point start .. ak nie tak skoncit meranie
+                MeasurementErrorEvent.Invoke();
             }
         }
 

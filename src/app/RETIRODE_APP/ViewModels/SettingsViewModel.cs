@@ -198,7 +198,7 @@ namespace RETIRODE_APP.ViewModels
         private async void _rangeMeasurementService_DeviceDisconnectedEvent(object obj, DeviceEventArgs e)
         {
             SetSettingParamsToDefault();
-            await ShowError("Device has been disconnected");
+            await ShowError(String.Format($"Device {e.Device.Name} has been disconnected"));
             await Application.Current.MainPage.Navigation.PushAsync(new BluetoothPage());
         }
 
