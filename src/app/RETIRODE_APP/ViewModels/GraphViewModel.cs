@@ -1,12 +1,17 @@
 ﻿using Nancy.TinyIoc;
+using Plugin.Permissions;
+using Plugin.Permissions.Abstractions;
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.CommunityToolkit.ObjectModel;
+using Xamarin.Essentials;
+using Xamarin.Forms;
 
 namespace RETIRODE_APP.ViewModels
 {
@@ -14,12 +19,14 @@ namespace RETIRODE_APP.ViewModels
     {
         private IDataStore _dataStore;
         private IRangeMeasurementService _rangeMeasurementService;
-        
+        protected readonly IApplicationStateProvider _applicationStateProvider;
+
         private DateTime StartMeasuringTime { get; set; }
         private CalibrationItem Calibration { get; set; }
         public ObservableCollection<MeasuredDataItem> MeasuredDataItems { get; set; }
         public ICommand StartStopCommand { get; set; }
         public ICommand GraphResetCommand { get; set; }
+        public ICommand ExportCommand { get; set; }
         public string CurrentIcon { get; set; }
 
         private bool _measurement;
@@ -39,8 +46,10 @@ namespace RETIRODE_APP.ViewModels
             MeasuredDataItems = new ObservableCollection<MeasuredDataItem>();
             StartStopCommand = new AsyncCommand(async () => await StartStopMeasurement());
             GraphResetCommand = new AsyncCommand(async () => await GraphReset());
+            ExportCommand = new AsyncCommand(async () => await ExportToFile());
             _rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
             _dataStore = TinyIoCContainer.Current.Resolve<IDataStore>();
+            _applicationStateProvider = TinyIoCContainer.Current.Resolve<IApplicationStateProvider>();
             _rangeMeasurementService.MeasuredDataResponseEvent -= _rangeMeasurementService_MeasuredDataResponseEvent;
             _rangeMeasurementService.MeasuredDataResponseEvent += _rangeMeasurementService_MeasuredDataResponseEvent;
             Measurement = true;
@@ -82,13 +91,15 @@ namespace RETIRODE_APP.ViewModels
                 i++;
                 var distance = CalculateDistanceFromTdc(item);
                 TimeSpan span = (DateTime.Now - StartMeasuringTime);
-                MeasuredDataItems.Add(new MeasuredDataItem(distance, (float)span.TotalMilliseconds + TimeSpan.FromMilliseconds(100 * i).Milliseconds));
+                var timeDifference = (float)span.TotalMilliseconds + TimeSpan.FromMilliseconds(100 * i).Milliseconds;
+                MeasuredDataItems.Add(new MeasuredDataItem(distance, timeDifference));
                 OnPropertyChanged(nameof(MeasuredDataItems));
 
                 await _dataStore.AddEntityAsync(new MeasurementItem()
                 {
                     Calibration_id = Calibration.Id,
-                    Tdc_value = item
+                    Tdc_value = item,
+                    TimeDifference = timeDifference
                 });
             }
         }
@@ -96,7 +107,7 @@ namespace RETIRODE_APP.ViewModels
         public async void Init()
         {
             await SetCalibration();
-          //  await LoadValues();
+            await LoadValues();
         }
 
         private async Task LoadValues()
@@ -111,6 +122,62 @@ namespace RETIRODE_APP.ViewModels
                 OnPropertyChanged(nameof(MeasuredDataItems));
             }
         }
+
+        private async Task ExportToFile()
+        {
+            if(await _applicationStateProvider.GetStoragePermissionStatus() != Plugin.Permissions.Abstractions.PermissionStatus.Granted)
+            {
+                if (await CrossPermissions.Current.ShouldShowRequestPermissionRationaleAsync(Permission.Storage))
+                {
+                    await ShowDialog("You must allow permission for storage to export file.");
+                }
+
+            }
+            if (await _applicationStateProvider.GetStoragePermissionStatus() == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
+            {
+                
+                await Export();
+            }
+        }
+
+        public async Task Export()
+        {
+            List<string> lines = new List<string>() { "---Calibration---", $"Tdc 0: {Calibration.Tdc_0}", $"Tdc 62.5: {Calibration.Tdc_62}", $"Tdc 125: {Calibration.Tdc_125}", "", "---Data----", "Distance Time" };
+            foreach (var item in MeasuredDataItems)
+            {
+                lines.Add($"{item.Distance} {item.Time}");
+            }
+            var file = Path.Combine(FileSystem.CacheDirectory, "data.txt");
+
+            File.WriteAllLines(file, lines.ToArray());
+            try
+            {
+                var message = new EmailMessage
+                {
+                    Subject = "RETIRODE Data",
+                };
+                message.Attachments.Add(new EmailAttachment(file));
+                await Email.ComposeAsync(message);
+            }
+            catch (FeatureNotSupportedException fbsEx)
+            {
+                await ShowDialog("Email is not supported on this device");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async static Task SaveTextAsync(string content, string fileName)
+        {
+            var backingFile = Path.Combine(Xamarin.Essentials.FileSystem.AppDataDirectory, fileName);
+            using (var writer = File.CreateText(backingFile))
+            {
+                await writer.WriteAsync(content);
+            }
+        }
+
 
         private float CalculateDistanceFromTdc(float tdcValue)
         {
@@ -141,6 +208,10 @@ namespace RETIRODE_APP.ViewModels
             var calibrationList = await _dataStore.GetEntitiesAsync<CalibrationItem>();
             var calibration = new List<CalibrationItem>(calibrationList).FindLast(x => x.Id > 0);
             Calibration = calibration;
+        }
+        protected async Task ShowDialog(string message)
+        {
+            await Application.Current.MainPage.DisplayAlert("Question", message, "OK");
         }
 
     }
