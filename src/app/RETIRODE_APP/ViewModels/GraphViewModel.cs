@@ -67,6 +67,15 @@ namespace RETIRODE_APP.ViewModels
             _rangeMeasurementService.StartMeasurement();
         }
 
+        public GraphViewModel(CalibrationItem calibration)
+        {
+            Calibration = calibration;
+            StartMeasuringTime = DateTime.Now;
+            MeasuredDataItems = new ObservableCollection<MeasuredDataItem>();
+            _dataStore = TinyIoCContainer.Current.Resolve<IDataStore>();
+
+        }
+
         private async void _rangeMeasurementService_DeviceDisconnectedEvent(object arg1, DeviceEventArgs arg2)
         {
             var deviceName = arg2.Device.Name;
@@ -133,7 +142,7 @@ namespace RETIRODE_APP.ViewModels
            // await LoadValues();
         }
 
-        private async Task LoadValues()
+        public async Task LoadValues()
         {
             var list = await _dataStore.ListMeasurementByCalibrationAsync(Calibration.Id);
 

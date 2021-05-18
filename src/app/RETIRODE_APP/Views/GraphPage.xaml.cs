@@ -1,4 +1,6 @@
-﻿using RETIRODE_APP.ViewModels;
+﻿using RETIRODE_APP.Models;
+using RETIRODE_APP.ViewModels;
+using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -16,10 +18,23 @@ namespace RETIRODE_APP.Views
             BindingContext = graphVM;
         }
 
+        public GraphPage(CalibrationItem calibration)
+        {
+            DevExpress.XamarinForms.Charts.Initializer.Init();
+            InitializeComponent();
+            graphVM = new GraphViewModel(calibration);
+            BindingContext = graphVM;
+        }
+
         protected override void OnAppearing()
         {
             base.OnAppearing();
             graphVM.Init();
+        }
+
+        public async Task LoadMeasuredData()
+        {
+            await graphVM.LoadValues();
         }
 
         protected override async void OnDisappearing()
