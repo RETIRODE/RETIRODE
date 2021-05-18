@@ -18,6 +18,7 @@ namespace RETIRODE_APP.ViewModels
         public ICommand StartDepictionCommand { get; set; }
         public HomeViewModel()
         {
+            
             _applicationStateProvider = TinyIoCContainer.Current.Resolve<IApplicationStateProvider>();
             StartDepictionCommand = new AsyncCommand(async () => await StartDepiction());
             Title = "Home";
@@ -25,8 +26,6 @@ namespace RETIRODE_APP.ViewModels
 
         private async Task StartDepiction()
         {
-            await Application.Current.MainPage.Navigation.PushAsync(new GraphPage());
-            /*
             var locationPermissionStatus = await RequestLocationPermissionIfNeeded();
             if (locationPermissionStatus != PermissionStatus.Granted)
             {

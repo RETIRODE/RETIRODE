@@ -1,40 +1,63 @@
-﻿using RETIRODE_APP.Models;
-using RETIRODE_APP.Views;
+﻿using Nancy.TinyIoc;
+using RETIRODE_APP.Models;
+using RETIRODE_APP.Services.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Xamarin.Forms;
+using System.Windows.Input;
+using Xamarin.CommunityToolkit.ObjectModel;
 
 namespace RETIRODE_APP.ViewModels
 {
     public class ItemsViewModel : BaseViewModel
     {
-        private Item _selectedItem;
+        private CalibrationItem _selectedItem;
 
-        public ObservableCollection<Item> Items { get; }
-        public Command LoadItemsCommand { get; }
-        public Command AddItemCommand { get; }
-        public Command<Item> ItemTapped { get; }
+        private readonly IDataStore _dataStore;
+
+        public ObservableCollection<CalibrationItem> Items { get; }
+        public ICommand LoadItemsCommand { get; }
+        public ICommand ItemTapped { get; }
 
         public ItemsViewModel()
         {
-            Title = "Save/Load";
-            Items = new ObservableCollection<Item>();
-            LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
-            ItemTapped = new Command<Item>(OnItemSelected);
-            AddItemCommand = new Command(OnAddItem);
+            Title = "Scan History";
+            _dataStore = TinyIoCContainer.Current.Resolve<IDataStore>();
+            Items = new ObservableCollection<CalibrationItem>();
+            LoadItemsCommand = new AsyncCommand(async () => await LoadItemsAsync());
+            ItemTapped = new AsyncCommand(async () => await OnItemSelected());
         }
 
-        private Task ExecuteLoadItemsCommand()
+        private async Task LoadItemsAsync()
         {
-            /*IsBusy = true;
 
             try
             {
                 Items.Clear();
-                //var items = await DataStore.GetItemsAsync(true);
-                //foreach (var item in items)
+
+
+
+                var list = new List<CalibrationItem>(){ new CalibrationItem()
+            {
+                DateTime = DateTime.Now,
+                Id = 1,
+                Pulse_count = 100,
+                Tdc_0 = 4,
+                Tdc_62 = 659,
+                Tdc_125 = 1272
+            },
+            new CalibrationItem{
+                DateTime = DateTime.Now,
+                Id = 1,
+                Pulse_count = 100,
+                Tdc_0 = 4,
+                Tdc_62 = 659,
+                Tdc_125 = 1272
+            }};// await _dataStore.GetEntitiesAsync<CalibrationItem>();
+
+                foreach (var item in list)
                 {
                     Items.Add(item);
                 }
@@ -46,38 +69,21 @@ namespace RETIRODE_APP.ViewModels
             finally
             {
                 IsBusy = false;
-            }*/
-            return Task.CompletedTask;
+            }
         }
 
-        public void OnAppearing()
-        {
-            IsBusy = true;
-            SelectedItem = null;
-        }
-
-        public Item SelectedItem
+        public CalibrationItem SelectedItem
         {
             get => _selectedItem;
             set
             {
                 SetProperty(ref _selectedItem, value);
-                OnItemSelected(value);
             }
         }
 
-        private async void OnAddItem(object obj)
+        private async Task OnItemSelected()
         {
-            await Shell.Current.GoToAsync(nameof(NewItemPage));
-        }
-
-        async void OnItemSelected(Item item)
-        {
-            if (item == null)
-                return;
-
-            // This will push the ItemDetailPage onto the navigation stack
-            await Shell.Current.GoToAsync($"{nameof(ItemDetailPage)}?{nameof(ItemDetailViewModel.ItemId)}={item.Id}");
+            //TODO: Push graph page
         }
     }
 }
