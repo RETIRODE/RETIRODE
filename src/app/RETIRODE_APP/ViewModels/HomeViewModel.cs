@@ -26,8 +26,6 @@ namespace RETIRODE_APP.ViewModels
 
         private async Task StartDepiction()
         {
-            await Application.Current.MainPage.Navigation.PushAsync(new ItemsPage());
-            return;
             var locationPermissionStatus = await RequestLocationPermissionIfNeeded();
             if (locationPermissionStatus != PermissionStatus.Granted)
             {
@@ -36,7 +34,8 @@ namespace RETIRODE_APP.ViewModels
             }
             await EnsureLocationEnabled();
             await EnsureBluetoothEnabled();
-            //Navigation.PushAsync(new GraphPage());
+
+          
 
             if (!App.isConnected)
             {
@@ -53,7 +52,7 @@ namespace RETIRODE_APP.ViewModels
                 var graphPage = TinyIoCContainer.Current.Resolve<GraphPage>();
                 await Application.Current.MainPage.Navigation.PushAsync(graphPage);
 
-            }
+            }*/
         }
 
         private async Task<PermissionStatus> RequestLocationPermissionIfNeeded()
