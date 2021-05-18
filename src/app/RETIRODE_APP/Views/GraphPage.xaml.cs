@@ -25,7 +25,10 @@ namespace RETIRODE_APP.Views
         protected override async void OnDisappearing()
         {
             base.OnDisappearing();
-            await graphVM.StopMeasurement();
+            if (graphVM.Measurement)
+            {
+                await graphVM.StartStopMeasurement();
+            }
         }
     }
 }

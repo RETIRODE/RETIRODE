@@ -18,30 +18,60 @@ namespace RETIRODE_APP.ViewModels
         private DateTime StartMeasuringTime { get; set; }
         private CalibrationItem Calibration { get; set; }
         public ObservableCollection<MeasuredDataItem> MeasuredDataItems { get; set; }
-        public ICommand StopCommand { get; set; }
+        public ICommand StartStopCommand { get; set; }
         public ICommand GraphResetCommand { get; set; }
+        public string CurrentIcon { get; set; }
+
+        private bool _measurement;
+        public bool Measurement
+        {
+            get { return _measurement; }
+            set
+            {
+                _measurement = value;
+                OnPropertyChanged(nameof(Measurement));
+            }
+        }
 
         public GraphViewModel()
         {
             StartMeasuringTime = DateTime.Now;
             MeasuredDataItems = new ObservableCollection<MeasuredDataItem>();
-            StopCommand = new AsyncCommand(async () => await StopMeasurement());
+            StartStopCommand = new AsyncCommand(async () => await StartStopMeasurement());
             GraphResetCommand = new AsyncCommand(async () => await GraphReset());
             _rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
             _dataStore = TinyIoCContainer.Current.Resolve<IDataStore>();
             _rangeMeasurementService.MeasuredDataResponseEvent -= _rangeMeasurementService_MeasuredDataResponseEvent;
             _rangeMeasurementService.MeasuredDataResponseEvent += _rangeMeasurementService_MeasuredDataResponseEvent;
+            Measurement = true;
             _rangeMeasurementService.StartMeasurement();
         }
 
-        private async Task GraphReset()
+        private Task GraphReset()
         {
             MeasuredDataItems.Clear();
+            return Task.CompletedTask;
         }
 
-        public async Task StopMeasurement()
+        public async Task StartStopMeasurement()
         {
-            await _rangeMeasurementService.StopMeasurement();
+            
+            if (Measurement)
+            {
+               // await WithBusy(() => _rangeMeasurementService.StopMeasurement());
+                Measurement = false;
+            } else
+            {
+                //await WithBusy(() => _rangeMeasurementService.StartMeasurement());
+                Measurement = true;
+            }
+            
+        }
+
+        public async Task StartMeasurement()
+        {
+            Measurement = true;
+            await _rangeMeasurementService.StartMeasurement();
         }
 
         private async void _rangeMeasurementService_MeasuredDataResponseEvent(List<float> obj)
