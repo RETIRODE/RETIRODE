@@ -29,13 +29,34 @@ namespace RETIRODE_APP.Services.Interfaces
         /// <param name="message"></param>
         /// <returns></returns>
         Task<bool> WriteToCharacteristic(ICharacteristic characteristic, byte[] message);
+        
+        /// <summary>
+        /// Tells BT adapter to stop scanning devices
+        /// </summary>
+        /// <returns></returns>
         Task StopScanning();
+
         /// <summary>
         /// event fired when some device nearby is found
         /// </summary>
         Action<object, IDevice> DeviceFound { get; set; }
 
+        /// <summary>
+        /// Event is fired when device is disconnected
+        /// </summary>
         Action<object,DeviceEventArgs> DeviceDisconnected { get; set; }
+
+        /// <summary>
+        /// State of bluetooth adapter
+        /// True - if BT adapter is scanning
+        /// False - if BT adapter is not scanning
+        /// </summary>
         bool IsScanning { get; }
+
+        /// <summary>
+        /// Investigate if device is still connected to mobile device
+        /// </summary>
+        /// <returns></returns>
+        Task<bool> IsDeviceConnected();
     }
 }

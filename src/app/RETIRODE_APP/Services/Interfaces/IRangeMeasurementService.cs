@@ -28,18 +28,24 @@ namespace RETIRODE_APP.Services.Interfaces
         /// </summary>
         event Action<List<float>> MeasuredDataResponseEvent;
 
+        /// <summary>
+        /// Event is fired as soon as device disconnected
+        /// </summary>
         event Action<object,DeviceEventArgs> DeviceDisconnectedEvent;
 
+        /// <summary>
+        /// Event is fired when something went wrong with Range Finder (LIDAR)
+        /// </summary>
         event Action MeasurementErrorEvent;
 
         /// <summary>
-        /// 
+        /// This method is writing to characteristic to start measuring data
         /// </summary>
         /// <returns></returns>
         Task StartMeasurement();
 
         /// <summary>
-        /// 
+        /// This method is writing to characteristic to stop measuring data
         /// </summary>
         /// <returns></returns>
         Task StopMeasurement();
@@ -55,7 +61,7 @@ namespace RETIRODE_APP.Services.Interfaces
         Task ConnectToRSL10(BLEDevice bleDevice);
 
         /// <summary>
-        /// 
+        /// This method tells bluetooth adapter to start scaning devices nearby
         /// </summary>
         /// <returns></returns>
         Task StartScanning();
@@ -81,7 +87,7 @@ namespace RETIRODE_APP.Services.Interfaces
         Task SetSipmBiasPowerVoltage(float sipmBiasPowerVoltage);
 
         /// <summary>
-        /// 
+        /// Start calibrate range finder 
         /// </summary>
         /// <returns></returns>
         Task CalibrateLidar();
@@ -92,7 +98,10 @@ namespace RETIRODE_APP.Services.Interfaces
         /// <returns></returns>
         Task SetPulseCount(int pulseCount);
 
-        
+        /// <summary>
+        /// Writes to characteristic to get pulse count
+        /// </summary>
+        /// <returns></returns>
         Task GetPulseCount();
 
         /// <summary>
@@ -110,13 +119,14 @@ namespace RETIRODE_APP.Services.Interfaces
         Task GetSipmBiasPowerVoltage(Voltage voltage);
 
         /// <summary>
-        /// 
+        /// Send request to get status of overload and if
+        /// laser and simp bias is turned on or off
         /// </summary>
         /// <returns></returns>
         Task GetVoltagesStatus();
 
         /// <summary>
-        /// 
+        /// Turns on/off laser voltage
         /// </summary>
         /// <param name="switchCase"></param>
         /// <returns></returns>
@@ -124,12 +134,16 @@ namespace RETIRODE_APP.Services.Interfaces
 
 
         /// <summary>
-        /// 
+        /// Turns on/off sipm bias voltage
         /// </summary>
         /// <param name="switchCase"></param>
         /// <returns></returns>
         Task SwitchSipmBiasVoltage(SwitchState switchCase);
 
+        /// <summary>
+        /// Tells bluetooth adapter to stop scanning devices.
+        /// </summary>
+        /// <returns></returns>
         Task StopScanning();
     }
 }
