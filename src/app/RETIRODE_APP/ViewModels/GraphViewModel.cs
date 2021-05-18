@@ -67,11 +67,11 @@ namespace RETIRODE_APP.ViewModels
             
             if (Measurement)
             {
-               // await WithBusy(() => _rangeMeasurementService.StopMeasurement());
+                await WithBusy(() => _rangeMeasurementService.StopMeasurement());
                 Measurement = false;
             } else
             {
-                //await WithBusy(() => _rangeMeasurementService.StartMeasurement());
+                await WithBusy(() => _rangeMeasurementService.StartMeasurement());
                 Measurement = true;
             }
             
@@ -107,7 +107,7 @@ namespace RETIRODE_APP.ViewModels
         public async void Init()
         {
             await SetCalibration();
-            await LoadValues();
+           // await LoadValues();
         }
 
         private async Task LoadValues()
