@@ -526,7 +526,7 @@ namespace RETIRODE_APP.ViewModels
                         Tdc_125 = TCDCal125,
                         Pulse_count = TriggerPulse
                     });
-                    var graphPage = TinyIoCContainer.Current.Resolve<GraphPage>();
+                    var graphPage = TinyIoCContainer.Current.Resolve<GraphPage>(NamedParameterOverloads.Default, new ResolveOptions());
                     await Application.Current.MainPage.Navigation.PushAsync(graphPage);
                 }
                 else
