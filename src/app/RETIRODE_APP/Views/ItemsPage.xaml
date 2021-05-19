@@ -7,40 +7,83 @@
              xmlns:model="clr-namespace:RETIRODE_APP.Models"  
              x:Name="BrowseItemsPage">
 
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Save" Command="{Binding AddItemCommand}" />
-    </ContentPage.ToolbarItems>
-
     <!--
       x:DataType enables compiled bindings for better performance and compile time validation of binding expressions.
       https://docs.microsoft.com/xamarin/xamarin-forms/app-fundamentals/data-binding/compiled-bindings
     -->
-    <RefreshView x:DataType="local:ItemsViewModel" Command="{Binding LoadItemsCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style TargetType="Label" Class="HistoryLabelSecondary">
+                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="FontSize" Value="15"/>
+            </Style>
+
+            <Style TargetType="Label" Class="HistoryLabel">
+                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="FontSize" Value="20"/>
+            </Style>
+
+            <Style TargetType="Image" Class="HistoryImage">
+                <Setter Property="WidthRequest" Value="10"/>
+                <Setter Property="HeightRequest" Value="10"/>
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <RefreshView x:Name="itemsRefreshView" x:DataType="local:ItemsViewModel" Command="{Binding LoadItemsCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}">
         <CollectionView x:Name="ItemsListView"
-                ItemsSource="{Binding Items}"
-                SelectionMode="None"
-                BackgroundColor="{StaticResource Secondary}">
+                        ItemsSource="{Binding Items}"
+                        SelectedItem="{Binding SelectedItem}"
+                        SelectionMode="Single"         
+                        SelectionChangedCommand="{Binding ItemTapped}"
+                        BackgroundColor="{StaticResource Secondary}">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <StackLayout Padding="10" x:DataType="model:Item">
-                        <Label Text="{Binding Text}" 
-                            LineBreakMode="NoWrap" 
-                            Style="{DynamicResource ListItemTextStyle}" 
-                            FontSize="16"
-                            TextColor="White" />
-                        <Label Text="{Binding Description}" 
-                            LineBreakMode="NoWrap"
-                            Style="{DynamicResource ListItemDetailTextStyle}"
-                            FontSize="13"
-                            TextColor="White" />
-                        <StackLayout.GestureRecognizers>
-                            <TapGestureRecognizer 
-                                NumberOfTapsRequired="1"
-                                Command="{Binding Source={RelativeSource AncestorType={x:Type local:ItemsViewModel}}, Path=ItemTapped}"		
-                                CommandParameter="{Binding .}">
-                            </TapGestureRecognizer>
-                        </StackLayout.GestureRecognizers>
-                    </StackLayout>
+                    <Frame CornerRadius="5"
+                           VerticalOptions="CenterAndExpand"
+                           BackgroundColor="{StaticResource Secondary}">
+                        <StackLayout Padding="10"
+                                     x:DataType="model:CalibrationItem">
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Image  Source="icon_saveorange.png"
+                                        StyleClass="HistoryImage"
+                                        VerticalOptions="FillAndExpand"
+                                        Scale="0.7"/>
+
+                                <StackLayout Grid.Column="1" Margin="30, 0, 0, 0">
+
+                                    <Label  Text="Measurement" 
+                                            LineBreakMode="NoWrap" 
+                                            StyleClass="HistoryLabel"/>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto" />
+                                            <ColumnDefinition Width="auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Label  Grid.Column="0" Text="Date: " 
+                                                LineBreakMode="NoWrap"
+                                                StyleClass="HistoryLabelSecondary" />
+
+                                        <Label  Grid.Column="1" Text="{Binding DateTime}" 
+                                                LineBreakMode="NoWrap"
+                                                StyleClass="HistoryLabelSecondary" />
+                                    </Grid>
+
+                                </StackLayout>
+
+                            </Grid>
+
+                        </StackLayout>
+                    </Frame>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
