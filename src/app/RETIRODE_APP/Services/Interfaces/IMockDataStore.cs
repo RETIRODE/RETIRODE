@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace RETIRODE_APP.Services
+namespace RETIRODE_APP.Services.Interfaces
 {
     public interface IMockDataStore<T>
     {

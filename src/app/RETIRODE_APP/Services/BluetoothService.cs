@@ -1,6 +1,8 @@
 ﻿using Plugin.BLE;
 using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
+using Plugin.BLE.Abstractions.EventArgs;
+using RETIRODE_APP.Services.Interfaces;
 using System;
 using System.Threading.Tasks;
 
@@ -15,10 +17,13 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IBluetoothService"/>
         public Action<object, IDevice> DeviceFound { get; set; }
 
+        public Action<object,DeviceEventArgs> DeviceDisconnected { get; set; }
+
         public BluetoothService()
         {
             _bluetoothAdapter = CrossBluetoothLE.Current.Adapter;
             _bluetoothAdapter.DeviceDiscovered += (obj, device) => DeviceFound.Invoke(obj, device.Device);
+            _bluetoothAdapter.DeviceDisconnected += (obj, e) => DeviceDisconnected.Invoke(obj,e);
         }
 
         /// <inheritdoc cref="IBluetoothService"/>
@@ -47,9 +52,24 @@ namespace RETIRODE_APP.Services
         }
 
         /// <inheritdoc cref="IBluetoothService"/>
-        public async Task<bool> WriteToCharacteristic(ICharacteristic characteristic, byte[] message)
+        public Task<bool> WriteToCharacteristic(ICharacteristic characteristic, byte[] message)
         {
-            return await characteristic.WriteAsync(message);
+            return characteristic.WriteAsync(message);
         }
+
+        public Task<bool> IsDeviceConnected()
+        {
+            var connectedDevices = _bluetoothAdapter.ConnectedDevices;
+
+            foreach (var device in connectedDevices)
+            {
+                if(device == _device)
+                {
+                    return Task.FromResult(true);
+                }
+            }
+            return Task.FromResult(false);
+        }
+
     }
 }

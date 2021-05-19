@@ -12,12 +12,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="DevExpress.XamarinForms.Charts" Version="20.2.7" />
+    <PackageReference Include="Microcharts.Forms" Version="0.9.5.9" />
     <None Remove="Views\AboutPage.xaml~RFa7724c7.TMP" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Plugin.BLE" Version="2.1.1" />
+    <PackageReference Include="Plugin.Permissions" Version="6.0.1" />
+    <PackageReference Include="Polly" Version="7.2.2" />
     <PackageReference Include="sqlite-net-pcl" Version="1.7.335" />
+    <PackageReference Include="SQLiteNetExtensions" Version="2.1.0" />
     <PackageReference Include="UrhoSharp.Forms" Version="1.9.67" />
     <PackageReference Include="Xamarin.CommunityToolkit" Version="1.1.0" />
     <PackageReference Include="Xamarin.Forms" Version="5.0.0.2012" />  
@@ -43,9 +48,6 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Views\DepictionPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="Views\InfoPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

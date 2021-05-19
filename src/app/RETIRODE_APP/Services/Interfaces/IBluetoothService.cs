@@ -1,8 +1,9 @@
 ﻿using Plugin.BLE.Abstractions.Contracts;
+using Plugin.BLE.Abstractions.EventArgs;
 using System;
 using System.Threading.Tasks;
 
-namespace RETIRODE_APP.Services
+namespace RETIRODE_APP.Services.Interfaces
 {
     public interface IBluetoothService
     {
@@ -29,11 +30,12 @@ namespace RETIRODE_APP.Services
         /// <returns></returns>
         Task<bool> WriteToCharacteristic(ICharacteristic characteristic, byte[] message);
         Task StopScanning();
-
         /// <summary>
         /// event fired when some device nearby is found
         /// </summary>
         Action<object, IDevice> DeviceFound { get; set; }
+
+        Action<object,DeviceEventArgs> DeviceDisconnected { get; set; }
         bool IsScanning { get; }
     }
 }

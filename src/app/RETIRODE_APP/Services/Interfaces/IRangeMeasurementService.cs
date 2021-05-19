@@ -1,9 +1,11 @@
-﻿using RETIRODE_APP.Models;
-using RETIRODE_APP.Models.Enums;
+﻿using Plugin.BLE.Abstractions.EventArgs;
+using RETIRODE_APP.Models;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using static RETIRODE_APP.Models.Enums.ApplicationEnums;
 
-namespace RETIRODE_APP.Services
+namespace RETIRODE_APP.Services.Interfaces
 {
     public interface IRangeMeasurementService : IDisposable
     {
@@ -24,7 +26,11 @@ namespace RETIRODE_APP.Services
         /// Event involves processed measured data from bluetooth
         /// which are interpretated as array of integers
         /// </summary>
-        event Action<int[]> MeasuredDataResponseEvent;
+        event Action<List<float>> MeasuredDataResponseEvent;
+
+        event Action<object,DeviceEventArgs> DeviceDisconnectedEvent;
+
+        event Action MeasurementErrorEvent;
 
         /// <summary>
         /// 
@@ -65,14 +71,14 @@ namespace RETIRODE_APP.Services
         /// </summary>
         /// <param name="laserVoltage"></param>
         /// <returns></returns>
-        Task SetLaserVoltage(int laserVoltage);
+        Task SetLaserVoltage(float laserVoltage);
 
         /// <summary>
         /// set sipm bias voltage power value for lidar
         /// </summary>
         /// <param name="sipmBiasPowerVoltage"></param>
         /// <returns></returns>
-        Task SetSipmBiasPowerVoltage(int sipmBiasPowerVoltage);
+        Task SetSipmBiasPowerVoltage(float sipmBiasPowerVoltage);
 
         /// <summary>
         /// 
@@ -104,11 +110,26 @@ namespace RETIRODE_APP.Services
         Task GetSipmBiasPowerVoltage(Voltage voltage);
 
         /// <summary>
-        /// Send request for one of three calibration values
-        /// of lidar
+        /// 
         /// </summary>
         /// <returns></returns>
-        Task GetCalibration(Calibrate calibrate);
+        Task GetVoltagesStatus();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="switchCase"></param>
+        /// <returns></returns>
+        Task SwitchLaserVoltage(SwitchState switchCase);
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="switchCase"></param>
+        /// <returns></returns>
+        Task SwitchSipmBiasVoltage(SwitchState switchCase);
+
         Task StopScanning();
     }
 }

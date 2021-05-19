@@ -22,21 +22,19 @@ namespace RETIRODE_APP.ViewModels
             Title = "Save/Load";
             Items = new ObservableCollection<Item>();
             LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
-
             ItemTapped = new Command<Item>(OnItemSelected);
-
             AddItemCommand = new Command(OnAddItem);
         }
 
-        async Task ExecuteLoadItemsCommand()
+        private Task ExecuteLoadItemsCommand()
         {
-            IsBusy = true;
+            /*IsBusy = true;
 
             try
             {
                 Items.Clear();
-                var items = await DataStore.GetItemsAsync(true);
-                foreach (var item in items)
+                //var items = await DataStore.GetItemsAsync(true);
+                //foreach (var item in items)
                 {
                     Items.Add(item);
                 }
@@ -48,7 +46,8 @@ namespace RETIRODE_APP.ViewModels
             finally
             {
                 IsBusy = false;
-            }
+            }*/
+            return Task.CompletedTask;
         }
 
         public void OnAppearing()

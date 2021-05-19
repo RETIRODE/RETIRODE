@@ -2,15 +2,19 @@
 using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Abstractions.EventArgs;
 using Plugin.BLE.Abstractions.Exceptions;
+using Polly;
+using RETIRODE_APP.Exceptions;
 using RETIRODE_APP.Helpers;
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Models.Enums;
+using RETIRODE_APP.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using static RETIRODE_APP.Models.Enums.ApplicationEnums;
 
 namespace RETIRODE_APP.Services
 {
@@ -30,14 +34,10 @@ namespace RETIRODE_APP.Services
         private ICharacteristic _receiveQueryCharacteristic;
 
         private bool _isDataSize = false;
-        private int _dataSize = 0;
+        private List<byte> _TOFData;
+        private int _dataSize;
+        private SemaphoreSlim _semaphoreSlim;
         private CalibrationState _calibrationState = CalibrationState.NoState;
-        public RangeMeasurementService()
-        {
-            _availableDevices = new List<IDevice>();
-            _bluetoothService = TinyIoCContainer.Current.Resolve<IBluetoothService>();
-            _bluetoothService.DeviceFound = DeviceDiscovered;
-        }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public event Action<BLEDevice> DeviceDiscoveredEvent;
@@ -46,27 +46,52 @@ namespace RETIRODE_APP.Services
         public event Action<ResponseItem> QueryResponseEvent;
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
-        public event Action<int[]> MeasuredDataResponseEvent;
+        public event Action<List<float>> MeasuredDataResponseEvent;
 
+        public event Action<object, DeviceEventArgs> DeviceDisconnectedEvent;
+
+        public event Action MeasurementErrorEvent;
+        public RangeMeasurementService()
+        {
+            _availableDevices = new List<IDevice>();
+            _TOFData = new List<byte>();
+            _semaphoreSlim = new SemaphoreSlim(1);
+            _bluetoothService = TinyIoCContainer.Current.Resolve<IBluetoothService>();
+            _bluetoothService.DeviceFound = DeviceDiscovered;
+            _bluetoothService.DeviceDisconnected = DeviceDisconnected;
+        }
+
+        private void DeviceDisconnected(object obj, DeviceEventArgs e)
+        {
+            DeviceDisconnectedEvent.Invoke(obj,e);
+        }
+             
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task ConnectToRSL10(BLEDevice bleDevice)
         {
-            try
+            var device = _availableDevices.FirstOrDefault(foundDevice => foundDevice.Name == bleDevice.Name);
+            if (device == null)
             {
-                var device = _availableDevices.FirstOrDefault(foundDevice => foundDevice.Name == bleDevice.Name);
-                if (device == null)
-                {
-                    throw new Exception("No device found");
-                }
+                throw new InvalidOperationException(String.Format("Device {0} with ID {1} is not available",
+                    bleDevice.Name, bleDevice.Identifier));
+            }
 
-                _connectedDevice = device;
-                await _bluetoothService.ConnectToDeviceAsync(_connectedDevice);
-                await InitializeBluetoothConnection();
-            }
-            catch (DeviceConnectionException ex)
+            if(_connectedDevice != null && _connectedDevice != device)
             {
-                throw;
+                throw new AlreadyConnectedDeviceException("Device is already connected to another BLE device");
             }
+            if(_connectedDevice != null && _connectedDevice == device)
+            {
+                return;
+            }
+
+            await Policy
+                .Handle<DeviceConnectionException>()
+                .WaitAndRetryAsync(5, time => TimeSpan.FromMilliseconds(100))
+                .ExecuteAsync(() => _bluetoothService.ConnectToDeviceAsync(device));
+
+            _connectedDevice = device;
+            await InitializeBluetoothConnection();
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
@@ -76,16 +101,6 @@ namespace RETIRODE_APP.Services
             {
                 await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StartLidar });
             }
-        }
-
-        private async void DataSizeHandler(object sender, CharacteristicUpdatedEventArgs e)
-        {
-            _isDataSize = true;
-            _dataSize = Convert.ToInt32(e.Characteristic.Value);
-
-            //request any value from offered interval <0, {_dataSize}>
-            var RandomValueInRange = new Random().Next(0, _dataSize);
-            await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StartTransfer, Convert.ToByte(RandomValueInRange) });
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
@@ -108,26 +123,42 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task StopMeasurement()
         {
-            await WriteToCharacteristic(_RMTInfoCharacteristic, new[] { (byte)RSL10Command.StopLidar });
+            await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StopLidar });
+            _isDataSize = false;
+            _dataSize = 0;
+            _TOFData.Clear();
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task SwReset()
         {
-            await WriteToCharacteristic(_sendCommandCharacteristic, new[] { (byte)Registers.SWReset, Convert.ToByte(0), Convert.ToByte(0) });
+            var message = new[] { (byte)Registers.SWReset, (byte)ProtocolGenerics.DefaultByte, (byte)ProtocolGenerics.DefaultByte };
+            await WriteToCharacteristic(_sendCommandCharacteristic,message);
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
-        public async Task SetLaserVoltage(int laserVoltage)
+        public async Task SetLaserVoltage(float laserVoltage)
         {
             var message = BuildProtocolMessage(Registers.LaserVoltage, (byte)Voltage.Target, laserVoltage);
             await WriteToCharacteristic(_sendCommandCharacteristic, message);
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
-        public async Task SetSipmBiasPowerVoltage(int simpBiasPowerVoltage)
+        public async Task SetSipmBiasPowerVoltage(float simpBiasPowerVoltage)
         {
             var message = BuildProtocolMessage(Registers.SipmBiasPowerVoltage, (byte)Voltage.Target, simpBiasPowerVoltage);
+            await WriteToCharacteristic(_sendCommandCharacteristic, message);
+        }
+
+        public async Task SwitchLaserVoltage(SwitchState s)
+        {
+            var message = BuildProtocolMessage(Registers.LaserVoltage, (byte)Voltage.Switch, (byte)s);
+            await WriteToCharacteristic(_sendCommandCharacteristic, message);
+        }
+
+        public async Task SwitchSipmBiasVoltage(SwitchState s)
+        {
+            var message = BuildProtocolMessage(Registers.SipmBiasPowerVoltage, (byte)Voltage.Switch, (byte)s);
             await WriteToCharacteristic(_sendCommandCharacteristic, message);
         }
 
@@ -136,45 +167,62 @@ namespace RETIRODE_APP.Services
         {
             if (_calibrationState == CalibrationState.NoState)
             {
-                var messageNS0 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS0, 0);
+                var messageNS0 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS0, (byte)ProtocolGenerics.DefaultByte);
                 await WriteToCharacteristic(_sendCommandCharacteristic, messageNS0);
                 _calibrationState = CalibrationState.NS0;
             }
             else
             {
-                throw new Exception("Currently calibrating LIDAR");
+                throw new CalibrationLidarException("Currently calibrating LIDAR");
             }
         }
         public async Task SetPulseCount(int pulseCount)
         {
-            //TODO: change 1 to enum
-            var message = BuildProtocolMessage(Registers.PulseCount, 1, pulseCount);
+            var message = BuildProtocolMessage(Registers.PulseCount, (byte)ProtocolGenerics.DefaultValueType, pulseCount);
             await WriteToCharacteristic(_sendCommandCharacteristic, message);
         }
 
         public async Task GetPulseCount()
         {
-            //TODO: change 1 to enum
-            var message = BuildProtocolMessage(Registers.PulseCount, 0, 0);
+            var message = BuildProtocolMessage(Registers.PulseCount, (byte)ProtocolGenerics.DefaultValueType);
             await WriteToCharacteristic(_sendQueryCharacteristic, message);
         }
 
         public async Task GetLaserVoltage(Voltage voltage)
         {
-            var message = BuildProtocolMessage(Registers.LaserVoltage, (byte)voltage, 0);
+            var message = BuildProtocolMessage(Registers.LaserVoltage, (byte)voltage);
             await WriteToCharacteristic(_sendQueryCharacteristic, message);
         }
 
         public async Task GetSipmBiasPowerVoltage(Voltage voltage)
         {
-            var message = BuildProtocolMessage(Registers.SipmBiasPowerVoltage, (byte)voltage, 0);
+            var message = BuildProtocolMessage(Registers.SipmBiasPowerVoltage, (byte)voltage);
             await WriteToCharacteristic(_sendQueryCharacteristic, message);
         }
 
-        public async Task GetCalibration(Calibrate calibrate)
+        public async Task GetVoltagesStatus()
         {
-            var message = BuildProtocolMessage(Registers.Calibrate, (byte)calibrate, 0);
+            var message = BuildProtocolMessage(Registers.VoltageStatus, (byte)ProtocolGenerics.DefaultValueType);
             await WriteToCharacteristic(_sendQueryCharacteristic, message);
+        }
+
+        private async void DataSizeHandler(object sender, CharacteristicUpdatedEventArgs e)
+        {
+            var data = e.Characteristic.Value;
+            if(data is null || data.Length != 5)
+            {
+                MeasurementErrorEvent.Invoke();
+            }
+            if(data[0] == (byte)InfoCharacteristicResponseType.DataSize)
+            {
+                _isDataSize = true;
+                _dataSize = BitConverter.ToInt32(data, 1);
+                await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StartTransfer });
+            }
+            else if(data[0] == (byte)InfoCharacteristicResponseType.Error)
+            {
+                MeasurementErrorEvent.Invoke();
+            }
         }
 
         private async void QueryResponseHandler(object sender, CharacteristicUpdatedEventArgs e)
@@ -190,137 +238,203 @@ namespace RETIRODE_APP.Services
                 return;
             }
 
-            var responseItem = GetQueryResponseItem(data);
-            QueryResponseEvent.Invoke(responseItem);
+            var responseItems = GetQueryResponseItem(data);
+            foreach (var item in responseItems)
+            {
+                QueryResponseEvent.Invoke(item);
+            }
+           
         }
 
         private void MeasurementDataHandler(object sender, CharacteristicUpdatedEventArgs e)
         {
             var data = e.Characteristic.Value;
-            int[] parsedData = { };
 
             if (data is null)
             {
                 return;
             }
 
-            for (int i = 0; i < data.Length; i++)
+            if (_dataSize > _TOFData.Count)
             {
-                parsedData[i] = Convert.ToInt32(data[i]);
+                // removing first 4 bytes which are offset
+                data = data.Skip(4).ToArray();
+                _TOFData.AddRange(data);
+            } 
+            else
+            {
+                List<float> parsedData = new List<float>();
+                for (int i = 0; i < _TOFData.Count; i+=4)
+                {
+                    parsedData.Add(BitConverter.ToSingle(_TOFData.ToArray(),i));
+                }
+                MeasuredDataResponseEvent.Invoke(parsedData);
+                _dataSize = 0;
+                _isDataSize = false;
+                _TOFData.Clear();
             }
-            MeasuredDataResponseEvent.Invoke(parsedData);
+        }
+
+        private async void DeviceDiscovered(object sender, IDevice device)
+        {
+            if (await IsWhiteList(device))
+            {
+                _availableDevices.Add(device);
+                DeviceDiscoveredEvent.Invoke(new BLEDevice()
+                {
+                    Name = device.Name,
+                    Identifier = device.Id,
+                    State = device.State
+                });
+            }
         }
 
         private async Task CalibratingLidar()
         {
             if (_calibrationState == CalibrationState.NS0)
             {
-                var messageNS62_5 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS62_5, 0);
+                var messageNS62_5 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS62_5, (byte)ProtocolGenerics.DefaultByte);
                 await WriteToCharacteristic(_sendCommandCharacteristic, messageNS62_5);
                 _calibrationState = CalibrationState.NS62_5;
             }
             else if (_calibrationState == CalibrationState.NS62_5)
             {
-                var messageNS125 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS125, 0);
+                var messageNS125 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.NS125, (byte)ProtocolGenerics.DefaultByte);
                 await WriteToCharacteristic(_sendCommandCharacteristic, messageNS125);
                 _calibrationState = CalibrationState.NS125;
             }
             else if (_calibrationState == CalibrationState.NS125)
             {
-                var messageNS125 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.EndCommand, 0);
+                var messageNS125 = BuildProtocolMessage(Registers.Calibrate, (byte)Calibrate.EndCommand, (byte)ProtocolGenerics.DefaultByte);
                 await WriteToCharacteristic(_sendCommandCharacteristic, messageNS125);
                 _calibrationState = CalibrationState.NoState;
             }
         }
-        private ResponseItem GetQueryResponseItem(byte[] data)
+        private List<ResponseItem> GetQueryResponseItem(byte[] data)
         {
-            
+            var list = new List<ResponseItem>();
             switch ((Registers)data[0])
             {
                 case Registers.LaserVoltage:
 
-                    if (data[2] == (byte)Voltage.Actual)
+                    if (data[1] == (byte)Voltage.Actual)
                     {
-                        return new ResponseItem()
+                        list.Add(new ResponseItem()
                         {
                             Identifier = RangeFinderValues.LaserVoltageActual,
-                            Value = GetDataFromResponse(data)
-                    };
+                            Value = GetDataFromResponse(data,2)
+                        });
                     }
                     else
                     {
-                        return new ResponseItem()
+                        list.Add(new ResponseItem()
                         {
                             Identifier = RangeFinderValues.LaserVoltageTarget,
-                            Value = GetDataFromResponse(data)
-                        };
+                            Value = GetDataFromResponse(data,2)
+                        });
                     }
+                    break;
                 case Registers.SipmBiasPowerVoltage:
 
-                    if (data[2] == (byte)Voltage.Actual)
+                    if (data[1] == (byte)Voltage.Actual)
                     {
-                        return new ResponseItem()
+                        list.Add(new ResponseItem()
                         {
                             Identifier = RangeFinderValues.SipmBiasPowerVoltageActual,
-                            Value = GetDataFromResponse(data)
-                        };
+                            Value = GetDataFromResponse(data,2)
+                        });
                     }
                     else
                     {
-                        return new ResponseItem()
+                        list.Add(new ResponseItem()
                         {
                             Identifier = RangeFinderValues.SipmBiasPowerVoltageTarget,
-                            Value = GetDataFromResponse(data)
-                        };
+                            Value = GetDataFromResponse(data,2)
+                        });
                     }
-
+                    break;
                 case Registers.Calibrate:
-                    if (data[2] == (byte)Calibrate.NS0)
+                    if (data[1] == (byte)Calibrate.NS0)
                     {
-                        return new ResponseItem()
+                        list.Add(new ResponseItem()
                         {
                             Identifier = RangeFinderValues.CalibrateNS0,
-                            Value = GetDataFromResponse(data)
-                        };
+                            Value = GetDataFromResponse(data,2)
+                        });
                     }
-                    else if (data[2] == (byte)Calibrate.NS62_5)
+                    else if (data[1] == (byte)Calibrate.NS62_5)
                     {
-                        return new ResponseItem()
+                        list.Add(new ResponseItem()
                         {
                             Identifier = RangeFinderValues.Calibrate62_5,
-                            Value = GetDataFromResponse(data)
-                        };
+                            Value = GetDataFromResponse(data,2)
+                        });
                     }
-                    else
+                    else if(data[1] == (byte)Calibrate.NS125)
                     {
-                        return new ResponseItem()
+                        list.Add(new ResponseItem()
                         {
                             Identifier = RangeFinderValues.Calibrate125,
-                            Value = GetDataFromResponse(data)
-                        };
+                            Value = GetDataFromResponse(data,2)
+                        });
                     }
+                    break;
                 case Registers.PulseCount:
-                    return new ResponseItem()
+                    if(data[1] == (byte)ProtocolGenerics.DefaultValueType)
                     {
-                        Identifier = RangeFinderValues.PulseCount,
-                        Value = GetDataFromResponse(data)
-                    };
+                        list.Add(new ResponseItem()
+                        {
+                            Identifier = RangeFinderValues.PulseCount,
+                            Value = GetDataFromResponse(data,2)
+                        });
+                    }
+                    break;
+
+                case Registers.VoltageStatus:
+                    var bits = Convert.ToInt32(data[2]);
+                    if (data[1] == (byte)ProtocolGenerics.DefaultValueType)
+                    {
+                        list.Add(new ResponseItem()
+                        {
+                            Identifier = RangeFinderValues.LaserVoltageStatus,
+                            Value = BitCompare(bits,1)
+                        });
+                        list.Add(new ResponseItem()
+                        {
+                            Identifier = RangeFinderValues.LaserVoltageOverload,
+                            Value = BitCompare(bits, 2)
+                        });
+                        list.Add(new ResponseItem()
+                        {
+                            Identifier = RangeFinderValues.SipmBiasPowerVoltageStatus,
+                            Value = BitCompare(bits, 3)
+                        });
+                        list.Add(new ResponseItem()
+                        {
+                            Identifier = RangeFinderValues.SipmBiasPowerVoltageOverload,
+                            Value = BitCompare(bits, 4)
+                        });
+                    }
+                    break;
                 default:
                     break;
             }
-            return new ResponseItem();
+            return list;
         }
 
-        private static int GetDataFromResponse(byte[] data)
+        private bool BitCompare(int bits, int toCompare)
         {
-            var k = BitConverter.ToString(new[] { data[5], data[4] }).Replace("-", "");
-            return Convert.ToInt32(k, 16);
+            return (bits & (1 << toCompare)) == 1 << toCompare;
+        }
+
+        private static float GetDataFromResponse(byte[] data, int startIndex) 
+        {
+            var result = BitConverter.ToSingle(data, startIndex);
+            return (float)Math.Round(result,2);
         }
 
         private async Task InitializeBluetoothConnection()
         {
-            try
-            {
                 _rangeMeasurementTransferService = await _connectedDevice.GetServiceAsync(Constants.RangeMeasurementTransferServiceUUID);
                 _RMTTimeOfFlightDataCharacteristic = await _rangeMeasurementTransferService.GetCharacteristicAsync(Constants.RMTTimeOfFlightDataCharacteristic);
                 _RMTControlPointCharacteristic = await _rangeMeasurementTransferService.GetCharacteristicAsync(Constants.RMTControlPointCharacteristic);
@@ -351,41 +465,22 @@ namespace RETIRODE_APP.Services
                 _RMTTimeOfFlightDataCharacteristic.ValueUpdated -= MeasurementDataHandler;
                 _RMTTimeOfFlightDataCharacteristic.ValueUpdated += MeasurementDataHandler;
                 await _RMTTimeOfFlightDataCharacteristic.StartUpdatesAsync();
-
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-
         }
 
         private async Task WriteToCharacteristic(ICharacteristic characteristic, byte[] command)
         {
             try
             {
-                if (!await _bluetoothService.WriteToCharacteristic(characteristic, command))
-                {
-                    throw new Exception("Error with send command to characteristic");
-                }
+                await _semaphoreSlim.WaitAsync();
+                await Policy
+                   .Handle<NullReferenceException>()
+                   .OrResult<bool>(result => result == false)
+                   .WaitAndRetryAsync(5, time => TimeSpan.FromMilliseconds(100))
+                   .ExecuteAsync(() => _bluetoothService.WriteToCharacteristic(characteristic, command));
             }
-            catch (Exception e)
+            finally
             {
-                throw new Exception(e.Message);
-            }
-        }
-
-        private async void DeviceDiscovered(object sender, IDevice device)
-        {
-            if (await IsWhiteList(device))
-            {
-                _availableDevices.Add(device);
-                DeviceDiscoveredEvent.Invoke(new BLEDevice()
-                {
-                    Name = device.Name,
-                    Identifier = device.Id,
-                    State = device.State
-                });
+                _semaphoreSlim.Release();
             }
         }
 
@@ -406,17 +501,40 @@ namespace RETIRODE_APP.Services
             return macAddress.Substring(0, Constants.UniqueMacAddressLength).Equals(Constants.RetirodeUniqueMacAddressPart);
         }
 
-        private byte[] BuildProtocolMessage(Registers register, byte subRegister, int value)
+        private byte[] BuildProtocolMessage(Registers register, byte subRegister, float value)
         {
-            return new[] { (byte)register, subRegister, Convert.ToByte(value) };
+            var message = new List<byte>{ (byte)register, subRegister};
+            var floatValue = BitConverter.GetBytes(value);
+            message.AddRange(floatValue);
+            return message.ToArray();
         }
 
+        private byte[] BuildProtocolMessage(Registers register, byte subRegister, byte value)
+        {
+            var message = new List<byte> { (byte)register, subRegister, value};
+            return message.ToArray();
+        }
+
+        private byte[] BuildProtocolMessage(Registers register, byte subRegister, int value)
+        {
+            return BuildProtocolMessage(register, subRegister, Convert.ToByte(value));
+        }
+
+        private byte[] BuildProtocolMessage(Registers register, byte subRegister)
+        {
+            var message = new List<byte> { (byte)register, subRegister};
+            return message.ToArray();
+        }
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public void Dispose()
         {
+            _dataSize = 0;
+            _isDataSize = false;
+            _TOFData.Clear();
             _RMTTimeOfFlightDataCharacteristic.ValueUpdated -= MeasurementDataHandler;
             _RMTInfoCharacteristic.ValueUpdated -= DataSizeHandler;
             _receiveQueryCharacteristic.ValueUpdated -= QueryResponseHandler;
+            _semaphoreSlim.Dispose();
             _connectedDevice.Dispose();
         }
     }

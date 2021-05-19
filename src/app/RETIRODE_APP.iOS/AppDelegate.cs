@@ -24,6 +24,7 @@ namespace RETIRODE_APP.iOS
         {
             global::Xamarin.Forms.Forms.SetFlags("CollectionView_Experimental");
             global::Xamarin.Forms.Forms.Init();
+            DevExpress.XamarinForms.Charts.iOS.Initializer.Init();
             LoadApplication(new App());
 
             return base.FinishedLaunching(app, options);

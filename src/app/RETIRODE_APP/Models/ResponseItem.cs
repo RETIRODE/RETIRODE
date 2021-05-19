@@ -1,4 +1,4 @@
-﻿using RETIRODE_APP.Models.Enums;
+﻿using static RETIRODE_APP.Models.Enums.ApplicationEnums;
 
 namespace RETIRODE_APP.Models
 {
@@ -6,6 +6,6 @@ namespace RETIRODE_APP.Models
     {
         public RangeFinderValues Identifier { get; set; }
 
-        public double Value { get; set; }
+        public object Value { get; set; }
     }
 }

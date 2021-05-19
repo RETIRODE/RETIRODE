@@ -1,12 +1,9 @@
 ﻿using SQLite;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms;
-using System.Linq;
+using RETIRODE_APP.Models;
+using RETIRODE_APP.Services.Interfaces;
 
 namespace RETIRODE_APP.Services
 {
@@ -25,7 +22,7 @@ namespace RETIRODE_APP.Services
         {
             var result = await _connection.InsertAsync(item);
 
-            var getEntities = GetEntitiesAsync<T>();
+            var getEntities = await GetEntitiesAsync<T>();
             return true;
         }
 
@@ -34,10 +31,6 @@ namespace RETIRODE_APP.Services
             await _connection.CreateTableAsync<T>();
         }
 
-        public Task<T> GetEntityAsync<T>(int id) where T : class, new()
-        {
-            throw new NotImplementedException();
-        }
 
         public async Task<IEnumerable<T>> GetEntitiesAsync<T>(bool forceRefresh = false) where T : class, new()
         {
@@ -45,14 +38,58 @@ namespace RETIRODE_APP.Services
             return items;
         }
 
-        public Task<bool> UpdateEntityAsync<T>(T item) where T : class, new()
+        public async Task<int> SaveCalibrationAsync(CalibrationItem item)
         {
-            throw new NotImplementedException();
+            if (item.Id != 0)
+            {
+                return await _connection.UpdateAsync(item);
+            }
+            else
+            {
+                return await _connection.InsertAsync(item);
+            }
         }
 
-        public Task<bool> DeleteEntityAsync<T>(int id) where T : class, new()
+        public async Task<int> SaveMeasurementAsync(MeasurementItem item)
         {
-            throw new NotImplementedException();
+            if (item.Id != 0)
+            {
+                return await _connection.UpdateAsync(item);
+            }
+            else
+            {
+                return await _connection.InsertAsync(item);
+            }
         }
+
+        public async Task<int> DeleteCalibrationAsync(CalibrationItem item)
+        {
+            return await _connection.DeleteAsync<CalibrationItem>(item);
+        }
+        
+        public async Task<int> DeleteMeasurementAsync(MeasurementItem item)
+        {
+            return await _connection.DeleteAsync<MeasurementItem>(item);
+        }
+
+        public async Task<CalibrationItem> GetCalibrationItemAsync(int id)
+        {
+            return await _connection.Table<CalibrationItem>().Where(i => i.Id == id).FirstOrDefaultAsync();
+        }
+
+        public async Task<MeasurementItem> GetMeasurementAsync(int id)
+        {
+            return await _connection.Table<MeasurementItem>().Where(i => i.Id == id).FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<MeasurementItem>> ListMeasurementByCalibrationAsync(int calibrationId)
+        {
+            var items = await _connection.Table<MeasurementItem>().Where(i => i.Calibration_id == calibrationId).ToListAsync();
+            return items;
+        }
+
+
+
+
     }
 }
