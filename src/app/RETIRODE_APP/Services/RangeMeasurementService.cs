@@ -102,6 +102,8 @@ namespace RETIRODE_APP.Services
         {
             if (!_isDataSize)
             {
+                _dataSize = 0;
+                _TOFData.Clear();
                 await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StartLidar });
             }
         }
@@ -130,8 +132,6 @@ namespace RETIRODE_APP.Services
             {
                 await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StopLidar });
                 _isDataSize = false;
-                _dataSize = 0;
-                _TOFData.Clear();
             }
             catch (Exception ex)
             { 
@@ -234,7 +234,10 @@ namespace RETIRODE_APP.Services
             }
             else if(data[0] == (byte)InfoCharacteristicResponseType.Error)
             {
-                MeasurementErrorEvent?.Invoke();
+                if (data[1] == (byte)InfoCharacteristicErrorType.CancelledByServer)
+                {
+                    MeasurementErrorEvent?.Invoke();
+                }                
             }
         }
 
