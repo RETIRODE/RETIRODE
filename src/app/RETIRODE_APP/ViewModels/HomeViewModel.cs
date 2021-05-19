@@ -52,7 +52,7 @@ namespace RETIRODE_APP.ViewModels
                 var graphPage = TinyIoCContainer.Current.Resolve<GraphPage>();
                 await Application.Current.MainPage.Navigation.PushAsync(graphPage);
 
-            }*/
+            }
         }
 
         private async Task<PermissionStatus> RequestLocationPermissionIfNeeded()

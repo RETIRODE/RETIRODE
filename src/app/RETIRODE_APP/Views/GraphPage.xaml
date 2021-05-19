@@ -13,8 +13,8 @@
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Icon="icon_share.png" Command="{Binding ExportCommand}"/>
-        <ToolbarItem Icon="icon_refresh.png" Command="{Binding GraphResetCommand}"/>
-        <ToolbarItem Icon="{Binding Measurement, Converter={StaticResource IconGraphConverter}}" Command="{Binding StartStopCommand}"/>
+        <ToolbarItem x:Name="refreshBtn" Icon="icon_refresh.png" Command="{Binding GraphResetCommand}"/>
+        <ToolbarItem x:Name="startStopBtn" Icon="{Binding Measurement, Converter={StaticResource IconGraphConverter}}" Command="{Binding StartStopCommand}"/>
     </ContentPage.ToolbarItems>
 
     <ContentPage.Content>

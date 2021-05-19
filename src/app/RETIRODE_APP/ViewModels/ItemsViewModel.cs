@@ -1,6 +1,7 @@
 ﻿using Nancy.TinyIoc;
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Services.Interfaces;
+using RETIRODE_APP.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,6 +9,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.CommunityToolkit.ObjectModel;
+using Xamarin.Forms;
 
 namespace RETIRODE_APP.ViewModels
 {
@@ -35,28 +37,14 @@ namespace RETIRODE_APP.ViewModels
 
             try
             {
-                Items.Clear();
+               Items.Clear();
+               var list =  await _dataStore.GetEntitiesAsync<CalibrationItem>();
 
-
-
-                var list = new List<CalibrationItem>(){ new CalibrationItem()
-            {
-                DateTime = DateTime.Now,
-                Id = 1,
-                Pulse_count = 100,
-                Tdc_0 = 4,
-                Tdc_62 = 659,
-                Tdc_125 = 1272
-            },
-            new CalibrationItem{
-                DateTime = DateTime.Now,
-                Id = 1,
-                Pulse_count = 100,
-                Tdc_0 = 4,
-                Tdc_62 = 659,
-                Tdc_125 = 1272
-            }};// await _dataStore.GetEntitiesAsync<CalibrationItem>();
-
+                Items.Add(new CalibrationItem()
+                {
+                    DateTime = DateTime.Now,
+                    Id = 54
+                });
                 foreach (var item in list)
                 {
                     Items.Add(item);
@@ -83,7 +71,9 @@ namespace RETIRODE_APP.ViewModels
 
         private async Task OnItemSelected()
         {
-            //TODO: Push graph page
+            var graphPage = new GraphPage(SelectedItem);
+            await graphPage.LoadMeasuredData();
+            await Application.Current.MainPage.Navigation.PushAsync(graphPage);
         }
     }
 }

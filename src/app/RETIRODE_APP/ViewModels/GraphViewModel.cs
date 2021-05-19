@@ -73,7 +73,8 @@ namespace RETIRODE_APP.ViewModels
             StartMeasuringTime = DateTime.Now;
             MeasuredDataItems = new ObservableCollection<MeasuredDataItem>();
             _dataStore = TinyIoCContainer.Current.Resolve<IDataStore>();
-
+            ExportCommand = new AsyncCommand(async () => await ExportToFile());
+            _applicationStateProvider = TinyIoCContainer.Current.Resolve<IApplicationStateProvider>();
         }
 
         private async void _rangeMeasurementService_DeviceDisconnectedEvent(object arg1, DeviceEventArgs arg2)
@@ -84,13 +85,13 @@ namespace RETIRODE_APP.ViewModels
 
         private async void _rangeMeasurementService_MeasurementErrorEvent()
         {
-            await ShowError("Something went wrong with LIDAR. You need to Software Reset on LIDAR, otherwise application will not work correctly");
-            if(await ShowDialog("Do you want to Software reset?"))
-            {
-                var settingPage = TinyIoCContainer.Current.Resolve<SettingsPage>();
-                await _rangeMeasurementService.SwReset();
-                await Application.Current.MainPage.Navigation.PushAsync(settingPage);
-            }
+            //await ShowError("Something went wrong with LIDAR. You need to Software Reset on LIDAR, otherwise application will not work correctly");
+            //if(await ShowDialog("Do you want to Software reset?"))
+            //{
+            //    var settingPage = TinyIoCContainer.Current.Resolve<SettingsPage>();
+            //    await _rangeMeasurementService.SwReset();
+            //    await Application.Current.MainPage.Navigation.PushAsync(settingPage);
+            //}
         }
 
         private Task GraphReset()

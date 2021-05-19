@@ -22,6 +22,8 @@ namespace RETIRODE_APP.Views
         {
             DevExpress.XamarinForms.Charts.Initializer.Init();
             InitializeComponent();
+            startStopBtn.IsEnabled = false;
+            refreshBtn.IsEnabled = false;
             graphVM = new GraphViewModel(calibration);
             BindingContext = graphVM;
         }
