@@ -85,13 +85,13 @@ namespace RETIRODE_APP.ViewModels
 
         private async void _rangeMeasurementService_MeasurementErrorEvent()
         {
-            //await ShowError("Something went wrong with LIDAR. You need to Software Reset on LIDAR, otherwise application will not work correctly");
-            //if(await ShowDialog("Do you want to Software reset?"))
-            //{
-            //    var settingPage = TinyIoCContainer.Current.Resolve<SettingsPage>();
-            //    await _rangeMeasurementService.SwReset();
-            //    await Application.Current.MainPage.Navigation.PushAsync(settingPage);
-            //}
+            await ShowError("Something went wrong with LIDAR. You need to Software Reset on LIDAR, otherwise application will not work correctly");
+            if(await ShowDialog("Do you want to Software reset?"))
+            {
+                var settingPage = TinyIoCContainer.Current.Resolve<SettingsPage>();
+                await _rangeMeasurementService.SwReset();
+                await Application.Current.MainPage.Navigation.PushAsync(settingPage);
+            }
         }
 
         private Task GraphReset()
@@ -103,20 +103,27 @@ namespace RETIRODE_APP.ViewModels
 
         public async Task StartStopMeasurement()
         {
-            
-            if (Measurement)
+            try
             {
-                await WithBusy(() => _rangeMeasurementService.StopMeasurement());
-                Measurement = false;
-            } else
+                if (Measurement)
+                {
+                    await WithBusy(() => _rangeMeasurementService.StopMeasurement());
+                    Measurement = false;
+                }
+                else
+                {
+                    await WithBusy(() => _rangeMeasurementService.StartMeasurement());
+                    Measurement = true;
+                }
+            }
+            catch(Exception ex)
             {
-                await WithBusy(() => _rangeMeasurementService.StartMeasurement());
-                Measurement = true;
+                await ShowError("StartStopMeasurement exception");
             }
             
         }
 
-        private async void _rangeMeasurementService_MeasuredDataResponseEvent(List<float> obj)
+        private void _rangeMeasurementService_MeasuredDataResponseEvent(List<float> obj)
         {
             int i = 0;
             foreach (var item in obj)
@@ -127,14 +134,22 @@ namespace RETIRODE_APP.ViewModels
                 var timeDifference = (float)span.TotalMilliseconds + TimeSpan.FromMilliseconds(100 * i).Milliseconds;
                 MeasuredDataItems.Add(new MeasuredDataItem(distance, timeDifference));
                 OnPropertyChanged(nameof(MeasuredDataItems));
+                SaveToDatabase(item, timeDifference);
+                
+            }
+        }
 
+        private void SaveToDatabase(float item, float timeDifference)
+        {
+            Task.Run(async () =>
+            {
                 await _dataStore.AddEntityAsync(new MeasurementItem()
                 {
                     Calibration_id = Calibration.Id,
                     Tdc_value = item,
                     TimeDifference = timeDifference
                 });
-            }
+            });
         }
 
         public async void Init()
