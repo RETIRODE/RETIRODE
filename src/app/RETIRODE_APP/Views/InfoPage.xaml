@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="RETIRODE_APP.Views.InfoPage"
+             BackgroundColor="{StaticResource Secondary}"
+             Title="About">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style TargetType="Label" Class="textLabel">
+                <Setter Property="FontSize" Value="16"/>
+                <Setter Property="Margin" Value="10, 5"/>
+                <Setter Property="TextColor" Value="White"/>
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    
+    <ContentPage.Content>
+
+        <ScrollView>
+
+            <StackLayout Margin="10, 0">
+
+                <Label StyleClass="textLabel" Text="This application is part of a team project at Slovak University of Technology, Faculty of Electrcal Engineering and Information Technology."/>
+                <Label StyleClass="textLabel" Text="Leader of this projcet were Peter Gergely and Marina Lekavy from company ON Semiconductor."/>
+                <Label StyleClass="textLabel" Text="Project consists of smartphone application and firmware which runs on RSL10. RSL10 comunicates with Range Finder using UART. Communication between application and firmware is secured by Bluetooth low energy. "/>
+                <Label StyleClass="textLabel" Text="All hardware was provided by company ON Semiconductor."/>
+
+                <Grid Margin="0, 30, 0, 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackLayout>
+                        <Label Text="Team Leaders" FontSize="20" FontAttributes="Bold" Margin="10, 10, 0, 0" TextColor="White"/>
+                        <Label Text="Peter Gergély" StyleClass="textLabel"/>
+                        <Label Text="Marián Lekavý" StyleClass="textLabel"/>
+                    </StackLayout>
+
+                    <StackLayout Grid.Column="1">
+                        <Label Text="Developers" FontSize="20" FontAttributes="Bold" Margin="10, 10, 0, 0" TextColor="White"/>
+                        <Label Text="Bc. Martin Trojan" StyleClass="textLabel"/>
+                        <Label Text="Bc. Patrik Smolar" StyleClass="textLabel"/>
+                        <Label Text="Bc. Maroš Kovaľák" StyleClass="textLabel"/>
+                        <Label Text="Bc. Jakub Trstenský" StyleClass="textLabel"/>
+                        <Label Text="Bc. Šimon Babic" StyleClass="textLabel"/>
+                    </StackLayout>
+
+                </Grid>
+
+
+
+            </StackLayout>
+
+        </ScrollView>
+        
+    </ContentPage.Content>
+</ContentPage>
