@@ -92,5 +92,11 @@ namespace RETIRODE_APP.Models.Enums
             Actual = 0x02,
             Switch = 0x03
         }
+
+        public enum RangeMeasurementErrorMessages
+        {
+            DeviceDisconnected,
+            RangeFinderError
+        }
     }
 }

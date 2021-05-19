@@ -49,7 +49,7 @@ namespace RETIRODE_APP.Services
         public event Action<List<float>> MeasuredDataResponseEvent;
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
-        public event Action<object, DeviceEventArgs> DeviceDisconnectedEvent;
+        public event Action<RangeMeasurementErrorMessages> DeviceDisconnectedEvent;
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public event Action MeasurementErrorEvent;
@@ -64,9 +64,19 @@ namespace RETIRODE_APP.Services
             _bluetoothService.DeviceDisconnected = DeviceDisconnected;
         }
 
-        private void DeviceDisconnected(object obj, DeviceEventArgs e)
+        private async void DeviceDisconnected(object obj, DeviceEventArgs e)
         {
-            DeviceDisconnectedEvent.Invoke(obj,e);
+            try
+            {
+                await ConnectToRSL10(new BLEDevice()
+                {
+                    Name = e.Device.Name
+                });
+            }
+            catch
+            {
+                DeviceDisconnectedEvent?.Invoke(RangeMeasurementErrorMessages.DeviceDisconnected);
+            }
         }
              
         /// <inheritdoc cref="IRangeMeasurementService"/>

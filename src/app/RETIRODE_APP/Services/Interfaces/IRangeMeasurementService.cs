@@ -31,7 +31,7 @@ namespace RETIRODE_APP.Services.Interfaces
         /// <summary>
         /// Event is fired as soon as device disconnected
         /// </summary>
-        event Action<object,DeviceEventArgs> DeviceDisconnectedEvent;
+        event Action<RangeMeasurementErrorMessages> DeviceDisconnectedEvent;
 
         /// <summary>
         /// Event is fired when something went wrong with Range Finder (LIDAR)
