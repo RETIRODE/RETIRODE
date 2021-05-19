@@ -412,7 +412,7 @@ int main(void)
     Device_Initialize();
     CIRCBUF_Initialize(app_data_cache_storage, APP_DATA_CACHE_SIZE,
             	        	                    &app_env.data_cache);
-    //RMP_Initialize();
+    RMP_Initialize();
     int i = 0;
 	/* Spin loop */
 	while (true)
@@ -433,7 +433,7 @@ int main(void)
 		}
 
 
-		if(i == 2000)
+		if(i == 250)
 		{
 			RETIRODE_RMP_QueryCommand('R');
 		}

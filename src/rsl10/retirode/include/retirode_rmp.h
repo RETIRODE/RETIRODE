@@ -316,7 +316,7 @@ void RETIRODE_RMP_CalibrateCommand(uint8_t calibrate);
  * Immediately reset command is issued to RF.
  * All pending actions of the library are cancelled.
  */
-void RETIRODE_RMP_SoftwareResetCommand();
+void RETIRODE_RMP_SoftwareResetCommand(void);
 
 /**
  * Issue command to the library to enable/disable laser power voltage.
