@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="RETIRODE_APP.Views.AboutPage"
+             xmlns:local="clr-namespace:RETIRODE_APP.ViewModels"
+             xmlns:model="clr-namespace:RETIRODE_APP.Models" 
+             Title="{Binding Title}"
+             BackgroundColor="{StaticResource Secondary}">
+
+    <ContentPage.BindingContext>
+        <local:AboutViewModel />
+    </ContentPage.BindingContext>
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style TargetType="Label" Class="AboutLabelSecondary">
+                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="FontSize" Value="15"/>
+            </Style>
+
+            <Style TargetType="Label" Class="AboutLabel">
+                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="FontSize" Value="20"/>
+            </Style>
+
+            <Style TargetType="Image" Class="AboutImage">
+                <Setter Property="WidthRequest" Value="10"/>
+                <Setter Property="HeightRequest" Value="10"/>
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ContentPage.Content>
+
+        <StackLayout>
+
+            <CollectionView
+                Margin="5"
+                ItemsSource="{Binding AboutItems}"
+                SelectionMode="None"
+                BackgroundColor="{StaticResource Secondary}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <StackLayout Padding="10" x:DataType="model:AboutItem">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Image  Source="{Binding ImageSrc}"
+                                        StyleClass="AboutImage"
+                                        VerticalOptions="FillAndExpand"
+                                        Scale="0.7"/>
+                                
+                                <StackLayout Grid.Column="1" Margin="30, 0, 0, 0">
+                                    <Label  Text="{Binding Name}" 
+                                    LineBreakMode="NoWrap"
+                                    StyleClass="AboutLabel"/>
+
+                                    <Label  Text="{Binding Link}" 
+                                    LineBreakMode="NoWrap"
+                                    StyleClass="AboutLabelSecondary"/>
+                                </StackLayout>
+
+                            </Grid>
+
+                            <StackLayout.GestureRecognizers>
+                                <TapGestureRecognizer 
+                                NumberOfTapsRequired="1"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type local:AboutViewModel}}, Path=ItemTapped}"		
+                                CommandParameter="{Binding .}">
+                                </TapGestureRecognizer>
+                            </StackLayout.GestureRecognizers>
+
+                        </StackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </StackLayout>
+
+    </ContentPage.Content>
+</ContentPage>
