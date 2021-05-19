@@ -86,7 +86,8 @@ namespace RETIRODE_APP.ViewModels
                 await rangeMeasurementService.StopScanning();
 
                 await WithBusy(() => rangeMeasurementService.ConnectToRSL10(device));
-                await Application.Current.MainPage.Navigation.PushAsync(new SettingsPage());
+                var settingPage = TinyIoCContainer.Current.Resolve<SettingsPage>();
+                await Application.Current.MainPage.Navigation.PushAsync(settingPage);
                 App.isConnected = true;
             }
             catch (Exception ex)

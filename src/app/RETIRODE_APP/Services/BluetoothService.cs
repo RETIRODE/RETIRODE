@@ -17,6 +17,7 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IBluetoothService"/>
         public Action<object, IDevice> DeviceFound { get; set; }
 
+        /// <inheritdoc cref="IBluetoothService"/>
         public Action<object,DeviceEventArgs> DeviceDisconnected { get; set; }
 
         public BluetoothService()
@@ -44,8 +45,10 @@ namespace RETIRODE_APP.Services
             return _bluetoothAdapter.StartScanningForDevicesAsync();            
         }
 
+        /// <inheritdoc cref="IBluetoothService"/>
         public bool IsScanning => _bluetoothAdapter.IsScanning;
 
+        /// <inheritdoc cref="IBluetoothService"/>
         public Task StopScanning()
         {
             return _bluetoothAdapter.StopScanningForDevicesAsync();
@@ -57,6 +60,7 @@ namespace RETIRODE_APP.Services
             return characteristic.WriteAsync(message);
         }
 
+        /// <inheritdoc cref="IBluetoothService"/>
         public Task<bool> IsDeviceConnected()
         {
             var connectedDevices = _bluetoothAdapter.ConnectedDevices;
