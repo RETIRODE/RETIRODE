@@ -126,10 +126,16 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task StopMeasurement()
         {
-            await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StopLidar });
-            _isDataSize = false;
-            _dataSize = 0;
-            _TOFData.Clear();
+            try
+            {
+                await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StopLidar });
+                _isDataSize = false;
+                _dataSize = 0;
+                _TOFData.Clear();
+            }
+            catch (Exception ex)
+            { 
+            }
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
@@ -220,10 +226,6 @@ namespace RETIRODE_APP.Services
         private async void DataSizeHandler(object sender, CharacteristicUpdatedEventArgs e)
         {
             var data = e.Characteristic.Value;
-            if(data is null || data.Length != 5)
-            {
-                MeasurementErrorEvent.Invoke();
-            }
             if(data[0] == (byte)InfoCharacteristicResponseType.DataSize)
             {
                 _isDataSize = true;
@@ -232,7 +234,7 @@ namespace RETIRODE_APP.Services
             }
             else if(data[0] == (byte)InfoCharacteristicResponseType.Error)
             {
-                MeasurementErrorEvent.Invoke();
+                MeasurementErrorEvent?.Invoke();
             }
         }
 
@@ -272,7 +274,8 @@ namespace RETIRODE_APP.Services
                 data = data.Skip(4).ToArray();
                 _TOFData.AddRange(data);
             } 
-            else
+            
+            if(_TOFData.Count >= _dataSize)
             {
                 List<float> parsedData = new List<float>();
                 for (int i = 0; i < _TOFData.Count; i+=4)

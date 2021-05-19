@@ -1,14 +1,5 @@
-﻿using RETIRODE_APP.Models;
-using RETIRODE_APP.ViewModels;
-using RETIRODE_APP.Views;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using RETIRODE_APP.ViewModels;
 using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
 
 namespace RETIRODE_APP.Views
 {
@@ -19,14 +10,13 @@ namespace RETIRODE_APP.Views
         public ItemsPage()
         {
             InitializeComponent();
-
             BindingContext = _viewModel = new ItemsViewModel();
         }
 
         protected override void OnAppearing()
         {
             base.OnAppearing();
-            _viewModel.OnAppearing();
+            itemsRefreshView.IsRefreshing = true;
         }
     }
 }

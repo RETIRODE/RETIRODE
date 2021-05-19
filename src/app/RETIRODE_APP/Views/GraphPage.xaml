@@ -3,71 +3,75 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
              xmlns:dxc="http://schemas.devexpress.com/xamarin/2014/forms/charts" xmlns:viewmodels="clr-namespace:RETIRODE_APP.ViewModels" x:DataType="viewmodels:GraphViewModel"
              x:Class="RETIRODE_APP.Views.GraphPage"
+             xmlns:converters="clr-namespace:RETIRODE_APP.Converters"
              BackgroundColor="#302c2c">
-    
-    <Grid>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="50" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <ContentPage.Resources>
+        <converters:IconGraphConverter x:Key="IconGraphConverter"></converters:IconGraphConverter>
+    </ContentPage.Resources>
 
-        <!-- Stop measurement button -->
-        <Button Text="Stop" Command="{Binding StopCommand}" Margin="10,10,5,0"/>
 
-        <!-- Graph Reset button -->
-        <Button Text="Reset" Command="{Binding GraphResetCommand}" Grid.Column="1" Margin="5,10,10,0"/>
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Icon="icon_share.png" Command="{Binding ExportCommand}"/>
+        <ToolbarItem x:Name="refreshBtn" Icon="icon_refresh.png" Command="{Binding GraphResetCommand}"/>
+        <ToolbarItem x:Name="startStopBtn" Icon="{Binding Measurement, Converter={StaticResource IconGraphConverter}}" Command="{Binding StartStopCommand}"/>
+    </ContentPage.ToolbarItems>
 
-        <dxc:ChartView SelectionMode="None"
-                       AxisXNavigationMode="ScrollingAndZooming"
-                       ScrollIndicatorsEnabled="True"
-                       Grid.Row="1"
-                       Grid.ColumnSpan="2"
-                       Theme="Dark">
-            <dxc:ChartView.Series>
-                <dxc:PointSeries>
-                    <dxc:PointSeries.Data>
-                        <dxc:SeriesDataAdapter DataSource="{Binding MeasuredDataItems, Mode=TwoWay}"
-                                                           ArgumentDataMember="Time" >
-                            <dxc:ValueDataMember Type="Value" Member="Distance"/>
-                        </dxc:SeriesDataAdapter>
-                    </dxc:PointSeries.Data>
-                </dxc:PointSeries>
-            </dxc:ChartView.Series>
-            <dxc:ChartView.AxisX>
-                <dxc:NumericAxisX>
-                    <dxc:NumericAxisX.Title>
-                        <dxc:AxisTitle Text="Time [ms]" >
-                            <dxc:AxisTitle.Style>
-                                <dxc:TitleStyle>
-                                    <dxc:TitleStyle.TextStyle>
-                                        <dxc:TextStyle Size="20" />
-                                    </dxc:TitleStyle.TextStyle>
-                                </dxc:TitleStyle>
-                            </dxc:AxisTitle.Style>
-                        </dxc:AxisTitle>
-                    </dxc:NumericAxisX.Title>
-                </dxc:NumericAxisX>
-            </dxc:ChartView.AxisX>
-            <dxc:ChartView.AxisY>
-                <dxc:NumericAxisY>
-                    <dxc:NumericAxisY.Title>
-                        <dxc:AxisTitle Text="Distance [m]">
-                            <dxc:AxisTitle.Style>
-                                <dxc:TitleStyle>
-                                    <dxc:TitleStyle.TextStyle>
-                                        <dxc:TextStyle Size="20" />
-                                    </dxc:TitleStyle.TextStyle>
-                                </dxc:TitleStyle>
-                            </dxc:AxisTitle.Style>
-                        </dxc:AxisTitle>
-                    </dxc:NumericAxisY.Title>
-                </dxc:NumericAxisY>
-            </dxc:ChartView.AxisY>
-        </dxc:ChartView>
-    </Grid>
+    <ContentPage.Content>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <dxc:ChartView SelectionMode="None"
+                    AxisXNavigationMode="ScrollingAndZooming"
+                    ScrollIndicatorsEnabled="True"
+                    Grid.Row="0"
+                    Grid.ColumnSpan="2"
+                    Theme="Dark">
+                <dxc:ChartView.Series>
+                    <dxc:PointSeries>
+                        <dxc:PointSeries.Data>
+                            <dxc:SeriesDataAdapter DataSource="{Binding MeasuredDataItems, Mode=TwoWay}"
+                                                        ArgumentDataMember="Time" >
+                                <dxc:ValueDataMember Type="Value" Member="Distance"/>
+                            </dxc:SeriesDataAdapter>
+                        </dxc:PointSeries.Data>
+                    </dxc:PointSeries>
+                </dxc:ChartView.Series>
+                <dxc:ChartView.AxisX>
+                    <dxc:NumericAxisX>
+                        <dxc:NumericAxisX.Title>
+                            <dxc:AxisTitle Text="Time [ms]" >
+                                <dxc:AxisTitle.Style>
+                                    <dxc:TitleStyle>
+                                        <dxc:TitleStyle.TextStyle>
+                                            <dxc:TextStyle Size="20" />
+                                        </dxc:TitleStyle.TextStyle>
+                                    </dxc:TitleStyle>
+                                </dxc:AxisTitle.Style>
+                            </dxc:AxisTitle>
+                        </dxc:NumericAxisX.Title>
+                    </dxc:NumericAxisX>
+                </dxc:ChartView.AxisX>
+                <dxc:ChartView.AxisY>
+                    <dxc:NumericAxisY>
+                        <dxc:NumericAxisY.Title>
+                            <dxc:AxisTitle Text="Distance [m]">
+                                <dxc:AxisTitle.Style>
+                                    <dxc:TitleStyle>
+                                        <dxc:TitleStyle.TextStyle>
+                                            <dxc:TextStyle Size="20" />
+                                        </dxc:TitleStyle.TextStyle>
+                                    </dxc:TitleStyle>
+                                </dxc:AxisTitle.Style>
+                            </dxc:AxisTitle>
+                        </dxc:NumericAxisY.Title>
+                    </dxc:NumericAxisY>
+                </dxc:ChartView.AxisY>
+            </dxc:ChartView>
+        </Grid>
+    </ContentPage.Content>
 </ContentPage>

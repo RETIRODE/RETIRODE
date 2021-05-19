@@ -37,5 +37,6 @@ namespace RETIRODE_APP.Services.Interfaces
         /// </summary>
         /// <returns></returns>
         Task EnableBluetooth();
+        Task<PermissionStatus> GetStoragePermissionStatus();
     }
 }

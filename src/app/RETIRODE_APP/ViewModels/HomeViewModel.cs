@@ -18,6 +18,7 @@ namespace RETIRODE_APP.ViewModels
         public ICommand StartDepictionCommand { get; set; }
         public HomeViewModel()
         {
+            
             _applicationStateProvider = TinyIoCContainer.Current.Resolve<IApplicationStateProvider>();
             StartDepictionCommand = new AsyncCommand(async () => await StartDepiction());
             Title = "Home";
@@ -25,7 +26,6 @@ namespace RETIRODE_APP.ViewModels
 
         private async Task StartDepiction()
         {
-
             var locationPermissionStatus = await RequestLocationPermissionIfNeeded();
             if (locationPermissionStatus != PermissionStatus.Granted)
             {
@@ -34,7 +34,8 @@ namespace RETIRODE_APP.ViewModels
             }
             await EnsureLocationEnabled();
             await EnsureBluetoothEnabled();
-            //Navigation.PushAsync(new GraphPage());
+
+          
 
             if (!App.isConnected)
             {
