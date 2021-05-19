@@ -15,6 +15,7 @@ using System.Windows.Input;
 using Xamarin.CommunityToolkit.ObjectModel;
 using Xamarin.Essentials;
 using Xamarin.Forms;
+using static RETIRODE_APP.Models.Enums.ApplicationEnums;
 
 namespace RETIRODE_APP.ViewModels
 {
@@ -77,10 +78,12 @@ namespace RETIRODE_APP.ViewModels
             _applicationStateProvider = TinyIoCContainer.Current.Resolve<IApplicationStateProvider>();
         }
 
-        private async void _rangeMeasurementService_DeviceDisconnectedEvent(object arg1, DeviceEventArgs arg2)
+        private async void _rangeMeasurementService_DeviceDisconnectedEvent(RangeMeasurementErrorMessages errorMessage)
         {
-            var deviceName = arg2.Device.Name;
-            await ShowError(String.Format($"Device {deviceName} has been disconnected"));
+            if (errorMessage == RangeMeasurementErrorMessages.DeviceDisconnected)
+            {
+                await ShowError("Problem with connecting to Range Finder");
+            }
         }
 
         private void _rangeMeasurementService_MeasurementErrorEvent()

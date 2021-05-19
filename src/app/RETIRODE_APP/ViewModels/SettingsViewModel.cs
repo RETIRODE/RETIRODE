@@ -202,19 +202,13 @@ namespace RETIRODE_APP.ViewModels
             StartPoolingRoutine();
         }
 
-        private async void _rangeMeasurementService_DeviceDisconnectedEvent(object obj, DeviceEventArgs e)
+        private async void _rangeMeasurementService_DeviceDisconnectedEvent(RangeMeasurementErrorMessages errorMessage)
         {
             SetSettingParamsToDefault();
-            try
+
+            if(errorMessage == RangeMeasurementErrorMessages.DeviceDisconnected)
             {
-                await _rangeMeasurementService.ConnectToRSL10(new BLEDevice()
-                {
-                    Name = e.Device.Name
-                });
-            }
-            catch
-            {
-                await ShowError("Connect to device failed!");
+                await ShowError("Problem with connecting to Range Finder");
             }
         }
 
