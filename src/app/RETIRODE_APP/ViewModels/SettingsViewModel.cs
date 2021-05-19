@@ -395,7 +395,11 @@ namespace RETIRODE_APP.ViewModels
                     break;
 
                 case RangeFinderValues.PulseCount:
-                    TriggerPulse = Convert.ToInt32(responseItem.Value);
+                    var response = Convert.ToInt32(responseItem.Value);
+                    if(response == 0)
+                    {
+                        TriggerPulse = 100;
+                    }
                     break;
 
                 case RangeFinderValues.SipmBiasPowerVoltageStatus:
@@ -418,10 +422,10 @@ namespace RETIRODE_APP.ViewModels
                     }
                     else
                     {
-                        var response = Convert.ToBoolean(responseItem.Value);
+                        var res = Convert.ToBoolean(responseItem.Value);
                         if (!_isSwitchBySystemLaserOverload)
                         {
-                            if (response)
+                            if (res)
                             {
                                 LaserVoltageOverload = true;
                             }
@@ -439,10 +443,10 @@ namespace RETIRODE_APP.ViewModels
                     }
                     else
                     {
-                        var response = Convert.ToBoolean(responseItem.Value);
+                        var res = Convert.ToBoolean(responseItem.Value);
                         if (!_isSwitchBySystemSipmBiasOverload)
                         {
-                            if (response)
+                            if (res)
                             {
                                 BiasVoltageOverload = true;
                             }
