@@ -50,7 +50,7 @@ namespace RETIRODE_APP.ViewModels
             MeasuredDataItems = new ObservableCollection<MeasuredDataItem>();
             StartStopCommand = new AsyncCommand(async () => await StartStopMeasurement());
             GraphResetCommand = new AsyncCommand(async () => await GraphReset());
-            ExportCommand = new AsyncCommand(async () => await ExportToFile());
+            ExportCommand = new AsyncCommand(async () => await Share());
             _rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
             _dataStore = TinyIoCContainer.Current.Resolve<IDataStore>();
 
@@ -74,7 +74,7 @@ namespace RETIRODE_APP.ViewModels
             StartMeasuringTime = DateTime.Now;
             MeasuredDataItems = new ObservableCollection<MeasuredDataItem>();
             _dataStore = TinyIoCContainer.Current.Resolve<IDataStore>();
-            ExportCommand = new AsyncCommand(async () => await ExportToFile());
+            ExportCommand = new AsyncCommand(async () => await Share());
             _applicationStateProvider = TinyIoCContainer.Current.Resolve<IApplicationStateProvider>();
         }
 
@@ -88,11 +88,10 @@ namespace RETIRODE_APP.ViewModels
 
         private void _rangeMeasurementService_MeasurementErrorEvent()
         {
-
             Device.BeginInvokeOnMainThread(async () =>
             {
-                await ShowError("Something went wrong with LIDAR. You need to Software Reset on LIDAR, otherwise application will not work correctly");
-                if (await ShowDialog("Do you want to Software reset?"))
+                await ShowError("Something went wrong with Range Finder. You need to reset software on RF, otherwise application may not work correctly");
+                if (await ShowDialog("Do you want to do software reset?"))
                 {
                     var settingPage = TinyIoCContainer.Current.Resolve<SettingsPage>();
                     await _rangeMeasurementService.SwReset();
@@ -177,14 +176,13 @@ namespace RETIRODE_APP.ViewModels
 
             foreach (var item in list)
             {
-                TimeSpan span = DateTime.Now - StartMeasuringTime;
                 var distance = CalculateDistanceFromTdc(item.Tdc_value);
-                MeasuredDataItems.Add(new MeasuredDataItem(distance, (float)span.TotalMilliseconds));
+                MeasuredDataItems.Add(new MeasuredDataItem(distance, item.TimeDifference));
                 OnPropertyChanged(nameof(MeasuredDataItems));
             }
         }
 
-        private async Task ExportToFile()
+        private async Task Share()
         {
             if (await _applicationStateProvider.GetStoragePermissionStatus() != Plugin.Permissions.Abstractions.PermissionStatus.Granted)
             {
@@ -202,7 +200,8 @@ namespace RETIRODE_APP.ViewModels
 
         public async Task Export()
         {
-            List<string> lines = new List<string>() { "---Calibration---", $"Tdc 0: {Calibration.Tdc_0}", $"Tdc 62.5: {Calibration.Tdc_62}", $"Tdc 125: {Calibration.Tdc_125}", "", "---Data----", "Distance Time" };
+            List<string> lines = new List<string>() { "---Calibration---", $"Tdc 0: {Calibration.Tdc_0}", $"Tdc 62.5: {Calibration.Tdc_62}", $"Tdc 125: {Calibration.Tdc_125}",
+                $"Date: {Calibration.DateTime}","", "---Data----", "Distance Time" };
             foreach (var item in MeasuredDataItems)
             {
                 lines.Add($"{item.Distance} {item.Time}");
