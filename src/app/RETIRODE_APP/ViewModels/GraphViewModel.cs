@@ -85,11 +85,10 @@ namespace RETIRODE_APP.ViewModels
 
         private void _rangeMeasurementService_MeasurementErrorEvent()
         {
-
             Device.BeginInvokeOnMainThread(async () =>
             {
-                await ShowError("Something went wrong with LIDAR. You need to Software Reset on LIDAR, otherwise application will not work correctly");
-                if (await ShowDialog("Do you want to Software reset?"))
+                await ShowError("Something went wrong with Range Finder. You need to reset software on RF, otherwise application may not work correctly");
+                if (await ShowDialog("Do you want to do software reset?"))
                 {
                     var settingPage = TinyIoCContainer.Current.Resolve<SettingsPage>();
                     await _rangeMeasurementService.SwReset();
