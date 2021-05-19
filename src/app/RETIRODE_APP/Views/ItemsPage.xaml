@@ -11,6 +11,7 @@
       x:DataType enables compiled bindings for better performance and compile time validation of binding expressions.
       https://docs.microsoft.com/xamarin/xamarin-forms/app-fundamentals/data-binding/compiled-bindings
     -->
+
     <RefreshView x:Name="itemsRefreshView" x:DataType="local:ItemsViewModel" Command="{Binding LoadItemsCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}">
         <CollectionView x:Name="ItemsListView"
                         ItemsSource="{Binding Items}"
@@ -27,10 +28,10 @@
                                      x:DataType="model:CalibrationItem">
 
                             <Label Text="Measurement" 
-                            LineBreakMode="NoWrap" 
-                            Style="{DynamicResource ListItemTextStyle}" 
-                            FontSize="20"
-                            TextColor="White" />
+                                    LineBreakMode="NoWrap" 
+                                    Style="{DynamicResource ListItemTextStyle}" 
+                                    FontSize="20"
+                                    TextColor="White" />
 
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -39,17 +40,18 @@
                                 </Grid.ColumnDefinitions>
 
                                 <Label Grid.Column="0" Text="Date: " 
-                            LineBreakMode="NoWrap"
-                            Style="{DynamicResource ListItemDetailTextStyle}"
-                            FontSize="15"
-                            TextColor="White" />
+                                        LineBreakMode="NoWrap"
+                                        Style="{DynamicResource ListItemDetailTextStyle}"
+                                        FontSize="15"
+                                        TextColor="White" />
 
                                 <Label Grid.Column="1" Text="{Binding DateTime}" 
-                            LineBreakMode="NoWrap"
-                            Style="{DynamicResource ListItemDetailTextStyle}"
-                            FontSize="15"
-                            TextColor="White" />
+                                        LineBreakMode="NoWrap"
+                                        Style="{DynamicResource ListItemDetailTextStyle}"
+                                        FontSize="15"
+                                        TextColor="White" />
                             </Grid>
+
                         </StackLayout>
                     </Frame>
                 </DataTemplate>
