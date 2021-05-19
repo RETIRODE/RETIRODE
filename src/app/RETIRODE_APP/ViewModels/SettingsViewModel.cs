@@ -205,9 +205,17 @@ namespace RETIRODE_APP.ViewModels
         private async void _rangeMeasurementService_DeviceDisconnectedEvent(object obj, DeviceEventArgs e)
         {
             SetSettingParamsToDefault();
-            await ShowError(String.Format($"Device {e.Device.Name} has been disconnected"));
-            var bluetoothPage = TinyIoCContainer.Current.Resolve<BluetoothPage>();
-            await Application.Current.MainPage.Navigation.PushAsync(bluetoothPage);
+            try
+            {
+                await _rangeMeasurementService.ConnectToRSL10(new BLEDevice()
+                {
+                    Name = e.Device.Name
+                });
+            }
+            catch
+            {
+                await ShowError("Connect to device failed!");
+            }
         }
 
         private async Task LaserVoltageToggle()
