@@ -200,11 +200,12 @@ namespace RETIRODE_APP.ViewModels
 
         public async Task Export()
         {
+            var list = await _dataStore.ListMeasurementByCalibrationAsync(Calibration.Id);
             List<string> lines = new List<string>() { "---Calibration---", $"Tdc 0: {Calibration.Tdc_0}", $"Tdc 62.5: {Calibration.Tdc_62}", $"Tdc 125: {Calibration.Tdc_125}",
-                $"Date: {Calibration.DateTime}","", "---Data----", "Distance Time" };
-            foreach (var item in MeasuredDataItems)
+                $"Date: {Calibration.DateTime}","", "---Data----", "ToF, Time ms" };
+            foreach (var item in list)
             {
-                lines.Add($"{item.Distance} {item.Time}");
+                lines.Add($"{item.Tdc_value} {item.TimeDifference}");
             }
             var file = Path.Combine(FileSystem.CacheDirectory, "data.txt");
 
