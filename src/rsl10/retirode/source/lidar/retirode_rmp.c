@@ -682,7 +682,11 @@ bool RETIRODE_RMP_MainLoop(void)
 	if(rmp_env.flag.cmd_software_reset == true)
 	{
 		RETIRODE_RMP_WriteCommand("R01\r");
-		memset(&rmp_env, 0, sizeof(rmp_env));
+		memset(&rmp_env.flag, 0, sizeof(rmp_env.flag));
+		memset(&rmp_env.current_command, 0, sizeof(rmp_env.current_command));
+		memset(&rmp_env.d_register_state, 0, sizeof(rmp_env.d_register_state));
+		memset(&rmp_env.pulse_count, 0, sizeof(rmp_env.pulse_count));
+		memset(&rmp_env.query_response_buffer, 0, sizeof(rmp_env.query_response_buffer));
 		RETIRODE_RMP_SetState(RETIRODE_RMP_STATE_SHUTDOWN);
 
 		if(entry_state != RETIRODE_RMP_STATE_SHUTDOWN)

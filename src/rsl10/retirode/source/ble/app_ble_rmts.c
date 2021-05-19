@@ -153,7 +153,7 @@ static void RMTS_MsgHandler(ke_msg_id_t const msg_id, void const *param,
 
         case GAPC_CONNECTION_REQ_IND:
         {
-            //REQUIRE(RMTS_env.transfer.state == RMTS_STATE_IDLE);
+
 
             RMTS_env.transfer.state = RMTS_STATE_CONNECTED;
 
@@ -165,7 +165,7 @@ static void RMTS_MsgHandler(ke_msg_id_t const msg_id, void const *param,
 
         case GAPC_DISCONNECT_IND:
         {
-           // REQUIRE(RMTS_env.transfer.state >= RMTS_STATE_CONNECTED);
+
 
             /* Send abort indication if disconnected during mrd transfer. */
             if (RMTS_env.transfer.state >= RMTS_STATE_TOFD_INFO_PROVIDED)
