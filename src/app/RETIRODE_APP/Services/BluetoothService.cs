@@ -4,6 +4,7 @@ using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Abstractions.EventArgs;
 using RETIRODE_APP.Services.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace RETIRODE_APP.Services
@@ -16,6 +17,8 @@ namespace RETIRODE_APP.Services
 
         /// <inheritdoc cref="IBluetoothService"/>
         public Action<object, IDevice> DeviceFound { get; set; }
+
+        public IReadOnlyList<IDevice> ConnectedDevices => _bluetoothAdapter?.ConnectedDevices ?? new List<IDevice>().AsReadOnly();
 
         /// <inheritdoc cref="IBluetoothService"/>
         public Action<object,DeviceEventArgs> DeviceDisconnected { get; set; }

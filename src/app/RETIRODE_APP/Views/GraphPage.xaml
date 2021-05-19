@@ -25,6 +25,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
+            <ActivityIndicator Color="Orange" IsRunning="{Binding IsBusy}" />
             <dxc:ChartView SelectionMode="None"
                     AxisXNavigationMode="ScrollingAndZooming"
                     ScrollIndicatorsEnabled="True"

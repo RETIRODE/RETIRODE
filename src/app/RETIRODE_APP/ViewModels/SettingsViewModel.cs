@@ -351,6 +351,8 @@ namespace RETIRODE_APP.ViewModels
                         }
                         else
                         {
+                            var bluetoothPage = TinyIoCContainer.Current.Resolve<BluetoothPage>();
+                            await Application.Current.MainPage.Navigation.PushAsync(bluetoothPage);
                             break;
                         }
                     }
@@ -510,31 +512,34 @@ namespace RETIRODE_APP.ViewModels
 
         private async Task StartDepiction()
         {
-            if (!App.isConnected)
+            if (!App.IsConnected)
             {
                 var bluetoothPage = TinyIoCContainer.Current.Resolve<BluetoothPage>();
                 await Application.Current.MainPage.Navigation.PushAsync(bluetoothPage);
             }
             else
             {
-                if (TCDCal0 != 0 && TCDCal62 != 0 && TCDCal125 != 0)
-                {
-                    App.isCalibrated = true;
-                    await _database.AddEntityAsync(new CalibrationItem()
-                    {
-                        DateTime = DateTime.Now,
-                        Tdc_0 = TCDCal0,
-                        Tdc_62 = TCDCal62,
-                        Tdc_125 = TCDCal125,
-                        Pulse_count = TriggerPulse
-                    });
-                    var graphPage = TinyIoCContainer.Current.Resolve<GraphPage>(NamedParameterOverloads.Default, new ResolveOptions());
-                    await Application.Current.MainPage.Navigation.PushAsync(graphPage);
-                }
-                else
+                if (TCDCal0 == 0 && TCDCal62 == 0 && TCDCal125 == 0)
                 {
                     await ShowError("Lidar not calibrated");
+                    return;
                 }
+                else if(!IsSipmBiasPowerVoltageTurnOn || !IsLaserVoltageTurnOn)
+                {
+                    await ShowError("Voltages are not powered on");
+                    return;
+                }
+
+                await _database.AddEntityAsync(new CalibrationItem()
+                {
+                    DateTime = DateTime.Now,
+                    Tdc_0 = TCDCal0,
+                    Tdc_62 = TCDCal62,
+                    Tdc_125 = TCDCal125,
+                    Pulse_count = TriggerPulse
+                });
+                var graphPage = TinyIoCContainer.Current.Resolve<GraphPage>(NamedParameterOverloads.Default, new ResolveOptions());
+                await Application.Current.MainPage.Navigation.PushAsync(graphPage);
             }
 
 

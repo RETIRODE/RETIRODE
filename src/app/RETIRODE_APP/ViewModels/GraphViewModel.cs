@@ -113,13 +113,13 @@ namespace RETIRODE_APP.ViewModels
             {
                 if (Measurement)
                 {
-                    await WithBusy(() => _rangeMeasurementService.StopMeasurement());
                     Measurement = false;
+                    await WithBusy(() => _rangeMeasurementService.StopMeasurement());                    
                 }
                 else
                 {
-                    await WithBusy(() => _rangeMeasurementService.StartMeasurement());
                     Measurement = true;
+                    await WithBusy(() => _rangeMeasurementService.StartMeasurement());                    
                 }
             }
             catch (Exception ex)

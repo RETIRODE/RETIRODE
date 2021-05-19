@@ -89,6 +89,8 @@ namespace RETIRODE_APP.Services
                     bleDevice.Name, bleDevice.Identifier));
             }
 
+            _connectedDevice = _bluetoothService.ConnectedDevices.FirstOrDefault();
+
             if(_connectedDevice != null && _connectedDevice != device)
             {
                 throw new AlreadyConnectedDeviceException("Device is already connected to another BLE device");

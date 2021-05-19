@@ -1,6 +1,7 @@
 ﻿using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Abstractions.EventArgs;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace RETIRODE_APP.Services.Interfaces
@@ -52,6 +53,7 @@ namespace RETIRODE_APP.Services.Interfaces
         /// False - if BT adapter is not scanning
         /// </summary>
         bool IsScanning { get; }
+        IReadOnlyList<IDevice> ConnectedDevices { get; }
 
         /// <summary>
         /// Investigate if device is still connected to mobile device

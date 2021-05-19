@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.CommunityToolkit.ObjectModel;
@@ -38,14 +39,9 @@ namespace RETIRODE_APP.ViewModels
             try
             {
                Items.Clear();
-               var list =  await _dataStore.GetEntitiesAsync<CalibrationItem>();
+               var list =  await _dataStore.GetEntitiesAsync<CalibrationItem>();                
 
-                Items.Add(new CalibrationItem()
-                {
-                    DateTime = DateTime.Now,
-                    Id = 54
-                });
-                foreach (var item in list)
+                foreach (var item in list.OrderByDescending(x => x.DateTime))
                 {
                     Items.Add(item);
                 }

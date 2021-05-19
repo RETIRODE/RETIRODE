@@ -37,21 +37,15 @@ namespace RETIRODE_APP.ViewModels
 
           
 
-            if (!App.isConnected)
+            if (!App.IsConnected)
             {
                 var bluetoothPage = TinyIoCContainer.Current.Resolve<BluetoothPage>();
                 await Application.Current.MainPage.Navigation.PushAsync(bluetoothPage);
             }
-            else if (!App.isCalibrated)
-            {
-                var settingsPage = TinyIoCContainer.Current.Resolve<SettingsPage>();
-                await Application.Current.MainPage.Navigation.PushAsync(settingsPage);
-            }
             else
             {
-                var graphPage = TinyIoCContainer.Current.Resolve<GraphPage>();
-                await Application.Current.MainPage.Navigation.PushAsync(graphPage);
-
+                var settingPage = TinyIoCContainer.Current.Resolve<SettingsPage>();
+                await Application.Current.MainPage.Navigation.PushAsync(settingPage);
             }
         }
 
