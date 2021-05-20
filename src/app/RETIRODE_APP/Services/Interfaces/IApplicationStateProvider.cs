@@ -15,25 +15,34 @@ namespace RETIRODE_APP.Services.Interfaces
         /// Returns true if location is enabled on mobile device,
         /// returns false if not
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// True - location is enabled
+        /// False - location is disabled
+        /// </returns>
         bool IsLocationEnabled();
 
         /// <summary>
         /// Returns true if bluetooth adapter is enabled on mobile device, 
         /// returns false if not
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// True - bluetooth is enabled
+        /// False - bluetooth is disabled
+        /// </returns>
         Task<bool> IsBluetoothEnabled();
 
         /// <summary>
         /// Returns PermissionStatus for location. Shows modal window
         /// to enable permission for using location
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// PermissionStatus.Granted - location is enabled
+        /// PermissionStatus.Denied - location is disabled
+        /// </returns>
         Task<PermissionStatus> GetLocationStatus();
 
         /// <summary>
-        /// Enable bluetooth adapter in settings
+        /// Enable bluetooth adapter in mobile device
         /// </summary>
         /// <returns></returns>
         Task EnableBluetooth();

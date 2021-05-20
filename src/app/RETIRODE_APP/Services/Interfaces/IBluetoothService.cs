@@ -28,7 +28,10 @@ namespace RETIRODE_APP.Services.Interfaces
         /// </summary>
         /// <param name="characteristic" <see cref="ICharacteristic"/>></param>
         /// <param name="message"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// True - if write to characteristic was correct
+        /// False - if write to characteristic was wrong
+        /// </returns>
         Task<bool> WriteToCharacteristic(ICharacteristic characteristic, byte[] message);
         
         /// <summary>
@@ -53,12 +56,19 @@ namespace RETIRODE_APP.Services.Interfaces
         /// False - if BT adapter is not scanning
         /// </summary>
         bool IsScanning { get; }
+
+        /// <summary>
+        /// list of connected devices
+        /// </summary>
         IReadOnlyList<IDevice> ConnectedDevices { get; }
 
         /// <summary>
         /// Investigate if device is still connected to mobile device
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// True - if device is connected
+        /// False - if device is not connected
+        /// </returns>
         Task<bool> IsDeviceConnected();
     }
 }
