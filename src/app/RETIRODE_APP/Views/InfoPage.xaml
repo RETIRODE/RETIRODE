@@ -34,8 +34,8 @@
 
                     <StackLayout>
                         <Label Text="Team Leaders" FontSize="20" FontAttributes="Bold" Margin="10, 10, 0, 0" TextColor="White"/>
-                        <Label Text="Peter Gergély" StyleClass="textLabel"/>
-                        <Label Text="Marián Lekavý" StyleClass="textLabel"/>
+                        <Label Text="Ing. Peter Gergély" StyleClass="textLabel"/>
+                        <Label Text="Ing. Marián Lekavý, PhD." StyleClass="textLabel"/>
                     </StackLayout>
 
                     <StackLayout Grid.Column="1">
