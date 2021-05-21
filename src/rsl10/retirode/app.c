@@ -413,31 +413,9 @@ int main(void)
     CIRCBUF_Initialize(app_data_cache_storage, APP_DATA_CACHE_SIZE,
             	        	                    &app_env.data_cache);
     RMP_Initialize();
-    int i = 0;
 	/* Spin loop */
 	while (true)
 	{
-
-		i++;
-
-		RETIRODE_RMP_MainLoop();
-
-		if(i == 20)
-		{
-			RETIRODE_RMP_SoftwareResetCommand();
-		}
-
-		if(i == 200)
-		{
-			RETIRODE_RMP_PowerUpCommand();
-		}
-
-
-		if(i == 250)
-		{
-			RETIRODE_RMP_QueryCommand('R');
-		}
-
 		/* Refresh the watchdog timer */
  		Sys_Watchdog_Refresh();
 		Kernel_Schedule();
