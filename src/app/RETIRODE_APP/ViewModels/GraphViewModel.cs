@@ -2,7 +2,6 @@
 
 using Plugin.Permissions;
 using Plugin.Permissions.Abstractions;
-using Plugin.BLE.Abstractions.EventArgs;
 using RETIRODE_APP.Models;
 using RETIRODE_APP.Services.Interfaces;
 using RETIRODE_APP.Views;
@@ -167,7 +166,6 @@ namespace RETIRODE_APP.ViewModels
         public async void Init()
         {
             await SetCalibration();
-            // await LoadValues();
         }
 
         public async Task LoadValues()
