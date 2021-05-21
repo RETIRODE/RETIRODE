@@ -64,6 +64,7 @@ void APP_RMTS_EventHandler(RMTS_ControlPointOpCode_t opcode,
 
         	RETIRODE_RMP_MeasureCommand(MEASURE_SIZE);
         	app_env.measurement_in_progress = true;
+        	app_env.stop_measurement_command = false;
 
             break;
         }
@@ -398,10 +399,6 @@ void RMP_Initialize(void)
 			RETIRODE_RMP_PowerUpCommand();
 		}
 
-		/* Refresh the watchdog timer */
-		Sys_Watchdog_Refresh();
-		Kernel_Schedule();
-
 		if(i == 100)
 		{
 			break;
@@ -419,8 +416,6 @@ int main(void)
 	/* Spin loop */
 	while (true)
 	{
-		RETIRODE_RMP_MainLoop();
-
 		/* Refresh the watchdog timer */
  		Sys_Watchdog_Refresh();
 		Kernel_Schedule();

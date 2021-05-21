@@ -23,6 +23,10 @@ static char hex[] = "0123456789ABCDEF";
 #define QUERY(dest, reg) 			ReplaceChar(dest, '%', reg)
 #define COMMAND(dest, reg, value)   ReplaceChar(dest, '%', reg); WriteValueToCommand(dest, '$', value);
 
+#define MAX_QUERY_WAIT_COUNT		100
+#define MAX_MUEASURE_WAIT_COUNT		20000
+
+
 static char* ReplaceChar(char* str, char find, char replace);
 static void WriteValueToCommand(char* str,char find, uint8_t val);
 
@@ -88,6 +92,8 @@ struct RETIRODE_RMP_EnvironmentFlags_t
 
 	/**Flag to indicate that RMP is ready to start next UART transaction. */
 	bool is_uart_ready;
+
+
 };
 
 
@@ -169,6 +175,9 @@ struct RETIRODE_RMP_Eviroment_t
 	 *certain events.
 	 */
 	RETIRODE_RMP_EventHandler_t p_evt_handler;
+
+	uint32_t query_response_waitter;
+	uint32_t mueasurement_response_waitter;
 };
 
 /**@internal */
@@ -471,6 +480,8 @@ static void RETIRODE_RMP_MeasureStateHandler(void)
 	int32_t resetStatus  = ARM_DRIVER_OK;
 	int32_t receive_status = ARM_DRIVER_OK;
 
+	rmp_env.mueasurement_response_waitter = 0;
+
 	receive_status = RETIRODE_RMP_UARTReceiveMeasurementData(rmp_env.pulse_count);
 	char command[4] = COMMAND_STRING;
 	COMMAND(command, RETIRODE_RMP_PULSE_COUNT_REGISTER, rmp_env.pulse_count);
@@ -527,6 +538,15 @@ static void RETIRODE_RMP_DataProcessingStateHandler(void)
 			RETIRODE_RMP_SetState(RETIRODE_RMP_STATE_MEASUREMENT_DATA_READY);
 		}
 	}
+	else
+	{
+		rmp_env.mueasurement_response_waitter += 1;
+
+		if(rmp_env.mueasurement_response_waitter >= MAX_MUEASURE_WAIT_COUNT)
+		{
+			RETIRODE_RMP_SetState(RETIRODE_RMP_STATE_IDLE);
+		}
+	}
 }
 
 static void RETIRODE_RMP_MeasurementDataReadyStateHandler(void)
@@ -563,6 +583,7 @@ static void RETIRODE_RMP_QueryStateHandler(void)
 	int32_t status = ARM_DRIVER_OK;
 	int32_t receive_status;
 
+	rmp_env.query_response_waitter = 0;
 	receive_status = RETIRODE_RMP_UARTReceiveQueryResponse();
 
 	char command[4] = QUERY_STRING;
@@ -654,6 +675,15 @@ static void RETIRODE_RMP_QueryResponseStateHandler(void)
 		RETIRODE_RMP_SendQueryResponseReadyEvent(&data);
 	 	RETIRODE_RMP_SetState(RETIRODE_RMP_STATE_IDLE);
 	}
+	else
+	{
+		rmp_env.query_response_waitter += 1;
+
+		if(rmp_env.query_response_waitter >= MAX_QUERY_WAIT_COUNT)
+		{
+			RETIRODE_RMP_SetState(RETIRODE_RMP_STATE_IDLE);
+		}
+	}
 }
 
 
@@ -682,7 +712,11 @@ bool RETIRODE_RMP_MainLoop(void)
 	if(rmp_env.flag.cmd_software_reset == true)
 	{
 		RETIRODE_RMP_WriteCommand("R01\r");
-		memset(&rmp_env, 0, sizeof(rmp_env));
+		memset(&rmp_env.flag, 0, sizeof(rmp_env.flag));
+		memset(&rmp_env.current_command, 0, sizeof(rmp_env.current_command));
+		memset(&rmp_env.d_register_state, 0, sizeof(rmp_env.d_register_state));
+		memset(&rmp_env.pulse_count, 0, sizeof(rmp_env.pulse_count));
+		memset(&rmp_env.query_response_buffer, 0, sizeof(rmp_env.query_response_buffer));
 		RETIRODE_RMP_SetState(RETIRODE_RMP_STATE_SHUTDOWN);
 
 		if(entry_state != RETIRODE_RMP_STATE_SHUTDOWN)
