@@ -83,7 +83,6 @@
                                                 LineBreakMode="NoWrap"
                                                 StyleClass="HistoryLabelSecondary" />
                                     </Grid>
-
                                 </StackLayout>
 
                             </Grid>

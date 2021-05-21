@@ -34,6 +34,7 @@ namespace RETIRODE_APP.Droid
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }*/
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults) {
-            PermissionsImplementation.Current.OnRequestPermissionsResult(requestCode, permissions, grantResults); }
+            PermissionsImplementation.Current.OnRequestPermissionsResult(requestCode, permissions, grantResults); 
+        }
     }
 }

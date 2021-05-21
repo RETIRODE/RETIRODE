@@ -11,8 +11,7 @@ namespace RETIRODE_APP
 {
     public partial class App : Application
     {
-        public static Boolean isConnected { get; set; }
-        public static Boolean isCalibrated { get; set; }
+        public static bool IsConnected { get; set; }
 
         public App()
         {
@@ -25,7 +24,7 @@ namespace RETIRODE_APP
             TinyIoCContainer.Current.Register<IBluetoothService, BluetoothService>();
             TinyIoCContainer.Current.Register<BluetoothPage>();
             TinyIoCContainer.Current.Register<SettingsPage>();
-            TinyIoCContainer.Current.Register<GraphPage>();
+            TinyIoCContainer.Current.Register<GraphPage>().UsingConstructor(() => new GraphPage());
             MainPage = new AppShell();
         }
 

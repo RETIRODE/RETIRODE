@@ -164,7 +164,8 @@ namespace RETIRODE_APP.ViewModels
 
 
         private CancellationTokenSource _poolingRoutineCancelation;
-        public IRangeMeasurementService _rangeMeasurementService;
+        private IRangeMeasurementService _rangeMeasurementService;
+        private IApplicationStateProvider _applicationStateProvider;
         private IDataStore _database;
 
         // false -> switch set by system
@@ -172,17 +173,23 @@ namespace RETIRODE_APP.ViewModels
         private bool _switchedBySystemLaserVolage = false;
         private bool _switchedBySystemSipmBias = false;
 
+        // false -> by system
+        // true -> by user
+        private bool _isSwitchBySystemLaserOverload = false;
+        private bool _isSwitchBySystemSipmBiasOverload = false;
+
         public SettingsViewModel()
         {
             Title = "Settings";
             _rangeMeasurementService = TinyIoCContainer.Current.Resolve<IRangeMeasurementService>();
+            _applicationStateProvider = TinyIoCContainer.Current.Resolve<IApplicationStateProvider>();
             _database = TinyIoCContainer.Current.Resolve<IDataStore>();
 
             _rangeMeasurementService.QueryResponseEvent -= RangeMeasurementService_QueryResponseEvent;
             _rangeMeasurementService.QueryResponseEvent += RangeMeasurementService_QueryResponseEvent;
 
             _rangeMeasurementService.DeviceDisconnectedEvent -= _rangeMeasurementService_DeviceDisconnectedEvent;
-           // _rangeMeasurementService.DeviceDisconnectedEvent += _rangeMeasurementService_DeviceDisconnectedEvent;
+            _rangeMeasurementService.DeviceDisconnectedEvent += _rangeMeasurementService_DeviceDisconnectedEvent;
 
             SoftwareResetCommand = new AsyncCommand(async () => await ResetLidar());
             CalibrateCommand = new AsyncCommand(async () => await CalibrateLidar());
@@ -195,15 +202,19 @@ namespace RETIRODE_APP.ViewModels
             StartPoolingRoutine();
         }
 
-        private async void _rangeMeasurementService_DeviceDisconnectedEvent(object obj, DeviceEventArgs e)
+        private async void _rangeMeasurementService_DeviceDisconnectedEvent(RangeMeasurementErrorMessages errorMessage)
         {
             SetSettingParamsToDefault();
-            await ShowError(String.Format($"Device {e.Device.Name} has been disconnected"));
-            await Application.Current.MainPage.Navigation.PushAsync(new BluetoothPage());
+
+            if(errorMessage == RangeMeasurementErrorMessages.DeviceDisconnected)
+            {
+                await ShowError("Problem with connecting to Range Finder");
+            }
         }
 
         private async Task LaserVoltageToggle()
         {
+            
             if (_switchedBySystemLaserVolage)
             {
                 _switchedBySystemLaserVolage = false;
@@ -226,6 +237,7 @@ namespace RETIRODE_APP.ViewModels
             {
                 try
                 {
+                    _isSwitchBySystemLaserOverload = true;
                     await WithBusy(() => _rangeMeasurementService.SwitchLaserVoltage(SwitchState.TurnOff));
                 }
                 catch (Exception ex)
@@ -239,6 +251,7 @@ namespace RETIRODE_APP.ViewModels
 
         private async Task SipmBiasPowerToggle()
         {
+            
             if (_switchedBySystemSipmBias)
             {
                 _switchedBySystemSipmBias = false;
@@ -260,6 +273,7 @@ namespace RETIRODE_APP.ViewModels
             {
                 try
                 {
+                    _isSwitchBySystemSipmBiasOverload = true;
                     await WithBusy(() => _rangeMeasurementService.SwitchSipmBiasVoltage(SwitchState.TurnOff));
                 }
                 catch (Exception ex)
@@ -288,27 +302,44 @@ namespace RETIRODE_APP.ViewModels
             PoolingRoutine(_poolingRoutineCancelation.Token);
         }
 
+        private void StopPoolingRoutine()
+        {
+            _poolingRoutineCancelation.Cancel();
+        }
         private void PoolingRoutine(CancellationToken cancellationToken)
         {
             Device.BeginInvokeOnMainThread(async () =>
             {
-                while (!cancellationToken.IsCancellationRequested)
+                try
                 {
-                    try
+                    if(await _applicationStateProvider.IsBluetoothEnabled())
                     {
-                        await Task.Delay(1000);
-                        await _rangeMeasurementService.GetSipmBiasPowerVoltage(Voltage.Actual);
-                        await _rangeMeasurementService.GetLaserVoltage(Voltage.Actual);
-                        await _rangeMeasurementService.GetVoltagesStatus();
-
                         if (TriggerPulse == default(int))
                         {
-                            //await _rangeMeasurementService.GetPulseCount();
+                            await _rangeMeasurementService.GetPulseCount();
                         }
                         await Task.Delay(1000);
 
                         await _rangeMeasurementService.GetSipmBiasPowerVoltage(Voltage.Target);
                         await _rangeMeasurementService.GetLaserVoltage(Voltage.Target);
+                    }
+                }
+                catch(Exception ex)
+                {
+                    await ShowError("Could not get data");
+                }
+                
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    try
+                    {
+                        if (await _applicationStateProvider.IsBluetoothEnabled())
+                        {
+                            await Task.Delay(1000);
+                            await _rangeMeasurementService.GetSipmBiasPowerVoltage(Voltage.Actual);
+                            await _rangeMeasurementService.GetLaserVoltage(Voltage.Actual);
+                            await _rangeMeasurementService.GetVoltagesStatus();
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -320,6 +351,8 @@ namespace RETIRODE_APP.ViewModels
                         }
                         else
                         {
+                            var bluetoothPage = TinyIoCContainer.Current.Resolve<BluetoothPage>();
+                            await Application.Current.MainPage.Navigation.PushAsync(bluetoothPage);
                             break;
                         }
                     }
@@ -362,22 +395,45 @@ namespace RETIRODE_APP.ViewModels
                     break;
 
                 case RangeFinderValues.PulseCount:
-                    TriggerPulse = Convert.ToInt32(responseItem.Value);
+                    var response = Convert.ToInt32(responseItem.Value);
+                    if(response == 0)
+                    {
+                        TriggerPulse = 100;
+                    }
                     break;
+
                 case RangeFinderValues.SipmBiasPowerVoltageStatus:
+                    _isSwitchBySystemSipmBiasOverload = false;
                     ChangeSipmBiasVoltagePoweredOn(Convert.ToBoolean(responseItem.Value));
                     break;
+
                 case RangeFinderValues.LaserVoltageStatus:
+                    _isSwitchBySystemLaserOverload = false;
                     ChangeLaserVoltagePoweredOn(Convert.ToBoolean(responseItem.Value));
                     break;
+
                 case RangeFinderValues.LaserVoltageOverload:
+                    if (Convert.ToBoolean(responseItem.Value)) 
+                    {
+                    }
                     if (IsLaserVoltageTurnOn)
                     {
                         LaserVoltageOverload = Convert.ToBoolean(responseItem.Value);
                     }
                     else
                     {
-                        LaserVoltageOverload = null;
+                        var res = Convert.ToBoolean(responseItem.Value);
+                        if (!_isSwitchBySystemLaserOverload)
+                        {
+                            if (res)
+                            {
+                                LaserVoltageOverload = true;
+                            }
+                            else
+                            {
+                                LaserVoltageOverload = null;
+                            }
+                        }
                     }
                     break;
                 case RangeFinderValues.SipmBiasPowerVoltageOverload:
@@ -387,7 +443,18 @@ namespace RETIRODE_APP.ViewModels
                     }
                     else
                     {
-                        BiasVoltageOverload = null;
+                        var res = Convert.ToBoolean(responseItem.Value);
+                        if (!_isSwitchBySystemSipmBiasOverload)
+                        {
+                            if (res)
+                            {
+                                BiasVoltageOverload = true;
+                            }
+                            else
+                            {
+                                BiasVoltageOverload = null;
+                            }
+                        }
                     }
                     break;
                 default:
@@ -400,7 +467,9 @@ namespace RETIRODE_APP.ViewModels
             try
             {
                 await WithBusy(() => _rangeMeasurementService.SwReset());
+                StopPoolingRoutine();
                 SetSettingParamsToDefault();
+                StartPoolingRoutine();
 
             }
             catch (Exception ex)
@@ -447,29 +516,34 @@ namespace RETIRODE_APP.ViewModels
 
         private async Task StartDepiction()
         {
-            if (!App.isConnected)
+            if (!App.IsConnected)
             {
-                await Application.Current.MainPage.Navigation.PushAsync(new BluetoothPage());
+                var bluetoothPage = TinyIoCContainer.Current.Resolve<BluetoothPage>();
+                await Application.Current.MainPage.Navigation.PushAsync(bluetoothPage);
             }
             else
             {
-                if (TCDCal0 != 0 && TCDCal62 != 0 && TCDCal125 != 0)
-                {
-                    App.isCalibrated = true;
-                    await _database.AddEntityAsync(new CalibrationItem()
-                    {
-                        DateTime = DateTime.Now,
-                        Tdc_0 = TCDCal0,
-                        Tdc_62 = TCDCal62,
-                        Tdc_125 = TCDCal125,
-                        Pulse_count = TriggerPulse
-                    });
-                    await Application.Current.MainPage.Navigation.PushAsync(new GraphPage());
-                }
-                else
+                if (TCDCal0 == 0 && TCDCal62 == 0 && TCDCal125 == 0)
                 {
                     await ShowError("Lidar not calibrated");
+                    return;
                 }
+                else if(!IsSipmBiasPowerVoltageTurnOn || !IsLaserVoltageTurnOn)
+                {
+                    await ShowError("Voltages are not powered on");
+                    return;
+                }
+
+                await _database.AddEntityAsync(new CalibrationItem()
+                {
+                    DateTime = DateTime.Now,
+                    Tdc_0 = TCDCal0,
+                    Tdc_62 = TCDCal62,
+                    Tdc_125 = TCDCal125,
+                    Pulse_count = TriggerPulse
+                });
+                var graphPage = TinyIoCContainer.Current.Resolve<GraphPage>(NamedParameterOverloads.Default, new ResolveOptions());
+                await Application.Current.MainPage.Navigation.PushAsync(graphPage);
             }
 
 

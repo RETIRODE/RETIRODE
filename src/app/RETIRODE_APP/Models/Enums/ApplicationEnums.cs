@@ -35,6 +35,12 @@ namespace RETIRODE_APP.Models.Enums
             DataSize = 0x01
         }
 
+        public enum InfoCharacteristicErrorType : byte
+        {
+            CancelledByServer = 0x00,
+            CancelledByClient = 0x01
+        }
+
         public enum ProtocolGenerics : byte
         {
             DefaultByte = 0x00,
@@ -85,6 +91,12 @@ namespace RETIRODE_APP.Models.Enums
             Target = 0x01,
             Actual = 0x02,
             Switch = 0x03
+        }
+
+        public enum RangeMeasurementErrorMessages
+        {
+            DeviceDisconnected,
+            RangeFinderError
         }
     }
 }

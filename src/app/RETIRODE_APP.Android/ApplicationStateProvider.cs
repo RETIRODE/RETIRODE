@@ -72,5 +72,22 @@ namespace RETIRODE_APP.Services
                 System.Diagnostics.Debug.WriteLine(ex.Message);
             }
         }
+
+        public async Task<PermissionStatus> GetStoragePermissionStatus()
+        {
+            try
+            {
+                var storageStatus = await CrossPermissions.Current.CheckPermissionStatusAsync<StoragePermission>();
+                if (storageStatus != PermissionStatus.Granted)
+                {
+                    return await CrossPermissions.Current.RequestPermissionAsync<StoragePermission>();
+                }
+                return storageStatus;
+            } 
+            catch
+            {
+                throw;
+            }
+        }
     }
 }

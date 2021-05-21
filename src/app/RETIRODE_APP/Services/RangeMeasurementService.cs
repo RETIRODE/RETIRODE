@@ -48,9 +48,12 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public event Action<List<float>> MeasuredDataResponseEvent;
 
-        public event Action<object, DeviceEventArgs> DeviceDisconnectedEvent;
+        /// <inheritdoc cref="IRangeMeasurementService"/>
+        public event Action<RangeMeasurementErrorMessages> DeviceDisconnectedEvent;
 
+        /// <inheritdoc cref="IRangeMeasurementService"/>
         public event Action MeasurementErrorEvent;
+
         public RangeMeasurementService()
         {
             _availableDevices = new List<IDevice>();
@@ -61,9 +64,19 @@ namespace RETIRODE_APP.Services
             _bluetoothService.DeviceDisconnected = DeviceDisconnected;
         }
 
-        private void DeviceDisconnected(object obj, DeviceEventArgs e)
+        private async void DeviceDisconnected(object obj, DeviceEventArgs e)
         {
-            DeviceDisconnectedEvent.Invoke(obj,e);
+            try
+            {
+                await ConnectToRSL10(new BLEDevice()
+                {
+                    Name = e.Device.Name
+                });
+            }
+            catch
+            {
+                DeviceDisconnectedEvent?.Invoke(RangeMeasurementErrorMessages.DeviceDisconnected);
+            }
         }
              
         /// <inheritdoc cref="IRangeMeasurementService"/>
@@ -75,6 +88,8 @@ namespace RETIRODE_APP.Services
                 throw new InvalidOperationException(String.Format("Device {0} with ID {1} is not available",
                     bleDevice.Name, bleDevice.Identifier));
             }
+
+            _connectedDevice = _bluetoothService.ConnectedDevices.FirstOrDefault();
 
             if(_connectedDevice != null && _connectedDevice != device)
             {
@@ -99,6 +114,8 @@ namespace RETIRODE_APP.Services
         {
             if (!_isDataSize)
             {
+                _dataSize = 0;
+                _TOFData.Clear();
                 await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StartLidar });
             }
         }
@@ -123,10 +140,14 @@ namespace RETIRODE_APP.Services
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task StopMeasurement()
         {
-            await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StopLidar });
-            _isDataSize = false;
-            _dataSize = 0;
-            _TOFData.Clear();
+            try
+            {
+                await WriteToCharacteristic(_RMTControlPointCharacteristic, new[] { (byte)RSL10Command.StopLidar });
+                _isDataSize = false;
+            }
+            catch (Exception ex)
+            { 
+            }
         }
 
         /// <inheritdoc cref="IRangeMeasurementService"/>
@@ -150,12 +171,14 @@ namespace RETIRODE_APP.Services
             await WriteToCharacteristic(_sendCommandCharacteristic, message);
         }
 
+        /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task SwitchLaserVoltage(SwitchState s)
         {
             var message = BuildProtocolMessage(Registers.LaserVoltage, (byte)Voltage.Switch, (byte)s);
             await WriteToCharacteristic(_sendCommandCharacteristic, message);
         }
 
+        /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task SwitchSipmBiasVoltage(SwitchState s)
         {
             var message = BuildProtocolMessage(Registers.SipmBiasPowerVoltage, (byte)Voltage.Switch, (byte)s);
@@ -176,30 +199,36 @@ namespace RETIRODE_APP.Services
                 throw new CalibrationLidarException("Currently calibrating LIDAR");
             }
         }
+
+        /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task SetPulseCount(int pulseCount)
         {
             var message = BuildProtocolMessage(Registers.PulseCount, (byte)ProtocolGenerics.DefaultValueType, pulseCount);
             await WriteToCharacteristic(_sendCommandCharacteristic, message);
         }
 
+        /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task GetPulseCount()
         {
             var message = BuildProtocolMessage(Registers.PulseCount, (byte)ProtocolGenerics.DefaultValueType);
             await WriteToCharacteristic(_sendQueryCharacteristic, message);
         }
 
+        /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task GetLaserVoltage(Voltage voltage)
         {
             var message = BuildProtocolMessage(Registers.LaserVoltage, (byte)voltage);
             await WriteToCharacteristic(_sendQueryCharacteristic, message);
         }
 
+        /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task GetSipmBiasPowerVoltage(Voltage voltage)
         {
             var message = BuildProtocolMessage(Registers.SipmBiasPowerVoltage, (byte)voltage);
             await WriteToCharacteristic(_sendQueryCharacteristic, message);
         }
 
+        /// <inheritdoc cref="IRangeMeasurementService"/>
         public async Task GetVoltagesStatus()
         {
             var message = BuildProtocolMessage(Registers.VoltageStatus, (byte)ProtocolGenerics.DefaultValueType);
@@ -209,10 +238,6 @@ namespace RETIRODE_APP.Services
         private async void DataSizeHandler(object sender, CharacteristicUpdatedEventArgs e)
         {
             var data = e.Characteristic.Value;
-            if(data is null || data.Length != 5)
-            {
-                MeasurementErrorEvent.Invoke();
-            }
             if(data[0] == (byte)InfoCharacteristicResponseType.DataSize)
             {
                 _isDataSize = true;
@@ -221,7 +246,10 @@ namespace RETIRODE_APP.Services
             }
             else if(data[0] == (byte)InfoCharacteristicResponseType.Error)
             {
-                MeasurementErrorEvent.Invoke();
+                if (data[1] == (byte)InfoCharacteristicErrorType.CancelledByServer)
+                {
+                    MeasurementErrorEvent?.Invoke();
+                }                
             }
         }
 
@@ -261,7 +289,8 @@ namespace RETIRODE_APP.Services
                 data = data.Skip(4).ToArray();
                 _TOFData.AddRange(data);
             } 
-            else
+            
+            if(_TOFData.Count >= _dataSize)
             {
                 List<float> parsedData = new List<float>();
                 for (int i = 0; i < _TOFData.Count; i+=4)
@@ -525,6 +554,7 @@ namespace RETIRODE_APP.Services
             var message = new List<byte> { (byte)register, subRegister};
             return message.ToArray();
         }
+
         /// <inheritdoc cref="IRangeMeasurementService"/>
         public void Dispose()
         {
