@@ -89,7 +89,4 @@
         <ShellContent Route="SettingsPage" ContentTemplate="{DataTemplate local:SettingsPage}"/>
     </FlyoutItem>-->
 
-
-   
-
 </Shell>

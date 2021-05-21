@@ -13,16 +13,20 @@
 
     <ContentPage.Resources>
         <ResourceDictionary>
+
+            <!--About label secondary styling-->
             <Style TargetType="Label" Class="AboutLabelSecondary">
                 <Setter Property="TextColor" Value="White"/>
                 <Setter Property="FontSize" Value="15"/>
             </Style>
 
+            <!--About label styling-->
             <Style TargetType="Label" Class="AboutLabel">
                 <Setter Property="TextColor" Value="White"/>
                 <Setter Property="FontSize" Value="20"/>
             </Style>
 
+            <!--About image styling-->
             <Style TargetType="Image" Class="AboutImage">
                 <Setter Property="WidthRequest" Value="10"/>
                 <Setter Property="HeightRequest" Value="10"/>
@@ -34,6 +38,7 @@
 
         <StackLayout>
 
+            <!--Useful links list-->
             <CollectionView
                 Margin="5"
                 ItemsSource="{Binding AboutItems}"
@@ -65,6 +70,7 @@
 
                             </Grid>
 
+                            <!--Link item clicked - call ItemTapped command from VM-->
                             <StackLayout.GestureRecognizers>
                                 <TapGestureRecognizer 
                                 NumberOfTapsRequired="1"

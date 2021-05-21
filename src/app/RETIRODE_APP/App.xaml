@@ -3,11 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="RETIRODE_APP.App">
     <!--
-        Define global resources and styles here, that apply to all pages in your app.
+        Global resources and styles here, that apply to all pages in app.
     -->
     <Application.Resources>
-        <ResourceDictionary>
-            <Color x:Key="Primary">#737475</Color>
+        <ResourceDictionary>        
+            <Color x:Key="Primary">#737475</Color>      <!--App base color palette-->
             <Color x:Key="Secondary">#3D4047</Color>
             <Color x:Key="Orange">#FFB534</Color>
             <Style TargetType="Button">

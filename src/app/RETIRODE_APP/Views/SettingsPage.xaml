@@ -16,7 +16,10 @@
         <converters:OkNotOkTextConverter x:Key="OkNotOkConverter"></converters:OkNotOkTextConverter>
         <converters:OverloadColorConverter x:Key="OverloadColorConverter"></converters:OverloadColorConverter>
         
+        
         <ResourceDictionary>
+
+            <!--Label styling-->
             <Style TargetType="Label">
                 <Setter Property="HorizontalOptions" Value="Center"/>
                 <Setter Property="FontSize" Value="20"/>
@@ -24,8 +27,7 @@
                 <Setter Property="TextColor" Value="White"/>
             </Style>
 
-
-
+            <!--Entry styling-->
             <Style x:Key="TCDValue" TargetType="Entry">
                 <Setter Property="HorizontalOptions" Value="Center"/>
                 <Setter Property="FontSize" Value="20"/>
@@ -37,6 +39,7 @@
                 <Setter Property="HorizontalTextAlignment" Value="Center"/>
             </Style>
 
+            <!--Disabled label styling-->
             <Style x:Key="TCDValueDisabled" TargetType="Label">
                 <Setter Property="Padding" Value="11"/>
                 <Setter Property="FontSize" Value="20"/>
@@ -47,6 +50,7 @@
                 <Setter Property="HorizontalTextAlignment" Value="Center"/>
             </Style>
 
+            <!--Ok/NotOk label styling-->
             <Style x:Key="OkNoTOkLabel" TargetType="Label">
                 <Setter Property="Padding" Value="0,5,0,0"/>
                 <Setter Property="FontAttributes" Value="Bold"/>
@@ -65,6 +69,8 @@
             <StackLayout>
 
                 <ActivityIndicator Color="Orange" IsRunning="{Binding IsBusy}" />
+                
+                <!--TCD block-->
                 <Grid Margin="20, 0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -109,7 +115,7 @@
                     </Entry.Behaviors>
                 </Entry>
 
-
+                <!--Power block-->
                 <Grid Margin="20,30,20,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -230,6 +236,7 @@
 
                 </Grid>
 
+                <!--Button block-->
                 <Grid Margin="20,10,20,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -247,6 +254,7 @@
 
                 </Grid>
 
+                <!--Start scan-->
                 <Button Margin="20,30,20,20" Text="SCAN"
                             Command="{Binding StartDepictionCommand}"
                             BackgroundColor="{StaticResource Orange}"

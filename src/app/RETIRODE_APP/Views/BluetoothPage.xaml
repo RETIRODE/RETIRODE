@@ -8,6 +8,7 @@
              BackgroundColor="{StaticResource Secondary}"
              Title="{Binding Title}">
 
+    <!--Refresh devices button-->
     <ContentPage.ToolbarItems>
         <ToolbarItem  Icon="icon_refresh.svg" Command="{Binding LoadDevicesCommand}"/>
     </ContentPage.ToolbarItems>
@@ -40,8 +41,7 @@
 
     <StackLayout>
 
-        <!-- testdata rewrite "TestDevices" to "Devices" -->
-
+        <!--Bluetooth devices found list-->
         <RefreshView x:DataType="local:BluetoothViewModel" IsRefreshing="{Binding IsBusy, Mode=TwoWay}" Margin="50, 20">
             <CollectionView x:Name="DevicesListView"
                             ItemsSource="{Binding Devices}"
@@ -64,6 +64,7 @@
                                     HorizontalOptions="Center"
                                     Padding="10, 5"/>
 
+                            <!--Device item clicked - call DeviceTapped command from VM-->
                             <StackLayout.GestureRecognizers>
                                 <TapGestureRecognizer 
                                     NumberOfTapsRequired="1"

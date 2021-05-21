@@ -18,6 +18,8 @@
                         <Label VerticalOptions="Center" FontSize="56" Text="RETIRODE" TextColor="White" />
                     </ContentView>
                 </StackLayout>
+                
+                <!--Connectivity indicator-->
                 <StackLayout Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Center">
                     <ContentView Padding="0,0,0,40" VerticalOptions="FillAndExpand">
                         <Label VerticalOptions="Center" FontSize="16" Text="{Binding Connected}" TextColor="Gray"/>
@@ -28,6 +30,8 @@
         <Grid Grid.Row="1">
             <StackLayout VerticalOptions="End"
                          BackgroundColor="{StaticResource Primary}">
+                
+                <!--Start scan button-->
                 <Button Margin="40,20,40,20" Text="SCAN"
                         Command="{Binding StartDepictionCommand}"
                         BackgroundColor="{StaticResource Orange}"
