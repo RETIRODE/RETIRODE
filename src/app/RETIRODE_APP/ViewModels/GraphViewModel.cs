@@ -229,15 +229,6 @@ namespace RETIRODE_APP.ViewModels
             }
         }
 
-        public async static Task SaveTextAsync(string content, string fileName)
-        {
-            var backingFile = Path.Combine(Xamarin.Essentials.FileSystem.AppDataDirectory, fileName);
-            using (var writer = File.CreateText(backingFile))
-            {
-                await writer.WriteAsync(content);
-            }
-        }
-
 
         private float CalculateDistanceFromTdc(float tdcValue)
         {
