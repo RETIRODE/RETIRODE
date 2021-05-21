@@ -19,8 +19,10 @@ namespace RETIRODE_APP.ViewModels
         {
             Title = "About";
 
+            // Call this command in item clicked
             ItemTapped = new AsyncCommand<AboutItem>(async (aboutItem) => await OnItemSelected(aboutItem));
 
+            // List of items which contain useful links to github repo. etc.
             AboutItems = new List<AboutItem>();
             AboutItems.Add(new AboutItem
             {
@@ -59,12 +61,14 @@ namespace RETIRODE_APP.ViewModels
             if (item == null)
                 return;
 
+            // If first item clicked, redirect to InfoPage
             if(item.Name == "About application")
             {
                 await Application.Current.MainPage.Navigation.PushAsync(new InfoPage());
             }
             else
             {
+                // Open item link in a browser
                 try
                 {
                     await Browser.OpenAsync(new Uri(item.Link), BrowserLaunchMode.SystemPreferred);

@@ -40,11 +40,13 @@ namespace RETIRODE_APP.ViewModels
 
         }
 
+        // On device discoved add to device list
         private void RangeMeasurementService_DeviceDiscoveredEvent(BLEDevice device)
         {
             Devices.Add(device);
         }
 
+        // On load device command, start scan
         private async Task ExecuteLoadDevicesCommand()
         {
             await EnsureBluetoothEnabled();
@@ -76,6 +78,8 @@ namespace RETIRODE_APP.ViewModels
             }
         }
 
+        // On bluetooth device clicked, stop scan, connect and redirect to settings page
+        // on error display alert
         public async Task OnDeviceSelected(BLEDevice device)
         {
             if (device == null)
